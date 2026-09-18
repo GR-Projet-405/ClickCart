@@ -17,6 +17,12 @@
   justify-content: space-between;
   gap: var(--cc-space-4);
 }
+@media (min-width: 1024px) {
+  .customer-topbar__inner {
+    max-width: none;
+    padding-inline: clamp(2rem, 4vw, 4rem);
+  }
+}
 .customer-topbar__support,
 .customer-topbar__links {
   gap: var(--cc-space-3);

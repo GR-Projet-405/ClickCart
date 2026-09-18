@@ -77,7 +77,14 @@
     display: flex;
   }
   .customer-header__inner {
-    gap: var(--cc-space-8);
+    display: grid;
+    max-width: none;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: var(--cc-space-6);
+    padding-inline: clamp(2rem, 4vw, 4rem);
+  }
+  .customer-header__actions {
+    justify-self: end;
   }
   .customer-header__actions {
     gap: var(--cc-space-2);
