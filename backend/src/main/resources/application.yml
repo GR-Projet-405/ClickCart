@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: clickcart-backend
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+
+server:
+  port: ${SERVER_PORT:8080}
+

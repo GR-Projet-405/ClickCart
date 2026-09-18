@@ -1,0 +1,9 @@
+body {
+  margin: 0;
+  background: var(--cc-bg-app);
+}
+
+:focus-visible {
+  outline: 2px solid var(--cc-primary-dark);
+  outline-offset: 2px;
+}

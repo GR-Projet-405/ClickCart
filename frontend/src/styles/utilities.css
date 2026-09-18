@@ -1,0 +1,64 @@
+.cc-display,
+.cc-h1,
+.cc-h2,
+.cc-h3,
+.cc-h4 {
+  margin: 0;
+  color: var(--cc-text-primary);
+  font-weight: 700;
+  line-height: 1.2;
+}
+.cc-display {
+  font-size: var(--cc-text-display-size);
+  letter-spacing: -0.03em;
+}
+.cc-h1 {
+  font-size: var(--cc-text-h1-size);
+  letter-spacing: -0.02em;
+}
+.cc-h2 {
+  font-size: var(--cc-text-h2-size);
+}
+.cc-h3 {
+  font-size: var(--cc-text-h3-size);
+}
+.cc-h4 {
+  font-size: var(--cc-text-h4-size);
+}
+.cc-body-lg {
+  font-size: var(--cc-text-body-lg-size);
+  line-height: 1.6;
+}
+.cc-body {
+  font-size: var(--cc-text-body-size);
+  line-height: 1.5;
+}
+.cc-body-sm {
+  font-size: var(--cc-text-body-sm-size);
+  line-height: 1.5;
+}
+.cc-caption {
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.4;
+}
+.cc-button-text {
+  font-size: var(--cc-text-button-size);
+  font-weight: 600;
+}
+.cc-text-secondary {
+  color: var(--cc-text-secondary);
+}
+.cc-text-muted {
+  color: var(--cc-text-muted);
+}
+.cc-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

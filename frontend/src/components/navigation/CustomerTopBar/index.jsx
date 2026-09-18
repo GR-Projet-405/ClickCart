@@ -1,0 +1,27 @@
+import { ChevronDown, Globe2, Phone } from "lucide-react";
+import PageContainer from "../../common/PageContainer";
+import "./styles.css";
+
+export default function CustomerTopBar() {
+  return (
+    <div className="customer-topbar">
+      <PageContainer className="customer-topbar__inner">
+        <div className="customer-topbar__support">
+          <Phone size={13} aria-hidden="true" />
+          <span>Need Help?</span>
+          <a href="tel:+942538862516">(025) 3886 25 16</a>
+        </div>
+        <nav className="customer-topbar__links" aria-label="Utility navigation">
+          <a href="#become-a-provider">Become a Provider</a>
+          <a href="#help-center">Help Center</a>
+          <span>LKR</span>
+          <button type="button" aria-label="Language: English">
+            <Globe2 size={13} aria-hidden="true" />
+            <span>Eng</span>
+            <ChevronDown size={12} aria-hidden="true" />
+          </button>
+        </nav>
+      </PageContainer>
+    </div>
+  );
+}

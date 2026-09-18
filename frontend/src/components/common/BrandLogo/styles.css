@@ -1,0 +1,46 @@
+.cc-brand-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+}
+.cc-brand-logo__mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  color: var(--cc-text-on-primary);
+  background: var(--cc-primary);
+  border-radius: var(--cc-radius-lg);
+}
+.cc-brand-logo__mark svg {
+  width: 1.35rem;
+}
+.cc-brand-logo__copy {
+  display: grid;
+  gap: 1px;
+}
+.cc-brand-logo__name {
+  font-size: 1.25rem;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+}
+.cc-brand-logo__name span {
+  color: var(--cc-primary);
+}
+.cc-brand-logo__tagline {
+  color: var(--cc-text-muted);
+  font-size: 0.625rem;
+}
+.cc-brand-logo--small {
+  gap: var(--cc-space-2);
+}
+.cc-brand-logo--small .cc-brand-logo__mark {
+  width: 2rem;
+  height: 2rem;
+}
+.cc-brand-logo--small .cc-brand-logo__name {
+  font-size: 1rem;
+}
+.cc-brand-logo--small .cc-brand-logo__tagline {
+  display: none;
+}

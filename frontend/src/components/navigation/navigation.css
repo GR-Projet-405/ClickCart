@@ -1,0 +1,57 @@
+.cc-nav-item,
+.cc-sidebar-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  color: var(--cc-text-secondary);
+  background: transparent;
+  border: 0;
+  border-radius: var(--cc-radius-md);
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 150ms,
+    background-color 150ms;
+}
+.cc-nav-item {
+  padding: var(--cc-space-2) var(--cc-space-3);
+}
+.cc-sidebar-item {
+  width: 100%;
+  padding: var(--cc-space-3);
+  text-align: left;
+}
+.cc-nav-item:hover,
+.cc-sidebar-item:hover {
+  color: var(--cc-primary-dark);
+  background: var(--cc-primary-softer);
+}
+.cc-nav-item--active,
+.cc-sidebar-item--active {
+  color: var(--cc-primary-dark);
+  background: var(--cc-primary-soft);
+}
+.cc-nav-item--disabled,
+.cc-sidebar-item--disabled {
+  color: var(--cc-text-muted);
+  pointer-events: none;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.cc-navigation-item__icon {
+  display: inline-flex;
+  flex: none;
+}
+.cc-navigation-item__icon svg {
+  width: 1.125rem;
+  height: 1.125rem;
+}
+.cc-navigation-item__label {
+  flex: 1;
+}
+.cc-navigation-item__badge {
+  margin-left: auto;
+}

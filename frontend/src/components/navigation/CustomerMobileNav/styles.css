@@ -1,0 +1,17 @@
+.customer-mobile-nav {
+  display: grid;
+  gap: var(--cc-space-1);
+  padding: var(--cc-space-3) var(--cc-space-4) var(--cc-space-4);
+  background: var(--cc-bg-surface);
+  border-top: 1px solid var(--cc-border-soft);
+  box-shadow: var(--cc-shadow-md);
+}
+.customer-mobile-nav .cc-nav-item {
+  width: 100%;
+  padding: var(--cc-space-3);
+}
+@media (min-width: 1024px) {
+  .customer-mobile-nav {
+    display: none;
+  }
+}

@@ -1,0 +1,10 @@
+.customer-layout {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--cc-bg-app);
+}
+.customer-layout__main {
+  flex: 1;
+  min-width: 0;
+}
