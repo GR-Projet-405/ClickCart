@@ -1,5 +1,5 @@
 .customer-topbar {
-  min-height: 2rem;
+  min-height: 2.5rem;
   color: var(--cc-text-secondary);
   background: var(--cc-bg-muted);
   border-bottom: 1px solid var(--cc-border-soft);
@@ -13,13 +13,20 @@
   align-items: center;
 }
 .customer-topbar__inner {
-  min-height: 2rem;
+  min-height: 2.5rem;
   justify-content: space-between;
   gap: var(--cc-space-4);
 }
 .customer-topbar__support,
 .customer-topbar__links {
   gap: var(--cc-space-3);
+}
+.customer-topbar__support svg {
+  color: var(--cc-primary);
+}
+.customer-topbar__support a {
+  color: var(--cc-text-primary);
+  font-weight: 700;
 }
 .customer-topbar a {
   color: inherit;
