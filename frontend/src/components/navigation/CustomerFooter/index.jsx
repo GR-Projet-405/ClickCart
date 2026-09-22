@@ -1,5 +1,12 @@
 import React from 'react';
-import { Facebook, Instagram, Linkedin } from "lucide-react";
+import {
+  Facebook,
+  Heart,
+  Instagram,
+  Linkedin,
+  MessageCircleMore,
+  Youtube,
+} from "lucide-react";
 import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
@@ -16,7 +23,7 @@ export default function CustomerFooter() {
   return (
     <footer className="customer-footer">
       <PageContainer className="customer-footer__main">
-        <BrandLogo showTagline />
+        <BrandLogo size="shell" showTagline />
         <nav className="customer-footer__links" aria-label="Footer navigation">
           {footerLinks.map((label) => (
             <a
@@ -43,15 +50,21 @@ export default function CustomerFooter() {
             label="LinkedIn"
             variant="ghost"
           />
+          <IconButton
+            icon={<Youtube size={17} />}
+            label="YouTube"
+            variant="ghost"
+          />
         </div>
+        <p className="customer-footer__community">
+          Made with <Heart size={16} fill="currentColor" /> for stronger communities
+        </p>
       </PageContainer>
-      <div className="customer-footer__bottom">
-        <PageContainer>
-          <small>
-            © {new Date().getFullYear()} ClickCart. All rights reserved.
-          </small>
-        </PageContainer>
-      </div>
+      <IconButton
+        className="customer-footer__chat"
+        icon={<MessageCircleMore size={23} />}
+        label="Open support chat"
+      />
     </footer>
   );
 }

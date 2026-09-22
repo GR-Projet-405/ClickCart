@@ -1,0 +1,90 @@
+.customer-trust-bar-wrap {
+  position: relative;
+  z-index: 9;
+}
+.customer-trust-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-5);
+  min-height: 4rem;
+  padding: var(--cc-space-2) var(--cc-space-3);
+  color: var(--cc-text-on-primary);
+  background: linear-gradient(100deg, var(--cc-primary-hover), var(--cc-primary));
+  border-radius: var(--cc-radius-xl);
+  box-shadow: var(--cc-shadow-md);
+}
+.customer-trust-bar__search {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  height: 2.75rem;
+  overflow: hidden;
+  color: var(--cc-text-primary);
+  background: var(--cc-bg-surface);
+  border-radius: var(--cc-radius-md);
+}
+.customer-trust-bar__search select,
+.customer-trust-bar__search input,
+.customer-trust-bar__search button {
+  min-width: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+}
+.customer-trust-bar__search select {
+  width: 10rem;
+  padding-inline: var(--cc-space-4);
+  border-right: 1px solid var(--cc-border-soft);
+  font-weight: 600;
+}
+.customer-trust-bar__search input {
+  flex: 1;
+  padding-inline: var(--cc-space-4);
+}
+.customer-trust-bar__search input:focus,
+.customer-trust-bar__search select:focus {
+  outline: 0;
+}
+.customer-trust-bar__search button {
+  display: grid;
+  width: 3.25rem;
+  flex: none;
+  place-items: center;
+  cursor: pointer;
+}
+.customer-trust-bar__items {
+  display: flex;
+  align-items: center;
+  flex: none;
+}
+.customer-trust-bar__item {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  min-height: 2.5rem;
+  padding-inline: var(--cc-space-4);
+  border-left: 1px solid rgb(255 255 255 / 22%);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.customer-trust-bar__item svg {
+  width: 1.75rem;
+  height: 1.75rem;
+}
+@media (max-width: 1023px) {
+  .customer-trust-bar__items {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .customer-trust-bar {
+    min-height: auto;
+  }
+  .customer-trust-bar__search select {
+    display: none;
+  }
+  .customer-trust-bar__search input {
+    padding-inline: var(--cc-space-3);
+  }
+}
