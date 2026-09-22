@@ -146,3 +146,113 @@
         padding: 0 var(--cc-space-4);
     }
 }
+
+/* Documents Upload Specific Styles */
+.cc-upload-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-2);
+    margin-bottom: var(--cc-space-5);
+}
+
+.cc-upload-label {
+    font-weight: 600;
+    color: var(--cc-text-primary);
+    font-size: 0.95rem;
+}
+
+.cc-upload-dropzone {
+    position: relative;
+    border: 2px dashed #22c55e;
+    /* Green dashed border */
+    border-radius: var(--cc-radius-md);
+    background-color: #f8fafc;
+    padding: var(--cc-space-8) var(--cc-space-4);
+    text-align: center;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.cc-upload-dropzone:hover {
+    background-color: #f0fdf4;
+}
+
+.cc-upload-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.cc-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--cc-space-3);
+    color: var(--cc-text-secondary);
+}
+
+.cc-upload-icon {
+    color: #64748b;
+}
+
+.cc-file-name {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-2);
+    color: #16a34a;
+    /* Green text for file name */
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-top: var(--cc-space-1);
+}
+
+.cc-upload-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--cc-space-5);
+}
+
+.cc-stacked {
+    display: flex;
+    flex-direction: column;
+}
+
+.mt-4 {
+    margin-top: var(--cc-space-4);
+}
+
+.cc-form-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--cc-space-4);
+    margin-top: var(--cc-space-6);
+}
+
+/* Stepper Completed State additions (To show green tick on step 1) */
+.cc-step.complete .cc-step-circle {
+    background-color: var(--cc-primary);
+    color: var(--cc-text-on-primary);
+}
+
+.cc-step-line.complete {
+    background-color: var(--cc-primary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .cc-upload-grid-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .cc-form-actions-row {
+        flex-direction: column-reverse;
+    }
+
+    .cc-form-actions-row button {
+        width: 100%;
+    }
+}
