@@ -50,7 +50,7 @@ export default function VerificationStep2() {
         // In a real scenario, you would upload files to Cloudinary/S3 here, 
         // get the URLs, and send those URLs to your backend database.
         console.log("Mock Uploading files...");
-        navigate("/provider/dashboard"); // Navigate to success or dashboard
+        navigate("/provider/verification/success"); // Navigate to success or dashboard
     };
 
     const handleBack = () => {
