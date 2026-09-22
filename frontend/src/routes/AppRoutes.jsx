@@ -1,3 +1,4 @@
+import React from 'react';
 import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
@@ -10,11 +11,21 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
+//importing provider verification steps
+import ProviderDashboard from "../pages/provider/Dashboard/ProviderDashboard";
+import VerificationStep1 from "../pages/provider/Dashboard/VerificationStep1";
+import VerificationStep2 from "../pages/provider/Dashboard/VerificationStep2";
+import VerificationSuccess from "../pages/provider/Dashboard/VerificationSuccess";
+
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
       <Route path="/provider" element={<ServiceProviderLayout />}>
+        <Route path="dashboard" element={<ProviderDashboard />} />
+        <Route path="verification/step-1" element={<VerificationStep1 />} />
+        <Route path="verification/step-2" element={<VerificationStep2 />} />
+        <Route path="verification/success" element={<VerificationSuccess />} />
         <Route
           index
           element={

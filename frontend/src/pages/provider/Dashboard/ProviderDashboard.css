@@ -1,0 +1,125 @@
+.cc-provider-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-6);
+    padding-top: var(--cc-space-6);
+    padding-bottom: var(--cc-space-8);
+}
+
+/* Banner Section */
+.cc-dashboard-banner__content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--cc-space-6);
+}
+
+.cc-dashboard-banner__profile {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-4);
+}
+
+.cc-dashboard-banner__info {
+    display: flex;
+    flex-direction: column;
+    gap: var(--cc-space-1);
+}
+
+.cc-dashboard-banner__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-3);
+    margin-top: var(--cc-space-1);
+}
+
+.cc-dashboard-banner__meta .cc-text-muted {
+    font-weight: 500;
+}
+
+/* Promo Section (Right side of the banner) */
+.cc-dashboard-banner__promo {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-6);
+    background-color: var(--cc-primary-softer);
+    padding: var(--cc-space-4) var(--cc-space-6);
+    border-radius: var(--cc-radius-lg);
+}
+
+.cc-promo-text h4 {
+    margin: 0 0 var(--cc-space-1) 0;
+    font-size: var(--cc-text-body-md-size);
+    color: var(--cc-text-primary);
+}
+
+.cc-promo-text p {
+    margin: 0;
+}
+
+.cc-promo-action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--cc-space-2);
+}
+
+.cc-promo-icon {
+    color: var(--cc-primary);
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Verification Alert Box */
+.cc-verification-alert {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--cc-space-5);
+    background-color: var(--cc-warning-soft);
+    border-color: var(--cc-warning);
+    margin-top: var(--cc-space-2);
+}
+
+.cc-verification-alert__message {
+    display: flex;
+    align-items: center;
+    gap: var(--cc-space-3);
+    color: var(--cc-warning-text);
+}
+
+.cc-alert-icon {
+    width: 2rem;
+    height: 2rem;
+    flex-shrink: 0;
+    color: var(--cc-warning);
+}
+
+.cc-verification-alert__message h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+/* Responsive Rules for Mobile and Tablet */
+@media (max-width: 768px) {
+    .cc-dashboard-banner__content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cc-dashboard-banner__promo {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .cc-verification-alert__message {
+        flex-direction: column;
+    }
+
+    .cc-verification-alert__message h3 {
+        line-height: 1.4;
+    }
+}
