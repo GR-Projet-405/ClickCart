@@ -1,3 +1,4 @@
+import React from 'react';
 import { Headphones, Search, ShieldCheck, Truck } from "lucide-react";
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
