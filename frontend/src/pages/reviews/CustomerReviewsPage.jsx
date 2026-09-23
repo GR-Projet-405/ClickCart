@@ -1,5 +1,6 @@
 import React from "react";
 import PageContainer from "../../components/common/PageContainer";
+import CustomerReviewsList from "../../components/reviews/CustomerReviewsList";
 import RatingSummaryCard from "../../components/reviews/RatingSummaryCard";
 import ReviewEligibilityCard from "../../components/reviews/ReviewEligibilityCard";
 import WriteReviewForm from "../../components/reviews/WriteReviewForm";
@@ -27,6 +28,8 @@ export default function CustomerReviewsPage() {
       <section className="reviews-write-section">
         <WriteReviewForm />
       </section>
+
+      <CustomerReviewsList />
     </PageContainer>
   );
 }
