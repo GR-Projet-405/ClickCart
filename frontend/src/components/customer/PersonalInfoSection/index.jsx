@@ -44,11 +44,18 @@ export default function PersonalInfoSection({ profile, onEdit }) {
     {
       label: "Date of Birth",
       value: profile.dateOfBirth
-        ? new Date(profile.dateOfBirth).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
+        ? (() => {
+            const parts = profile.dateOfBirth.split("-");
+            if (parts.length === 3) {
+              const d = new Date(parts[0], parts[1] - 1, parts[2]);
+              return d.toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              });
+            }
+            return profile.dateOfBirth;
+          })()
         : "Not provided",
       icon: Calendar,
     },

@@ -14,7 +14,7 @@
 .cc-modal {
   position: relative;
   width: 100%;
-  max-width: 42rem;
+  max-width: 44rem;
   background: var(--cc-bg-surface);
   border-radius: var(--cc-radius-xl);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -53,9 +53,38 @@
   transition: background-color 150ms;
 }
 
-.cc-modal__close-btn:hover {
+.cc-modal__close-btn:hover:not(:disabled) {
   background: var(--cc-bg-muted);
   color: var(--cc-text-primary);
+}
+
+.cc-modal__close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.edit-profile-modal__api-error {
+  margin: var(--cc-space-4) var(--cc-space-6) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-3) var(--cc-space-4);
+  background: var(--cc-danger-soft, #fef2f2);
+  border: 1px solid var(--cc-danger, #ef4444);
+  border-radius: var(--cc-radius-md);
+  color: var(--cc-danger, #ef4444);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.edit-profile-modal__field-error {
+  display: block;
+  font-size: var(--cc-text-caption-size, 0.75rem);
+  color: var(--cc-danger, #ef4444);
+  margin-top: 4px;
+}
+
+.edit-profile-modal__spinner {
+  animation: spin 1s linear infinite;
 }
 
 .edit-profile-modal__form {

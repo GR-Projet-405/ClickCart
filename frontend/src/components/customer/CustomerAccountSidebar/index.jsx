@@ -85,7 +85,12 @@ export default function CustomerAccountSidebar({
                   {item.description}
                 </span>
               </div>
-              {item.badge && (
+              {item.id === "addresses" && profile.savedAddresses?.length > 0 && (
+                <span className="customer-account-sidebar__badge">
+                  {profile.savedAddresses.length}
+                </span>
+              )}
+              {item.badge && item.id !== "addresses" && (
                 <span className="customer-account-sidebar__badge">
                   {item.badge}
                 </span>

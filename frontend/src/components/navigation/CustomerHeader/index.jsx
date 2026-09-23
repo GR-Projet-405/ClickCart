@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Heart, Menu, UserRound, X } from "lucide-react";
+import { Bell, Heart, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
@@ -7,6 +7,7 @@ import Button from "../../common/Button";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import { customerNavigation } from "../../../config/customerNavigation";
+import { useCustomer } from "../../../context/CustomerContext";
 import CustomerMobileNav from "../CustomerMobileNav";
 import NavItem from "../NavItem";
 import "./styles.css";
@@ -14,6 +15,7 @@ import "./styles.css";
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
+  const { profile, displayName, avatarFallback } = useCustomer();
 
   useEffect(() => setMenuOpen(false), [pathname]);
   useEffect(() => {
@@ -55,10 +57,14 @@ export default function CustomerHeader() {
             to="/customer/profile"
             aria-label="View customer profile"
           >
-            <Avatar fallback="KP" size="sm" />
+            <Avatar
+              src={profile?.avatarUrl}
+              fallback={avatarFallback}
+              size="sm"
+            />
             <span>
               <small>Hello,</small>
-              <strong>Kasun</strong>
+              <strong>{displayName}</strong>
             </span>
           </Link>
           <Button className="customer-header__cta">Post a Service</Button>

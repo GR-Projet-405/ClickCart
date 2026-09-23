@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronRight,
   Home,
-  Lock,
-  Menu,
+  Loader2,
+  RefreshCw,
   Shield,
   X,
-  Bell,
-  Heart,
-  Sparkles,
 } from "lucide-react";
 import PageContainer from "../../components/common/PageContainer";
 import Button from "../../components/common/Button";
@@ -19,43 +17,62 @@ import Badge from "../../components/common/Badge";
 import CustomerAccountSidebar from "../../components/customer/CustomerAccountSidebar";
 import ProfileHeaderCard from "../../components/customer/ProfileHeaderCard";
 import PersonalInfoSection from "../../components/customer/PersonalInfoSection";
-import AccountSummarySection from "../../components/customer/AccountSummarySection";
 import SavedAddressesSection from "../../components/customer/SavedAddressesSection";
 import EditProfileModal from "../../components/customer/EditProfileModal";
 import AddressModal from "../../components/customer/AddressModal";
-import { initialCustomerProfile } from "../../config/profileData";
+import { useCustomer } from "../../context/CustomerContext";
 import "./CustomerProfilePage.css";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(initialCustomerProfile);
+  const {
+    profile,
+    setProfile,
+    isLoading,
+    error,
+    refreshProfile,
+    saveProfile,
+  } = useCustomer();
+
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressToEdit, setAddressToEdit] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
+  const [toastType, setToastType] = useState("success");
 
-  const showToast = (message) => {
+  const showToast = (message, type = "success") => {
     setToastMessage(message);
+    setToastType(type);
     setTimeout(() => {
       setToastMessage(null);
     }, 4000);
   };
 
-  const handleSaveProfile = (updatedData) => {
-    setProfile((prev) => ({
-      ...prev,
-      ...updatedData,
-    }));
-    showToast("Profile details updated successfully!");
+  const handleSaveProfile = async (updatedData) => {
+    try {
+      const saved = await saveProfile(updatedData);
+      showToast("Profile details updated successfully!");
+      return saved;
+    } catch (err) {
+      console.error("Failed to update profile:", err);
+      showToast(err.message || "Failed to update profile on server.", "warning");
+      throw err;
+    }
   };
 
-  const handleAvatarChange = (newAvatarUrl) => {
-    setProfile((prev) => ({
-      ...prev,
-      avatarUrl: newAvatarUrl,
-    }));
-    showToast("Profile photo updated successfully!");
+  const handleAvatarChange = async (newAvatarUrl) => {
+    try {
+      await saveProfile({ avatarUrl: newAvatarUrl });
+      showToast("Profile photo updated successfully!");
+    } catch (err) {
+      console.error("Failed to update avatar:", err);
+      setProfile((prev) => ({
+        ...prev,
+        avatarUrl: newAvatarUrl,
+      }));
+      showToast("Profile photo updated locally.", "warning");
+    }
   };
 
   const handleAddAddress = () => {
@@ -68,63 +85,97 @@ export default function CustomerProfilePage() {
     setIsAddressModalOpen(true);
   };
 
-  const handleSaveAddress = (addressData) => {
-    setProfile((prev) => {
-      let updatedAddresses = [...prev.savedAddresses];
-      if (addressData.isDefault) {
-        updatedAddresses = updatedAddresses.map((a) => ({
-          ...a,
-          isDefault: false,
-        }));
-      }
+  const handleSaveAddress = async (addressData) => {
+    let updatedAddresses = [...(profile.savedAddresses || [])];
+    if (addressData.isDefault) {
+      updatedAddresses = updatedAddresses.map((a) => ({
+        ...a,
+        isDefault: false,
+      }));
+    }
 
-      const existingIndex = updatedAddresses.findIndex(
-        (a) => a.id === addressData.id
+    const existingIndex = updatedAddresses.findIndex(
+      (a) => a.id === addressData.id
+    );
+
+    if (existingIndex >= 0) {
+      updatedAddresses[existingIndex] = addressData;
+    } else {
+      updatedAddresses.push({
+        ...addressData,
+        id: addressData.id || `addr-${Date.now()}`,
+      });
+    }
+
+    try {
+      await saveProfile({ savedAddresses: updatedAddresses });
+      showToast(
+        addressToEdit
+          ? "Address updated successfully!"
+          : "New address added successfully!"
       );
-
-      if (existingIndex >= 0) {
-        updatedAddresses[existingIndex] = addressData;
-      } else {
-        updatedAddresses.push(addressData);
-      }
-
-      return {
+    } catch (err) {
+      console.error("Failed to save address:", err);
+      setProfile((prev) => ({
         ...prev,
         savedAddresses: updatedAddresses,
-      };
-    });
+      }));
+      showToast("Address saved locally.", "warning");
+    }
+  };
 
-    showToast(
-      addressToEdit
-        ? "Address updated successfully!"
-        : "New address added successfully!"
+  const handleDeleteAddress = async (id) => {
+    const updatedAddresses = (profile.savedAddresses || []).filter(
+      (a) => a.id !== id
     );
+
+    try {
+      await saveProfile({ savedAddresses: updatedAddresses });
+      showToast("Address removed.");
+    } catch (err) {
+      console.error("Failed to delete address:", err);
+      setProfile((prev) => ({
+        ...prev,
+        savedAddresses: updatedAddresses,
+      }));
+      showToast("Address removed locally.", "warning");
+    }
   };
 
-  const handleDeleteAddress = (id) => {
-    setProfile((prev) => ({
-      ...prev,
-      savedAddresses: prev.savedAddresses.filter((a) => a.id !== id),
+  const handleSetDefaultAddress = async (id) => {
+    const updatedAddresses = (profile.savedAddresses || []).map((a) => ({
+      ...a,
+      isDefault: a.id === id,
     }));
-    showToast("Address removed.");
-  };
 
-  const handleSetDefaultAddress = (id) => {
-    setProfile((prev) => ({
-      ...prev,
-      savedAddresses: prev.savedAddresses.map((a) => ({
-        ...a,
-        isDefault: a.id === id,
-      })),
-    }));
-    showToast("Default address updated!");
+    try {
+      await saveProfile({ savedAddresses: updatedAddresses });
+      showToast("Default address updated!");
+    } catch (err) {
+      console.error("Failed to update default address:", err);
+      setProfile((prev) => ({
+        ...prev,
+        savedAddresses: updatedAddresses,
+      }));
+      showToast("Default address updated locally.", "warning");
+    }
   };
 
   return (
     <div className="customer-profile-page">
+      {/* Toast Notification */}
       {toastMessage && (
-        <div className="customer-profile-page__toast" role="status">
-          <CheckCircle2 size={18} color="var(--cc-success)" />
+        <div
+          className={`customer-profile-page__toast ${
+            toastType === "warning" ? "customer-profile-page__toast--warning" : ""
+          }`}
+          role="status"
+        >
+          {toastType === "warning" ? (
+            <AlertCircle size={18} color="var(--cc-warning)" />
+          ) : (
+            <CheckCircle2 size={18} color="var(--cc-success)" />
+          )}
           <span>{toastMessage}</span>
           <button
             type="button"
@@ -152,168 +203,134 @@ export default function CustomerProfilePage() {
           </span>
         </nav>
 
-        <div className="customer-profile-page__layout">
-          {/* Sidebar */}
-          <aside className="customer-profile-page__sidebar-col">
-            <CustomerAccountSidebar
-              profile={profile}
-              activeTab={activeTab}
-              onSelectTab={(tabId) => setActiveTab(tabId)}
-            />
-          </aside>
-
-          {/* Main Content Area */}
-          <main className="customer-profile-page__main-col">
-            <ProfileHeaderCard
-              profile={profile}
-              onEditProfile={() => setIsEditModalOpen(true)}
-              onAvatarChange={handleAvatarChange}
-              onManageAddresses={() => setActiveTab("addresses")}
-            />
-
-            {/* Mobile Tab Navigation Bar */}
-            <div className="customer-profile-page__mobile-tabs">
-              <button
-                type="button"
-                className={`customer-profile-page__mob-tab ${
-                  activeTab === "profile" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("profile")}
-              >
-                Profile & Details
-              </button>
-              <button
-                type="button"
-                className={`customer-profile-page__mob-tab ${
-                  activeTab === "addresses" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("addresses")}
-              >
-                Saved Addresses ({profile.savedAddresses.length})
-              </button>
-              <button
-                type="button"
-                className={`customer-profile-page__mob-tab ${
-                  activeTab === "activity" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("activity")}
-              >
-                Activity
-              </button>
-              <button
-                type="button"
-                className={`customer-profile-page__mob-tab ${
-                  activeTab === "security" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("security")}
-              >
-                Security
-              </button>
+        {/* Server Connection Error Banner (non-blocking) */}
+        {error && (
+          <div className="customer-profile-page__error-banner" role="alert">
+            <AlertCircle size={18} />
+            <div className="customer-profile-page__error-content">
+              <strong>Database Connection Notice:</strong> {error}
             </div>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<RefreshCw size={14} />}
+              onClick={refreshProfile}
+            >
+              Retry
+            </Button>
+          </div>
+        )}
 
-            {/* Tab Views */}
-            {activeTab === "profile" && (
-              <div className="customer-profile-page__tab-content">
-                <PersonalInfoSection
-                  profile={profile}
-                  onEdit={() => setIsEditModalOpen(true)}
-                />
+        {isLoading ? (
+          <div className="customer-profile-page__loading-state">
+            <Loader2 size={36} className="customer-profile-page__spinner" />
+            <p className="cc-text-secondary">Loading customer profile from database...</p>
+          </div>
+        ) : (
+          <div className="customer-profile-page__layout">
+            {/* Sidebar */}
+            <aside className="customer-profile-page__sidebar-col">
+              <CustomerAccountSidebar
+                profile={profile}
+                activeTab={activeTab}
+                onSelectTab={(tabId) => setActiveTab(tabId)}
+              />
+            </aside>
 
-                <SavedAddressesSection
-                  addresses={profile.savedAddresses}
-                  onAddAddress={handleAddAddress}
-                  onEditAddress={handleEditAddress}
-                  onDeleteAddress={handleDeleteAddress}
-                  onSetDefault={handleSetDefaultAddress}
-                />
+            {/* Main Content Area */}
+            <main className="customer-profile-page__main-col">
+              <ProfileHeaderCard
+                profile={profile}
+                onEditProfile={() => setIsEditModalOpen(true)}
+                onAvatarChange={handleAvatarChange}
+                onManageAddresses={() => setActiveTab("addresses")}
+              />
 
-                <AccountSummarySection
-                  stats={profile.stats}
-                  activities={profile.recentActivities}
-                  onExploreServices={() => navigate("/find-services")}
-                />
+              {/* Mobile Tab Navigation Bar */}
+              <div className="customer-profile-page__mobile-tabs">
+                <button
+                  type="button"
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("profile")}
+                >
+                  Profile & Details
+                </button>
+                <button
+                  type="button"
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "addresses" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("addresses")}
+                >
+                  Saved Addresses ({profile.savedAddresses?.length || 0})
+                </button>
+                <button
+                  type="button"
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "security" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("security")}
+                >
+                  Security
+                </button>
               </div>
-            )}
 
-            {activeTab === "addresses" && (
-              <div className="customer-profile-page__tab-content">
-                <SavedAddressesSection
-                  addresses={profile.savedAddresses}
-                  onAddAddress={handleAddAddress}
-                  onEditAddress={handleEditAddress}
-                  onDeleteAddress={handleDeleteAddress}
-                  onSetDefault={handleSetDefaultAddress}
-                />
-              </div>
-            )}
+              {/* Tab Views */}
+              {activeTab === "profile" && (
+                <div className="customer-profile-page__tab-content">
+                  <PersonalInfoSection
+                    profile={profile}
+                    onEdit={() => setIsEditModalOpen(true)}
+                  />
 
-            {activeTab === "activity" && (
-              <div className="customer-profile-page__tab-content">
-                <AccountSummarySection
-                  stats={profile.stats}
-                  activities={profile.recentActivities}
-                  onExploreServices={() => navigate("/find-services")}
-                />
-              </div>
-            )}
+                  <SavedAddressesSection
+                    addresses={profile.savedAddresses || []}
+                    onAddAddress={handleAddAddress}
+                    onEditAddress={handleEditAddress}
+                    onDeleteAddress={handleDeleteAddress}
+                    onSetDefault={handleSetDefaultAddress}
+                  />
+                </div>
+              )}
 
-            {activeTab === "favorites" && (
-              <div className="customer-profile-page__tab-content">
-                <Card className="customer-profile-page__placeholder-card">
-                  <div className="customer-profile-page__placeholder-icon">
-                    <Heart size={28} color="#e11d48" />
-                  </div>
-                  <h2 className="cc-h3">Saved & Favorite Service Providers</h2>
-                  <p className="cc-text-secondary">
-                    You currently have {profile.stats.favoriteProviders} saved favorite service providers in Colombo.
-                  </p>
-                  <Button variant="outline" onClick={() => navigate("/find-services")}>
-                    Browse Marketplace
-                  </Button>
-                </Card>
-              </div>
-            )}
+              {activeTab === "addresses" && (
+                <div className="customer-profile-page__tab-content">
+                  <SavedAddressesSection
+                    addresses={profile.savedAddresses || []}
+                    onAddAddress={handleAddAddress}
+                    onEditAddress={handleEditAddress}
+                    onDeleteAddress={handleDeleteAddress}
+                    onSetDefault={handleSetDefaultAddress}
+                  />
+                </div>
+              )}
 
-            {activeTab === "security" && (
-              <div className="customer-profile-page__tab-content">
-                <Card className="customer-profile-page__placeholder-card">
-                  <div className="customer-profile-page__placeholder-icon">
-                    <Shield size={28} color="var(--cc-primary-dark)" />
-                  </div>
-                  <h2 className="cc-h3">Account Security & Verification</h2>
-                  <p className="cc-text-secondary">
-                    Your account is secured with 2-Factor Authentication and Level 2 National ID Verification.
-                  </p>
-                  <div className="customer-profile-page__sec-badges">
-                    <Badge variant="success">Password Protected</Badge>
-                    <Badge variant="success">2FA Enabled</Badge>
-                    <Badge variant="success">National ID Verified</Badge>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Change Password
-                  </Button>
-                </Card>
-              </div>
-            )}
-
-            {activeTab === "notifications" && (
-              <div className="customer-profile-page__tab-content">
-                <Card className="customer-profile-page__placeholder-card">
-                  <div className="customer-profile-page__placeholder-icon">
-                    <Bell size={28} color="var(--cc-primary-dark)" />
-                  </div>
-                  <h2 className="cc-h3">Notification Preferences</h2>
-                  <p className="cc-text-secondary">
-                    Manage your email and SMS service booking alerts and appointment reminders.
-                  </p>
-                  <Button variant="outline" size="sm">
-                    Configure Alerts
-                  </Button>
-                </Card>
-              </div>
-            )}
-          </main>
-        </div>
+              {activeTab === "security" && (
+                <div className="customer-profile-page__tab-content">
+                  <Card className="customer-profile-page__placeholder-card">
+                    <div className="customer-profile-page__placeholder-icon">
+                      <Shield size={28} color="var(--cc-primary-dark)" />
+                    </div>
+                    <h2 className="cc-h3">Account Security & Verification</h2>
+                    <p className="cc-text-secondary">
+                      Your account is secured with 2-Factor Authentication and Level 2 National ID Verification.
+                    </p>
+                    <div className="customer-profile-page__sec-badges">
+                      <Badge variant="success">Password Protected</Badge>
+                      <Badge variant="success">2FA Enabled</Badge>
+                      <Badge variant="success">National ID Verified</Badge>
+                    </div>
+                    <Button variant="outline" size="sm">
+                      Change Password
+                    </Button>
+                  </Card>
+                </div>
+              )}
+            </main>
+          </div>
+        )}
       </PageContainer>
 
       {/* Modals */}

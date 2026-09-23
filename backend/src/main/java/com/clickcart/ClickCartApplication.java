@@ -10,4 +10,3 @@ public class ClickCartApplication {
         SpringApplication.run(ClickCartApplication.class, args);
     }
 }
-

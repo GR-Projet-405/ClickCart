@@ -39,6 +39,47 @@
   font-weight: 600;
 }
 
+/* Error Banner */
+.customer-profile-page__error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-3) var(--cc-space-4);
+  background: var(--cc-danger-soft, #fef2f2);
+  border: 1px solid var(--cc-danger, #ef4444);
+  border-radius: var(--cc-radius-md);
+  color: var(--cc-danger, #ef4444);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.customer-profile-page__error-content {
+  flex: 1;
+}
+
+/* Loading State */
+.customer-profile-page__loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--cc-space-12) 0;
+  gap: var(--cc-space-4);
+}
+
+.customer-profile-page__spinner {
+  animation: spin 1s linear infinite;
+  color: var(--cc-primary);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .customer-profile-page__layout {
   display: grid;
   grid-template-columns: 18rem 1fr;
@@ -138,6 +179,10 @@
   font-size: var(--cc-text-body-sm-size);
   font-weight: 500;
   animation: slideUp 200ms ease-out;
+}
+
+.customer-profile-page__toast--warning {
+  border-color: var(--cc-warning, #f59e0b);
 }
 
 .customer-profile-page__toast-close {
