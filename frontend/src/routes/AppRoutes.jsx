@@ -10,6 +10,7 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 
 export default function AppRoutes() {
   return (
@@ -65,6 +66,7 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
