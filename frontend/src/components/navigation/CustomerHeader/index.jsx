@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { Bell, Heart, Menu, UserRound, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";

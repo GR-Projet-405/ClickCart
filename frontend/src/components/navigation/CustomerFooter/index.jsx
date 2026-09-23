@@ -1,3 +1,4 @@
+import React from 'react';
 import { Facebook, Instagram, Linkedin } from "lucide-react";
 import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";

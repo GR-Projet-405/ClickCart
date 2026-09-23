@@ -1,3 +1,4 @@
+import React from 'react';
 import { BarChart3 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import Button from "../../common/Button";
