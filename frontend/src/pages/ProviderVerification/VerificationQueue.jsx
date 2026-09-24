@@ -69,59 +69,65 @@ const VerificationQueue = () => {
     }
   };
 
-  // Date Formatter 
-  const formatDate = (dateValue) => {
-    if (!dateValue) return 'N/A';
+  
+  const parseProviderDate = (dateValue) => {
+    if (!dateValue) return null;
 
-    
     if (typeof dateValue === 'string' && dateValue.includes('IST')) {
       const parts = dateValue.trim().split(/\s+/);
       if (parts.length >= 6) {
-        const month = parts[1]; // Sep
-        const day = parts[2];   // 23
-        const time = parts[3];  // 15:30:00
-        const year = parts[5];  // 2026
-        return `${month} ${day} ${year} , ${time}`;
+        const monthStr = parts[1]; // Sep
+        const day = parts[2];      // 23
+        const time = parts[3];     // 15:30:00
+        const year = parts[5];     // 2026
+        const parsed = new Date(`${monthStr} ${day}, ${year} ${time}`);
+        if (!isNaN(parsed.getTime())) return parsed;
       }
     }
 
-    
-    const dateObj = new Date(dateValue);
-    if (!isNaN(dateObj.getTime())) {
-      const month = dateObj.toLocaleString('en-US', { month: 'short' });
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      const year = dateObj.getFullYear();
-      const hours = String(dateObj.getHours()).padStart(2, '0');
-      const minutes = String(dateObj.getMinutes()).padStart(2, '0');
-      const seconds = String(dateObj.getSeconds()).padStart(2, '0');
-
-      return `${month} ${day} ${year} , ${hours}:${minutes}:${seconds}`;
-    }
-
-    return String(dateValue);
+    const d = new Date(dateValue);
+    return isNaN(d.getTime()) ? null : d;
   };
 
-  
+  // Date Formatter
+  const formatDate = (dateValue) => {
+    const dateObj = parseProviderDate(dateValue);
+    if (!dateObj) return 'N/A';
+
+    const month = dateObj.toLocaleString('en-US', { month: 'short' });
+    const day = String(dateObj.getDate()).padStart(2, '0');
+    const year = dateObj.getFullYear();
+    const hours = String(dateObj.getHours()).padStart(2, '0');
+    const minutes = String(dateObj.getMinutes()).padStart(2, '0');
+    const seconds = String(dateObj.getSeconds()).padStart(2, '0');
+
+    return `${month} ${day} ${year} , ${hours}:${minutes}:${seconds}`;
+  };
+
+  // Summary Counts Calculation
   const pendingCount = safeProviders.filter(p => p.status?.toUpperCase() === 'PENDING').length;
   const approvedThisMonthCount = safeProviders.filter(p => {
     if (p.status?.toUpperCase() !== 'APPROVED') return false;
-    const date = new Date(p.createdAt || p.date);
+    const date = parseProviderDate(p.createdAt || p.date || p.submittedDate);
     const now = new Date();
-    return !isNaN(date.getTime()) && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+    return date && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
   }).length;
   const rejectedCount = safeProviders.filter(p => p.status?.toUpperCase() === 'REJECTED').length;
   const totalCount = safeProviders.length;
 
-  // Filtering Logic
+  // Filtering Logic 
   const filteredProviders = safeProviders.filter(p => {
+    // 1. Status Filter
     if (activeTab !== 'All' && p.status?.toUpperCase() !== activeTab.toUpperCase()) {
       return false;
     }
 
+    // 2. Provider Type Filter
     if (typeFilter !== 'All' && p.providerType?.toLowerCase() !== typeFilter.toLowerCase()) {
       return false;
     }
 
+    // 3. Search Filter
     const term = searchTerm.toLowerCase();
     const matchSearch = 
       (p.ownerName && p.ownerName.toLowerCase().includes(term)) ||
@@ -130,11 +136,22 @@ const VerificationQueue = () => {
       (p.category && p.category.toLowerCase().includes(term));
     if (term && !matchSearch) return false;
 
+    // 4. Date Range Filter
     if (startDate || endDate) {
-      const pDate = new Date(p.createdAt || p.date);
-      if (!isNaN(pDate.getTime())) {
-        if (startDate && pDate < new Date(startDate)) return false;
-        if (endDate && pDate > new Date(endDate + 'T23:59:59')) return false;
+      const pDate = parseProviderDate(p.createdAt || p.date || p.submittedDate);
+      if (pDate) {
+        if (startDate) {
+          const start = new Date(startDate);
+          start.setHours(0, 0, 0, 0);
+          if (pDate < start) return false;
+        }
+        if (endDate) {
+          const end = new Date(endDate);
+          end.setHours(23, 59, 59, 999);
+          if (pDate > end) return false;
+        }
+      } else {
+        return false;
       }
     }
 
@@ -402,7 +419,7 @@ const VerificationQueue = () => {
 
                       {/* Submitted Date */}
                       <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '13px', whiteSpace: 'nowrap' }}>
-                        {formatDate(p.createdAt || p.date)}
+                        {formatDate(p.createdAt || p.date || p.submittedDate)}
                       </td>
 
                       {/* Status */}
@@ -420,7 +437,7 @@ const VerificationQueue = () => {
                       <td style={{ padding: '12px 14px', textAlign: 'left' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px', whiteSpace: 'nowrap' }}>
                           
-                          {/* View Details Button  */}
+                          {/* View Details Button */}
                           <button 
                             style={{ 
                               background: '#0070f3', color: '#ffffff', border: 'none', 
