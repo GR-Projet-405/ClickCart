@@ -6,6 +6,9 @@ import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
+import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
+import EditServiceAreaPage from "../pages/provider/serviceAreas/EditServiceAreaPage";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
@@ -24,7 +27,12 @@ export default function AppRoutes() {
             />
           }
         />
-        {providerNavigation.map(({ path }) => (
+        <Route path="service-areas" element={<ServiceAreasPage />} />
+        <Route path="service-areas/new" element={<AddServiceAreaPage />} />
+        <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+        {providerNavigation
+          .filter(({ path }) => path !== "/provider/service-areas")
+          .map(({ path }) => (
           <Route
             key={path}
             path={path.replace("/provider/", "")}
