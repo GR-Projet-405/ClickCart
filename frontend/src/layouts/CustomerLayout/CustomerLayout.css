@@ -2,9 +2,13 @@
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  background: var(--cc-bg-app);
+  background: var(--cc-bg-surface);
 }
 .customer-layout__main {
   flex: 1;
   min-width: 0;
+  min-height: 24rem;
+  margin-top: -2rem;
+  padding-top: 2rem;
+  background: var(--cc-bg-app);
 }

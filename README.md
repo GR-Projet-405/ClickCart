@@ -1,3 +1,5 @@
+<img width="2172" height="724" alt="clickcartcover" src="https://github.com/user-attachments/assets/8cb56884-15ea-4f92-b8e4-260bf8fce081" />
+
 # ClickCart
 
 AI-Powered Local Services Marketplace
