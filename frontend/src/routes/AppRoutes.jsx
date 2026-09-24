@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import BookingCreation from "../pages/customer/BookingCreation/BookingCreation";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
@@ -65,6 +66,7 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="booking/create" element={<BookingCreation />} />
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
