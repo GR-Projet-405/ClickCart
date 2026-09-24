@@ -10,4 +10,7 @@ public interface ServicePackageRepository extends MongoRepository<ServicePackage
 
     // Fetch all packages belonging to a specific service
     List<ServicePackage> findByServiceId(String serviceId);
+
+    // Delete all packages for a specific service (useful for cleanup)
+    void deleteByServiceId(String serviceId);
 }
