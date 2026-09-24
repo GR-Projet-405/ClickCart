@@ -56,6 +56,8 @@ cd backend
 
 The backend defaults to `http://localhost:8080`. Its foundation health endpoint is `http://localhost:8080/api/health`.
 
+For local MongoDB-backed marketplace data, create `backend/.env` from `backend/.env.example`. Spring Boot loads this file when the backend is started from the `backend` directory. Set `CLICKCART_SEED_DATA=false` when the database already contains provider and service records and startup seeding is not wanted.
+
 ## Environment variables
 
 Copy the relevant `.env.example` file for local documentation, but do not commit real `.env` files or secrets.
@@ -77,6 +79,11 @@ Spring Boot does not automatically load `backend/.env`; define backend variables
 - `/provider` — Service Provider base layout
 - `/admin` — Platform Admin base layout
 - `/dev/ui-foundation` — shared component showcase
+
+Marketplace API routes:
+
+- `GET /api/providers/cleanpro-services` — provider profile data
+- `GET /api/services/house-cleaning` — service detail data
 
 Temporary configured navigation paths render neutral workspace placeholders. Assigned developers add actual pages as children of the correct layout.
 

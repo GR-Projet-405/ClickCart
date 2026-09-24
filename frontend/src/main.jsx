@@ -1,16 +1,15 @@
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes.jsx";
-import "./styles/tokens.css";
-import "./styles/reset.css";
-import "./styles/utilities.css";
-import "./styles/global.css";
 
-createRoot(document.getElementById("root")).render(
-  <StrictMode>
+import AppRoutes from "./routes/AppRoutes";
+
+import "./styles/reset.css";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
     <BrowserRouter>
       <AppRoutes />
     </BrowserRouter>
-  </StrictMode>,
+  </React.StrictMode>
 );
