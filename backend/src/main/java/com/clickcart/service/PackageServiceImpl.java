@@ -2,6 +2,8 @@ package com.clickcart.service;
 
 import com.clickcart.dto.PackageRequestDTO;
 import com.clickcart.dto.PackageResponseDTO;
+import com.clickcart.exception.InvalidPricingException;
+import com.clickcart.exception.ResourceNotFoundException;
 import com.clickcart.model.ServicePackage;
 import com.clickcart.repository.ServicePackageRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +42,10 @@ public class PackageServiceImpl implements PackageService {
     public PackageResponseDTO updatePackage(String packageId, String serviceId, PackageRequestDTO requestDTO) {
         // Security Check: Ensure the package belongs to the requested service
         ServicePackage existingPackage = packageRepository.findById(packageId)
-            .orElseThrow(() -> new RuntimeException("Package not found with id: " + packageId));
+            .orElseThrow(() -> new ResourceNotFoundException("Package not found with id: " + packageId));
 
         if (!existingPackage.getServiceId().equals(serviceId)) {
-            throw new IllegalArgumentException("Package does not belong to the specified service");
+            throw new InvalidPricingException("Package does not belong to the specified service");
         }
 
         // Update fields
@@ -61,10 +63,10 @@ public class PackageServiceImpl implements PackageService {
     public void deletePackage(String packageId, String serviceId) {
         // Security Check
         ServicePackage existingPackage = packageRepository.findById(packageId)
-            .orElseThrow(() -> new RuntimeException("Package not found with id: " + packageId));
+            .orElseThrow(() -> new ResourceNotFoundException("Package not found with id: " + packageId));
 
         if (!existingPackage.getServiceId().equals(serviceId)) {
-            throw new IllegalArgumentException("Package does not belong to the specified service");
+            throw new InvalidPricingException("Package does not belong to the specified service");
         }
 
         packageRepository.delete(existingPackage);

@@ -2,6 +2,8 @@ package com.clickcart.service;
 
 import com.clickcart.dto.PricingRequestDTO;
 import com.clickcart.dto.PricingResponseDTO;
+import com.clickcart.exception.InvalidPricingException;
+import com.clickcart.exception.ResourceNotFoundException;
 import com.clickcart.model.PricingModel;
 import com.clickcart.model.ServicePricing;
 import com.clickcart.repository.ServicePricingRepository;
@@ -19,7 +21,7 @@ public class PricingServiceImpl implements PricingService {
     public PricingResponseDTO saveOrUpdatePricing(String serviceId, PricingRequestDTO requestDTO) {
         // 1. Validation: Ensure price is not negative
         if (requestDTO.getBasePrice() != null && requestDTO.getBasePrice() < 0) {
-            throw new IllegalArgumentException("Base price cannot be negative");
+            throw new InvalidPricingException("Base price cannot be negative");
         }
 
         // 2. Check if pricing already exists for this service
@@ -41,7 +43,7 @@ public class PricingServiceImpl implements PricingService {
     @Override
     public PricingResponseDTO getPricingByServiceId(String serviceId) {
         ServicePricing pricing = pricingRepository.findByServiceId(serviceId)
-            .orElseThrow(() -> new RuntimeException("Pricing not found for service: " + serviceId));
+            .orElseThrow(() -> new ResourceNotFoundException("Pricing not found for service: " + serviceId));
         return convertToResponseDTO(pricing);
     }
 
