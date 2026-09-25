@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import React from 'react';
+import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";

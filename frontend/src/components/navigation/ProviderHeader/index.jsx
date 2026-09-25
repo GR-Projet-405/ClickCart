@@ -1,4 +1,5 @@
-import { Bell, CheckCircle2, ChevronDown, Menu } from "lucide-react";
+import React from 'react';
+import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
