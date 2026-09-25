@@ -45,6 +45,36 @@ const VerificationQueue = () => {
 
   const safeProviders = Array.isArray(providers) ? providers : [];
 
+  // Document Name Resolver Helper
+  const getDocumentLabel = (doc, idx) => {
+    if (typeof doc === 'string') return doc;
+    if (!doc) return `Document ${idx + 1}`;
+
+    // 1. Direct name properties
+    if (doc.name) return doc.name;
+    if (doc.documentType) return doc.documentType;
+    if (doc.docName) return doc.docName;
+
+    // 2. Custom label if 'type' is not just a badge color
+    if (doc.type && doc.type !== 'info' && doc.type !== 'purple') {
+      return doc.type;
+    }
+
+    // 3. Derive from URL filename
+    if (doc.url) {
+      const filename = doc.url.split('/').pop().split('?')[0].toLowerCase();
+      if (filename.includes('nic')) return 'NIC / Identity';
+      if (filename.includes('br')) return 'Business Registration';
+      if (filename.includes('cert')) return 'Certificate / License';
+    }
+
+    // 4. Fallback based on badge type color names
+    if (doc.type === 'info') return 'NIC / Identity';
+    if (doc.type === 'purple') return 'Business Registration';
+
+    return `Document ${idx + 1}`;
+  };
+
   const handleRefresh = () => {
     setSearchTerm('');
     setActiveTab('All');
@@ -120,17 +150,14 @@ const VerificationQueue = () => {
 
   // Filtering Logic 
   const filteredProviders = safeProviders.filter(p => {
-    // 1. Status Filter
     if (activeTab !== 'All' && p.status?.toUpperCase() !== activeTab.toUpperCase()) {
       return false;
     }
 
-    // 2. Provider Type Filter
     if (typeFilter !== 'All' && p.providerType?.toLowerCase() !== typeFilter.toLowerCase()) {
       return false;
     }
 
-    // 3. Search Filter
     const term = searchTerm.toLowerCase();
     const matchSearch = 
       (p.ownerName && p.ownerName.toLowerCase().includes(term)) ||
@@ -139,7 +166,6 @@ const VerificationQueue = () => {
       (p.category && p.category.toLowerCase().includes(term));
     if (term && !matchSearch) return false;
 
-    // 4. Date Range Filter
     if (startDate || endDate) {
       const pDate = parseProviderDate(p.createdAt || p.date || p.submittedDate);
       if (pDate) {
@@ -371,12 +397,7 @@ const VerificationQueue = () => {
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                           {Array.isArray(p.documents) && p.documents.length > 0 ? (
                             p.documents.map((doc, idx) => {
-                              // Console Log for Inspection
-                              console.log("Document Item (Table):", doc);
-
-                              const docLabel = typeof doc === 'string' 
-                                ? doc 
-                                : (doc?.name || doc?.documentType || doc?.docName || doc?.type || `Document ${idx + 1}`);
+                              const docLabel = getDocumentLabel(doc, idx);
 
                               return (
                                 <span 
@@ -612,12 +633,7 @@ const VerificationQueue = () => {
                 {Array.isArray(selectedProvider.documents) && selectedProvider.documents.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
                     {selectedProvider.documents.map((doc, idx) => {
-                      // Console Log for Inspection
-                      console.log("Document Item (Modal):", doc);
-
-                      const docType = typeof doc === 'string' 
-                        ? doc 
-                        : (doc?.name || doc?.documentType || doc?.docName || doc?.type || `Document ${idx + 1}`);
+                      const docType = getDocumentLabel(doc, idx);
                       const docUrl = typeof doc === 'object' && doc?.url ? doc.url : '';
 
                       return (
