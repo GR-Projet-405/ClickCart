@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, MapPin } from "lucide-react";
 import Avatar from "../../../components/common/Avatar";
 import Badge from "../../../components/common/Badge";
@@ -6,83 +6,143 @@ import Button from "../../../components/common/Button";
 import Card from "../../../components/common/Card";
 import EmptyState from "../../../components/common/EmptyState";
 import PageContainer from "../../../components/common/PageContainer";
+import { API_BASE_URL } from "../../../config/api";
 import "./BookingApprovalPage.css";
 
-const SAMPLE_REQUESTS = [
-  {
-    id: "bk-1",
-    initials: "HC",
+const PROVIDER_ID = "provider-1";
+
+function toAmPm(value) {
+  const [hourText, minute] = value.split(":");
+  let hour = Number(hourText);
+  const suffix = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12 || 12;
+  return `${String(hour).padStart(2, "0")}:${minute} ${suffix}`;
+}
+
+function toRequest(booking) {
+  const initials = booking.serviceName
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
+  const scheduled = new Date(booking.scheduledAt);
+  const dateLabel = scheduled.toLocaleDateString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Colombo",
+  });
+  const shortDate = scheduled.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "Asia/Colombo",
+  });
+  const [start, end] = (booking.timeSlot || "").split("-");
+  const timeSlot =
+    start && end ? `${toAmPm(start)} – ${toAmPm(end)}` : booking.timeSlot;
+
+  return {
+    id: booking.id,
+    initials,
     tone: "green",
-    serviceName: "House Cleaning",
-    isNew: true,
-    customerName: "Gihani Perera",
-    location: "Colombo 05",
-    whenLabel: "Mar 20, 2024 (09:00 AM)",
-    createdAt: "2024-03-20T09:00:00",
-    status: "PENDING_APPROVAL",
-    area: "Colombo 05, Sri Lanka",
-    dateLabel: "March 20, 2024",
-    timeSlot: "09:00 AM – 11:00 AM",
-    payLabel: "LKR 4,500",
-    notes:
-      "Please bring eco-friendly cleaning agents. Focus mainly on high dusting.",
-  },
-  {
-    id: "bk-2",
-    initials: "AC",
-    tone: "blue",
-    serviceName: "AC Repair & Service",
-    isNew: true,
-    customerName: "Kasun Rajapaksha",
-    location: "Dehiwala",
-    whenLabel: "Mar 21, 2024 (02:00 PM)",
-    createdAt: "2024-03-21T14:00:00",
-    status: "PENDING_APPROVAL",
-    area: "Dehiwala, Sri Lanka",
-    dateLabel: "March 21, 2024",
-    timeSlot: "02:00 PM – 04:00 PM",
-    payLabel: "LKR 6,200",
-    notes:
-      "The unit is leaking. Please check the outdoor pipe before refilling gas.",
-  },
-  {
-    id: "bk-3",
-    initials: "PL",
-    tone: "green",
-    serviceName: "Plumbing Repair",
-    isNew: false,
-    customerName: "Nimal Silva",
-    location: "Nugegoda",
-    whenLabel: "Mar 22, 2024 (11:00 AM)",
-    createdAt: "2024-03-22T11:00:00",
-    status: "PENDING_APPROVAL",
-    area: "Nugegoda, Sri Lanka",
-    dateLabel: "March 22, 2024",
-    timeSlot: "11:00 AM – 01:00 PM",
-    payLabel: "LKR 3,800",
-    notes:
-      "The kitchen sink is blocked. Please bring tools for the trap under the sink.",
-  },
-];
+    serviceName: booking.serviceName,
+    isNew: booking.unread,
+    customerName: booking.customerName,
+    location: booking.city,
+    whenLabel: `${shortDate} (${toAmPm(start)})`,
+    createdAt: booking.createdAt,
+    status: booking.status,
+    area: `${booking.city}, ${booking.country}`,
+    dateLabel,
+    timeSlot,
+    payLabel: `${booking.currency} ${Number(booking.estimatedPay).toLocaleString("en-US")}`,
+    notes: booking.notes,
+  };
+}
 
 export default function BookingApprovalPage() {
-  const [requests] = useState(SAMPLE_REQUESTS);
-  const [selectedId, setSelectedId] = useState(SAMPLE_REQUESTS[0].id);
+  const [requests, setRequests] = useState([]);
+  const [selectedId, setSelectedId] = useState(null);
   const [sort, setSort] = useState("newest");
-  const [lastDecision, setLastDecision] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [deciding, setDeciding] = useState(false);
+  const [error, setError] = useState("");
 
-  const sortedRequests = [...requests].sort((a, b) =>
-    sort === "newest"
-      ? b.createdAt.localeCompare(a.createdAt)
-      : a.createdAt.localeCompare(b.createdAt),
-  );
+  useEffect(() => {
+    let ignore = false;
+
+    async function load() {
+      setLoading(true);
+      setError("");
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/provider/bookings?sort=${sort}`,
+          { headers: { "X-Provider-Id": PROVIDER_ID } },
+        );
+        if (!response.ok) {
+          throw new Error("Pending requests could not be loaded.");
+        }
+        const next = (await response.json()).map(toRequest);
+        if (ignore) {
+          return;
+        }
+        setRequests(next);
+        setSelectedId((current) =>
+          next.some((request) => request.id === current)
+            ? current
+            : (next[0]?.id ?? null),
+        );
+      } catch (loadError) {
+        if (!ignore) {
+          setError(loadError.message);
+        }
+      } finally {
+        if (!ignore) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
+  }, [sort]);
 
   const selected =
     requests.find((request) => request.id === selectedId) ?? null;
 
-  function decide(requestId, nextStatus) {
+  async function decide(requestId, nextStatus) {
     setSelectedId(requestId);
-    setLastDecision({ requestId, nextStatus });
+    setDeciding(true);
+    setError("");
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/provider/bookings/${requestId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Provider-Id": PROVIDER_ID,
+          },
+          body: JSON.stringify({ status: nextStatus }),
+        },
+      );
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.message || "The booking could not be updated.");
+      }
+      setRequests((current) =>
+        current.filter((request) => request.id !== requestId),
+      );
+      setSelectedId((current) => (current === requestId ? null : current));
+    } catch (decideError) {
+      setError(decideError.message);
+    } finally {
+      setDeciding(false);
+    }
   }
 
   return (
@@ -111,14 +171,27 @@ export default function BookingApprovalPage() {
             </label>
           </div>
 
-          {sortedRequests.length === 0 ? (
+          {error && (
+            <p
+              className="booking-approval__message booking-approval__message--error"
+              role="alert"
+            >
+              {error}
+            </p>
+          )}
+
+          {loading ? (
+            <p className="booking-approval__message">
+              Loading pending requests...
+            </p>
+          ) : requests.length === 0 ? (
             <EmptyState
               title="No pending requests"
               description="New client requests will appear here for approval."
             />
           ) : (
             <ul className="booking-approval__list">
-              {sortedRequests.map((request) => {
+              {requests.map((request) => {
                 const isSelected = request.id === selectedId;
                 return (
                   <li key={request.id}>
@@ -159,6 +232,7 @@ export default function BookingApprovalPage() {
                         <Button
                           variant="ghost"
                           size="sm"
+                          disabled={deciding}
                           onClick={() => decide(request.id, "DECLINED")}
                         >
                           Decline
@@ -166,6 +240,7 @@ export default function BookingApprovalPage() {
                         <Button
                           variant="primary"
                           size="sm"
+                          disabled={deciding}
                           onClick={() => decide(request.id, "ACCEPTED")}
                         >
                           Accept
@@ -180,15 +255,7 @@ export default function BookingApprovalPage() {
         </Card>
 
         {selected && (
-          <Card
-            className="booking-approval__details"
-            padding="md"
-            data-last-decision={
-              lastDecision
-                ? `${lastDecision.requestId}:${lastDecision.nextStatus}`
-                : undefined
-            }
-          >
+          <Card className="booking-approval__details" padding="md">
             <div className="booking-approval__details-head">
               <h2>Request Details</h2>
               <Badge className="booking-approval__status" variant="warning">
@@ -197,7 +264,9 @@ export default function BookingApprovalPage() {
             </div>
 
             <p className="booking-approval__profile-label">Customer Profile</p>
-            <p className="booking-approval__customer">{selected.customerName}</p>
+            <p className="booking-approval__customer">
+              {selected.customerName}
+            </p>
             <p className="booking-approval__place">{selected.area}</p>
 
             <dl className="booking-approval__facts">
@@ -227,12 +296,14 @@ export default function BookingApprovalPage() {
             <div className="booking-approval__details-actions">
               <Button
                 variant="outline"
+                disabled={deciding}
                 onClick={() => decide(selected.id, "DECLINED")}
               >
                 Decline Request
               </Button>
               <Button
                 variant="primary"
+                disabled={deciding}
                 onClick={() => decide(selected.id, "ACCEPTED")}
               >
                 Accept Booking

@@ -284,3 +284,13 @@
     grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.9fr);
   }
 }
+
+.booking-approval__message {
+  margin: 0 0 var(--cc-space-4);
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.booking-approval__message--error {
+  color: var(--cc-error-text);
+}
