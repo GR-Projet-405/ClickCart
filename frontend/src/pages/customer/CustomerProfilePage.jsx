@@ -263,14 +263,6 @@ export default function CustomerProfilePage() {
                 >
                   Saved Addresses ({profile.savedAddresses?.length || 0})
                 </button>
-                <button
-                  type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "security" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("security")}
-                >
-                  Security
-                </button>
               </div>
 
               {/* Tab Views */}
@@ -300,28 +292,6 @@ export default function CustomerProfilePage() {
                     onDeleteAddress={handleDeleteAddress}
                     onSetDefault={handleSetDefaultAddress}
                   />
-                </div>
-              )}
-
-              {activeTab === "security" && (
-                <div className="customer-profile-page__tab-content">
-                  <Card className="customer-profile-page__placeholder-card">
-                    <div className="customer-profile-page__placeholder-icon">
-                      <Shield size={28} color="var(--cc-primary-dark)" />
-                    </div>
-                    <h2 className="cc-h3">Account Security & Verification</h2>
-                    <p className="cc-text-secondary">
-                      Your account is secured with 2-Factor Authentication and Level 2 National ID Verification.
-                    </p>
-                    <div className="customer-profile-page__sec-badges">
-                      <Badge variant="success">Password Protected</Badge>
-                      <Badge variant="success">2FA Enabled</Badge>
-                      <Badge variant="success">National ID Verified</Badge>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      Change Password
-                    </Button>
-                  </Card>
                 </div>
               )}
             </main>

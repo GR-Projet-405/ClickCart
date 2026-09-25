@@ -58,21 +58,14 @@ export default function CustomerHeader() {
             to="/customer/profile"
             aria-label="View customer profile"
           >
-<<<<<<< HEAD
             <Avatar
               src={profile?.avatarUrl}
-              fallback={avatarFallback}
+              fallback={avatarFallback || "TH"}
               size="sm"
             />
             <span>
               <small>Hello,</small>
-              <strong>{displayName}</strong>
-=======
-            <Avatar fallback="TH" size="md" />
-            <span>
-              <small>Hello,</small>
-              <strong>Tharindu</strong>
->>>>>>> dev
+              <strong>{displayName || "Tharindu"}</strong>
             </span>
           </Link>
           <Button className="customer-header__cta">Post a Service</Button>

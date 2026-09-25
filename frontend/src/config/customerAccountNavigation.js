@@ -1,4 +1,4 @@
-import { MapPin, ShieldCheck, UserRound } from "lucide-react";
+import { MapPin, UserRound } from "lucide-react";
 
 export const customerAccountNavigation = [
   {
@@ -12,11 +12,5 @@ export const customerAccountNavigation = [
     label: "Saved Addresses",
     icon: MapPin,
     description: "Manage delivery & service locations",
-  },
-  {
-    id: "security",
-    label: "Security & Login",
-    icon: ShieldCheck,
-    description: "Password & 2FA protection",
   },
 ];
