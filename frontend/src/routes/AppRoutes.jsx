@@ -10,6 +10,8 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import ProviderJobManagementDashboard from "../pages/provider/ProviderJobManagementDashboard";
+import ProviderJobDetailsConsole from "../pages/provider/ProviderJobDetailsConsole";
 
 export default function AppRoutes() {
   return (
@@ -25,7 +27,11 @@ export default function AppRoutes() {
             />
           }
         />
-        {providerNavigation.map(({ path }) => (
+        <Route path="jobs" element={<ProviderJobManagementDashboard />} />
+        <Route path="jobs/:jobId" element={<ProviderJobDetailsConsole />} />
+        {providerNavigation
+          .filter(({ path }) => path !== "/provider/jobs")
+          .map(({ path }) => (
           <Route
             key={path}
             path={path.replace("/provider/", "")}

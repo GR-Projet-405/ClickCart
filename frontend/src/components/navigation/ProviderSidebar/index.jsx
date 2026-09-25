@@ -18,6 +18,7 @@ export default function ProviderSidebar({ onNavigate }) {
             to={path}
             active={
               pathname === path ||
+              pathname.startsWith(`${path}/`) ||
               (path.endsWith("dashboard") && pathname === "/provider")
             }
             badge={

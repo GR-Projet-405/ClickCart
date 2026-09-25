@@ -5,6 +5,7 @@ frontend/.env
 frontend/.env.local
 
 # Backend
+backend/data/
 backend/target/
 backend/.idea/
 backend/.classpath

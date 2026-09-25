@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronDown, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
 
@@ -13,7 +14,7 @@ export default function CustomerTopBar() {
           <a href="tel:+942538862516">(025) 3886 25 16</a>
         </div>
         <nav className="customer-topbar__links" aria-label="Utility navigation">
-          <a href="#become-a-provider">Become a Provider</a>
+          <Link to="/provider">Become a Provider</Link>
           <a href="#help-center">Help Center</a>
           <span>LKR</span>
           <button type="button" aria-label="Language: English">

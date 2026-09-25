@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   CalendarCheck,
   CalendarDays,
   Home,
@@ -12,6 +13,7 @@ import {
 
 export const providerNavigation = [
   { label: "Dashboard", path: "/provider/dashboard", icon: Home },
+  { label: "My Jobs", path: "/provider/jobs", icon: Briefcase },
   { label: "My Services", path: "/provider/services", icon: Wrench },
   { label: "Bookings", path: "/provider/bookings", icon: CalendarCheck },
   { label: "Messages", path: "/provider/messages", icon: Mail, demoCount: 3 },
