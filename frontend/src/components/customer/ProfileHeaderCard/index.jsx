@@ -44,8 +44,8 @@ export default function ProfileHeaderCard({
           <div className="profile-header-card__avatar-area">
             <div className="profile-header-card__avatar-wrapper">
               <Avatar
-                src={profile.avatarUrl}
-                fallback={profile.fullName.slice(0, 2).toUpperCase()}
+                src={profile?.avatarUrl}
+                fallback={(profile?.fullName || "CP").slice(0, 2).toUpperCase()}
                 size="lg"
                 className="profile-header-card__avatar-img"
               />
@@ -69,15 +69,17 @@ export default function ProfileHeaderCard({
             <div className="profile-header-card__title-meta">
               <div className="profile-header-card__name-row">
                 <h1 className="cc-h2 profile-header-card__name">
-                  {profile.fullName}
+                  {profile?.fullName || "Customer Profile"}
                 </h1>
-                <Badge variant="success" className="profile-header-card__verified-badge">
-                  <ShieldCheck size={14} />
-                  {profile.verification.badgeLabel}
-                </Badge>
+                {profile?.verification?.badgeLabel && (
+                  <Badge variant="success" className="profile-header-card__verified-badge">
+                    <ShieldCheck size={14} />
+                    {profile.verification.badgeLabel}
+                  </Badge>
+                )}
               </div>
               <p className="profile-header-card__id-tag">
-                Customer ID: <code>{profile.id}</code> &bull; Member since {profile.memberSince}
+                Customer ID: <code>{profile?.id || "N/A"}</code> &bull; Member since {profile?.memberSince || "Recent"}
               </p>
             </div>
           </div>
@@ -105,9 +107,9 @@ export default function ProfileHeaderCard({
             <Mail size={15} className="profile-header-card__detail-icon" />
             <span className="profile-header-card__detail-label">Email:</span>
             <span className="profile-header-card__detail-val">
-              {profile.email}
+              {profile?.email || "Not provided"}
             </span>
-            {profile.verification.emailVerified && (
+            {profile?.verification?.emailVerified && (
               <span className="profile-header-card__verified-dot" title="Verified Email">
                 <CheckCircle2 size={13} color="var(--cc-success)" />
               </span>
@@ -118,9 +120,9 @@ export default function ProfileHeaderCard({
             <Phone size={15} className="profile-header-card__detail-icon" />
             <span className="profile-header-card__detail-label">Phone:</span>
             <span className="profile-header-card__detail-val">
-              {profile.phone}
+              {profile?.phone || "Not provided"}
             </span>
-            {profile.verification.phoneVerified && (
+            {profile?.verification?.phoneVerified && (
               <span className="profile-header-card__verified-dot" title="Verified Phone">
                 <CheckCircle2 size={13} color="var(--cc-success)" />
               </span>
@@ -131,7 +133,7 @@ export default function ProfileHeaderCard({
             <MapPin size={15} className="profile-header-card__detail-icon" />
             <span className="profile-header-card__detail-label">Location:</span>
             <span className="profile-header-card__detail-val">
-              {profile.location}
+              {profile?.location || "Not specified"}
             </span>
           </div>
         </div>
@@ -139,7 +141,7 @@ export default function ProfileHeaderCard({
         <div className="profile-header-card__chips-row">
           <div className="profile-header-card__chip">
             <Sparkles size={13} color="var(--cc-primary)" />
-            <span>{profile.verification.level}</span>
+            <span>{profile?.verification?.level || "Customer"}</span>
           </div>
           <div className="profile-header-card__chip">
             <CheckCircle2 size={13} color="var(--cc-success)" />

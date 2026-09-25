@@ -166,9 +166,8 @@ export default function CustomerProfilePage() {
       {/* Toast Notification */}
       {toastMessage && (
         <div
-          className={`customer-profile-page__toast ${
-            toastType === "warning" ? "customer-profile-page__toast--warning" : ""
-          }`}
+          className={`customer-profile-page__toast ${toastType === "warning" ? "customer-profile-page__toast--warning" : ""
+            }`}
           role="status"
         >
           {toastType === "warning" ? (
@@ -226,7 +225,7 @@ export default function CustomerProfilePage() {
             <Loader2 size={36} className="customer-profile-page__spinner" />
             <p className="cc-text-secondary">Loading customer profile from database...</p>
           </div>
-        ) : (
+        ) : profile ? (
           <div className="customer-profile-page__layout">
             {/* Sidebar */}
             <aside className="customer-profile-page__sidebar-col">
@@ -250,27 +249,24 @@ export default function CustomerProfilePage() {
               <div className="customer-profile-page__mobile-tabs">
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${
-                    activeTab === "profile" ? "active" : ""
-                  }`}
+                  className={`customer-profile-page__mob-tab ${activeTab === "profile" ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab("profile")}
                 >
                   Profile & Details
                 </button>
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${
-                    activeTab === "addresses" ? "active" : ""
-                  }`}
+                  className={`customer-profile-page__mob-tab ${activeTab === "addresses" ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab("addresses")}
                 >
                   Saved Addresses ({profile.savedAddresses?.length || 0})
                 </button>
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${
-                    activeTab === "security" ? "active" : ""
-                  }`}
+                  className={`customer-profile-page__mob-tab ${activeTab === "security" ? "active" : ""
+                    }`}
                   onClick={() => setActiveTab("security")}
                 >
                   Security
@@ -329,6 +325,21 @@ export default function CustomerProfilePage() {
                 </div>
               )}
             </main>
+          </div>
+        ) : (
+          <div className="customer-profile-page__error-banner" role="alert">
+            <AlertCircle size={18} />
+            <div className="customer-profile-page__error-content">
+              <strong>Unable to load customer profile:</strong> {error || "Profile data not found in database."}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<RefreshCw size={14} />}
+              onClick={refreshProfile}
+            >
+              Retry
+            </Button>
           </div>
         )}
       </PageContainer>

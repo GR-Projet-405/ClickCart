@@ -21,72 +21,72 @@ export default function PersonalInfoSection({ profile, onEdit }) {
   const infoItems = [
     {
       label: "Full Name",
-      value: profile.fullName,
+      value: profile?.fullName || "Not provided",
       icon: User,
     },
     {
       label: "Preferred Name",
-      value: profile.preferredName || profile.fullName.split(" ")[0],
+      value: profile?.preferredName || profile?.fullName?.split(" ")[0] || "Not provided",
       icon: User,
     },
     {
       label: "Email Address",
-      value: profile.email,
+      value: profile?.email || "Not provided",
       icon: Mail,
-      verified: profile.verification.emailVerified,
+      verified: profile?.verification?.emailVerified,
     },
     {
       label: "Mobile Number",
-      value: profile.phone,
+      value: profile?.phone || "Not provided",
       icon: Phone,
-      verified: profile.verification.phoneVerified,
+      verified: profile?.verification?.phoneVerified,
     },
     {
       label: "Date of Birth",
-      value: profile.dateOfBirth
+      value: profile?.dateOfBirth
         ? (() => {
-            const parts = profile.dateOfBirth.split("-");
-            if (parts.length === 3) {
-              const d = new Date(parts[0], parts[1] - 1, parts[2]);
-              return d.toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              });
-            }
-            return profile.dateOfBirth;
-          })()
+          const parts = profile.dateOfBirth.split("-");
+          if (parts.length === 3) {
+            const d = new Date(parts[0], parts[1] - 1, parts[2]);
+            return d.toLocaleDateString("en-US", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+          return profile.dateOfBirth;
+        })()
         : "Not provided",
       icon: Calendar,
     },
     {
       label: "Gender",
-      value: profile.gender || "Not specified",
+      value: profile?.gender || "Not specified",
       icon: User,
     },
     {
       label: "Preferred Language",
-      value: profile.preferredLanguage,
+      value: profile?.preferredLanguage || "English (UK)",
       icon: Languages,
     },
     {
       label: "Default Currency",
-      value: profile.defaultCurrency,
+      value: profile?.defaultCurrency || "LKR (Rs.)",
       icon: DollarSign,
     },
     {
       label: "Time Zone",
-      value: profile.timezone,
+      value: profile?.timezone || "Asia/Colombo (GMT+5:30)",
       icon: Globe,
     },
     {
       label: "Primary Region",
-      value: profile.location,
+      value: profile?.location || "Not specified",
       icon: MapPin,
     },
     {
       label: "Emergency Contact",
-      value: profile.emergencyContact,
+      value: profile?.emergencyContact || "Not provided",
       icon: HeartHandshake,
     },
   ];
@@ -139,7 +139,7 @@ export default function PersonalInfoSection({ profile, onEdit }) {
         })}
       </div>
 
-      {profile.bio && (
+      {profile?.bio && (
         <div className="personal-info-card__bio-box">
           <span className="personal-info-card__bio-label">
             Customer Notes & Bio

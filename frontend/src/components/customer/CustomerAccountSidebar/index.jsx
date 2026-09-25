@@ -17,25 +17,27 @@ export default function CustomerAccountSidebar({
       <div className="customer-account-sidebar__user-summary">
         <div className="customer-account-sidebar__avatar-wrap">
           <Avatar
-            src={profile.avatarUrl}
-            fallback={profile.fullName.slice(0, 2).toUpperCase()}
+            src={profile?.avatarUrl}
+            fallback={(profile?.fullName || "CP").slice(0, 2).toUpperCase()}
             size="lg"
             online
           />
         </div>
         <div className="customer-account-sidebar__identity">
           <h2 className="cc-h4 customer-account-sidebar__name">
-            {profile.fullName}
+            {profile?.fullName || "Customer"}
           </h2>
           <span className="customer-account-sidebar__email">
-            {profile.email}
+            {profile?.email || ""}
           </span>
-          <div className="customer-account-sidebar__badge-row">
-            <Badge variant="success">
-              <ShieldCheck size={13} style={{ marginRight: 4 }} />
-              {profile.verification.badgeLabel}
-            </Badge>
-          </div>
+          {profile?.verification?.badgeLabel && (
+            <div className="customer-account-sidebar__badge-row">
+              <Badge variant="success">
+                <ShieldCheck size={13} style={{ marginRight: 4 }} />
+                {profile.verification.badgeLabel}
+              </Badge>
+            </div>
+          )}
         </div>
       </div>
 
@@ -69,9 +71,8 @@ export default function CustomerAccountSidebar({
             <button
               key={item.id}
               type="button"
-              className={`customer-account-sidebar__item ${
-                isActive ? "customer-account-sidebar__item--active" : ""
-              }`}
+              className={`customer-account-sidebar__item ${isActive ? "customer-account-sidebar__item--active" : ""
+                }`}
               onClick={() => onSelectTab(item.id)}
             >
               <span className="customer-account-sidebar__item-icon">

@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { initialCustomerProfile } from "../config/profileData";
 import {
   getCustomerProfile,
   updateCustomerProfile,
@@ -8,7 +7,7 @@ import {
 const CustomerContext = createContext(null);
 
 export function CustomerProvider({ children }) {
-  const [profile, setProfile] = useState(initialCustomerProfile);
+  const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,7 +19,7 @@ export function CustomerProvider({ children }) {
       setProfile(data);
     } catch (err) {
       console.warn("CustomerContext: Failed to fetch profile from API:", err);
-      setError(err.message || "Failed to load customer profile.");
+      setError(err.message || "Failed to load customer profile from database.");
     } finally {
       setIsLoading(false);
     }
@@ -40,8 +39,8 @@ export function CustomerProvider({ children }) {
     return saved;
   }, [profile]);
 
-  const displayName = profile.preferredName?.trim() || profile.fullName?.trim()?.split(" ")[0] || "Customer";
-  const avatarFallback = (profile.fullName?.trim() || "CP").slice(0, 2).toUpperCase();
+  const displayName = profile?.preferredName?.trim() || profile?.fullName?.trim()?.split(" ")[0] || "Customer";
+  const avatarFallback = (profile?.fullName?.trim() || "CP").slice(0, 2).toUpperCase();
 
   const value = {
     profile,
