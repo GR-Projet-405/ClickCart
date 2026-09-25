@@ -7,6 +7,7 @@ import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
@@ -25,6 +26,7 @@ export default function AppRoutes() {
             />
           }
         />
+        <Route path="bookings" element={<BookingApprovalPage />} />
         {providerNavigation.map(({ path }) => (
           <Route
             key={path}

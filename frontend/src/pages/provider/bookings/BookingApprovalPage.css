@@ -1,0 +1,19 @@
+.booking-approval {
+    display: grid;
+    gap: var(--cc-space-6);
+    padding-block: var(--cc-space-6);
+  }
+  
+  .booking-approval__header h1 {
+    margin: 0;
+    color: var(--cc-text-primary);
+    font-size: var(--cc-text-h2-size);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+  
+  .booking-approval__header p {
+    margin: var(--cc-space-1) 0 0;
+    color: var(--cc-text-secondary);
+    font-size: var(--cc-text-body-sm-size);
+  }
