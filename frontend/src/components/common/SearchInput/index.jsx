@@ -1,3 +1,4 @@
+import React from 'react';
 import { Search } from "lucide-react";
 import Field from "../Field/Field";
 import "../components.css";
