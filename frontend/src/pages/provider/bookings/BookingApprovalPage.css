@@ -156,3 +156,105 @@
     margin-left: 0;
   }
 }
+
+.booking-approval__workspace {
+  display: grid;
+  gap: var(--cc-space-4);
+  align-items: start;
+}
+
+.booking-approval__details-head,
+.booking-approval__facts div,
+.booking-approval__details-actions {
+  display: flex;
+  align-items: center;
+}
+
+.booking-approval__details-head {
+  justify-content: space-between;
+  gap: var(--cc-space-3);
+  margin-bottom: var(--cc-space-5);
+}
+
+.booking-approval__details-head h2,
+.booking-approval__profile-label,
+.booking-approval__customer,
+.booking-approval__place,
+.booking-approval__notes h3,
+.booking-approval__notes blockquote {
+  margin: 0;
+}
+
+.booking-approval__details-head h2 {
+  font-size: var(--cc-text-h4-size);
+}
+
+.booking-approval__status {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.booking-approval__profile-label,
+.booking-approval__place,
+.booking-approval__notes h3,
+.booking-approval__facts dt {
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.booking-approval__customer {
+  margin-top: var(--cc-space-2);
+  font-weight: 700;
+}
+
+.booking-approval__facts {
+  display: grid;
+  gap: var(--cc-space-3);
+  margin: var(--cc-space-5) 0;
+}
+
+.booking-approval__facts div {
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+}
+
+.booking-approval__facts dd {
+  margin: 0;
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+  text-align: right;
+}
+
+.booking-approval__pay {
+  color: var(--cc-primary-dark);
+}
+
+.booking-approval__notes {
+  display: grid;
+  gap: var(--cc-space-2);
+  margin-bottom: var(--cc-space-5);
+}
+
+.booking-approval__notes blockquote {
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-sm-size);
+  font-style: italic;
+}
+
+.booking-approval__details-actions {
+  gap: var(--cc-space-3);
+}
+
+.booking-approval__details-actions .cc-button {
+  flex: 1;
+}
+
+.booking-approval__details-actions .cc-button--primary {
+  border-radius: var(--cc-radius-pill);
+}
+
+@media (min-width: 64rem) {
+  .booking-approval__workspace {
+    grid-template-columns: minmax(0, 1.45fr) minmax(18rem, 0.9fr);
+  }
+}
