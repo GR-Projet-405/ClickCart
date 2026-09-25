@@ -14,22 +14,43 @@ import {
   MapPin,
   FileText,
   AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import Button from "../../../components/common/Button";
+import Spinner from "../../../components/common/Spinner";
 import {
   getProviderProfile,
   calculateProfileStatus,
   getCompletionPercentage,
+  EMPTY_PROFILE,
 } from "../../../services/providerProfileService";
 import "./ProviderProfileOverview.css";
 
 export default function ProviderProfileOverview() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(() => getProviderProfile());
+  const [profile, setProfile] = useState(EMPTY_PROFILE);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await getProviderProfile();
+      setProfile(data);
+    } catch (err) {
+      console.error("Failed to load profile:", err);
+      setError("Unable to load profile data from backend server.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
+    fetchProfile();
+
     const handleProfileUpdate = () => {
-      setProfile(getProviderProfile());
+      fetchProfile();
     };
 
     window.addEventListener("provider_profile_updated", handleProfileUpdate);
@@ -50,7 +71,11 @@ export default function ProviderProfileOverview() {
   };
 
   const handleViewPublicProfile = () => {
-    navigate("/provider/profile/public");
+    if (profile.id) {
+      navigate(`/provider/profile/${profile.id}`);
+    } else {
+      navigate("/provider/profile/public");
+    }
   };
 
   const isCompleted = profileStatus === "COMPLETED";
@@ -60,6 +85,15 @@ export default function ProviderProfileOverview() {
     profile.providerType === "individual"
       ? profile.fullName || "Your Full Name"
       : profile.businessName || "Your Business Name";
+
+  if (loading) {
+    return (
+      <div className="provider-overview-container" style={{ textAlign: "center", padding: "60px 20px" }}>
+        <Spinner size="lg" />
+        <p style={{ marginTop: 16, color: "var(--cc-text-secondary)" }}>Loading provider profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="provider-overview-container">
@@ -72,6 +106,16 @@ export default function ProviderProfileOverview() {
           </p>
         </div>
       </div>
+
+      {error && (
+        <div style={{ padding: 16, backgroundColor: "var(--cc-error-soft)", color: "var(--cc-error-text)", borderRadius: 8, display: "flex", alignItems: "center", gap: 8 }}>
+          <AlertCircle size={20} />
+          <span>{error}</span>
+          <button type="button" onClick={fetchProfile} style={{ marginLeft: "auto", background: "none", border: "none", color: "inherit", cursor: "pointer", display: "inline-flex", alignItems: "center", gap: 4, fontWeight: 600 }}>
+            <RefreshCw size={14} /> Retry
+          </button>
+        </div>
+      )}
 
       {/* STATE A & STATE B: INCOMPLETE PROFILE (NOT STARTED / PARTIALLY COMPLETED) */}
       {!isCompleted && (

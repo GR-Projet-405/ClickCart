@@ -9,16 +9,19 @@ import {
   User,
   X,
   ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
 import Button from "../../../components/common/Button";
 import Input from "../../../components/common/Input";
 import Textarea from "../../../components/common/Textarea";
+import Spinner from "../../../components/common/Spinner";
 import { getProviderProfile, saveProviderProfile } from "../../../services/providerProfileService";
 import "./EditProviderProfile.css";
 
 export default function EditProviderProfile() {
   const navigate = useNavigate();
 
+  const [profileId, setProfileId] = useState(null);
   const [providerType, setProviderType] = useState("individual");
   const [formData, setFormData] = useState({
     fullName: "",
@@ -33,25 +36,39 @@ export default function EditProviderProfile() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
   useEffect(() => {
-    const existing = getProviderProfile();
-    if (existing) {
-      if (existing.providerType) setProviderType(existing.providerType);
-      setFormData({
-        fullName: existing.fullName || "",
-        businessName: existing.businessName || "",
-        contactPerson: existing.contactPerson || "",
-        email: existing.email || "",
-        phone: existing.phone || "",
-        location: existing.location || "",
-        bio: existing.bio || "",
-      });
-      if (existing.imagePreview) {
-        setImagePreview(existing.imagePreview);
+    async function loadProfile() {
+      try {
+        setLoading(true);
+        const existing = await getProviderProfile();
+        if (existing) {
+          if (existing.id) setProfileId(existing.id);
+          if (existing.providerType) setProviderType(existing.providerType);
+          setFormData({
+            fullName: existing.fullName || "",
+            businessName: existing.businessName || "",
+            contactPerson: existing.contactPerson || "",
+            email: existing.email || "",
+            phone: existing.phone || "",
+            location: existing.location || "",
+            bio: existing.bio || "",
+          });
+          if (existing.imagePreview) {
+            setImagePreview(existing.imagePreview);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading profile for edit:", err);
+      } finally {
+        setLoading(false);
       }
     }
+    loadProfile();
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -121,27 +138,47 @@ export default function EditProviderProfile() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSaveChanges = (e) => {
+  const handleSaveChanges = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      saveProviderProfile({
-        ...formData,
-        providerType,
-        imagePreview,
-        status: "COMPLETED",
-      });
+      try {
+        setSaving(true);
+        setSubmitError(null);
+        await saveProviderProfile(
+          {
+            ...formData,
+            providerType,
+            imagePreview,
+          },
+          profileId
+        );
 
-      setSubmittedSuccess(true);
-      setTimeout(() => {
-        setSubmittedSuccess(false);
-        navigate("/provider/profile");
-      }, 1200);
+        setSubmittedSuccess(true);
+        setTimeout(() => {
+          setSubmittedSuccess(false);
+          navigate("/provider/profile");
+        }, 1000);
+      } catch (err) {
+        console.error("Error saving edits:", err);
+        setSubmitError("Failed to update profile on backend. Please try again.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
   const handleCancel = () => {
     navigate("/provider/profile");
   };
+
+  if (loading) {
+    return (
+      <div className="edit-profile-container" style={{ textAlign: "center", padding: "60px 20px" }}>
+        <Spinner size="lg" />
+        <p style={{ marginTop: 16, color: "var(--cc-text-secondary)" }}>Loading profile form...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="edit-profile-container">
@@ -162,6 +199,13 @@ export default function EditProviderProfile() {
       </div>
 
       <form className="edit-profile-form" onSubmit={handleSaveChanges} noValidate>
+        {submitError && (
+          <div style={{ padding: 12, backgroundColor: "var(--cc-error-soft)", color: "var(--cc-error-text)", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertCircle size={18} />
+            <span>{submitError}</span>
+          </div>
+        )}
+
         {/* Success Banner */}
         {submittedSuccess && (
           <div className="success-banner">
@@ -210,7 +254,7 @@ export default function EditProviderProfile() {
                   )}
                 </span>
                 <span className="profile-status-badge">
-                  <ShieldCheck size={12} /> Profile Ready
+                  <ShieldCheck size={12} /> Profile Active
                 </span>
               </div>
             </div>
@@ -307,11 +351,12 @@ export default function EditProviderProfile() {
               <Input
                 id="email"
                 type="email"
-                label="Email Address 🔒"
+                label="Email Address"
                 placeholder="you@example.com"
-                helperText="Your account email is managed separately."
-                readOnly
+                required
                 value={formData.email}
+                onChange={(e) => handleInputChange("email", e.target.value)}
+                error={errors.email}
               />
               <Input
                 id="phone"
@@ -361,10 +406,10 @@ export default function EditProviderProfile() {
 
         {/* Footer Actions */}
         <div className="edit-profile-actions">
-          <Button variant="secondary" onClick={handleCancel}>
+          <Button variant="secondary" onClick={handleCancel} disabled={saving}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit">
+          <Button variant="primary" type="submit" loading={saving} disabled={saving}>
             Save Changes
           </Button>
         </div>

@@ -20,7 +20,8 @@ import {
   PhoneCall,
   Share2,
 } from "lucide-react";
-import { getProviderProfile } from "../../../services/providerProfileService";
+import { getPublicProviderProfile, EMPTY_PROFILE } from "../../../services/providerProfileService";
+import Spinner from "../../../components/common/Spinner";
 import "./PublicProviderProfile.css";
 
 export default function PublicProviderProfile() {
@@ -28,18 +29,23 @@ export default function PublicProviderProfile() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Load saved provider profile data or fallback to demo profile
-  const [profileData, setProfileData] = useState(() => getProviderProfile());
+  const [profileData, setProfileData] = useState(EMPTY_PROFILE);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const handleProfileUpdate = () => {
-      setProfileData(getProviderProfile());
-    };
-    window.addEventListener("provider_profile_updated", handleProfileUpdate);
-    return () => {
-      window.removeEventListener("provider_profile_updated", handleProfileUpdate);
-    };
-  }, []);
+    async function loadPublicProfile() {
+      try {
+        setLoading(true);
+        const data = await getPublicProviderProfile(providerId);
+        setProfileData(data);
+      } catch (err) {
+        console.error("Error loading public profile:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadPublicProfile();
+  }, [providerId]);
 
   const isIndividual = profileData.providerType === "individual";
   const name = isIndividual
@@ -111,6 +117,15 @@ export default function PublicProviderProfile() {
       serviceUsed: "Electrical Maintenance & Repairs",
     },
   ];
+
+  if (loading) {
+    return (
+      <div className="public-profile-root" style={{ textAlign: "center", padding: "80px 20px" }}>
+        <Spinner size="lg" />
+        <p style={{ marginTop: 16, color: "var(--cc-text-secondary)" }}>Loading public profile...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="public-profile-root">

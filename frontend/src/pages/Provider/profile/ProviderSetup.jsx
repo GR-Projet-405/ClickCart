@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, CheckCircle2, Upload, User, X, ArrowLeft, ArrowRight } from "lucide-react";
+import { Building2, CheckCircle2, Upload, User, X, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react";
 import Button from "../../../components/common/Button";
 import Input from "../../../components/common/Input";
 import Textarea from "../../../components/common/Textarea";
@@ -11,6 +11,7 @@ export default function ProviderSetup() {
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(1);
+  const [profileId, setProfileId] = useState(null);
   const [providerType, setProviderType] = useState("individual");
 
   const [formData, setFormData] = useState({
@@ -26,30 +27,39 @@ export default function ProviderSetup() {
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
+  const [saving, setSaving] = useState(false);
+  const [submitError, setSubmitError] = useState(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
-  // Load existing profile data on mount to allow continuing setup
+  // Load existing profile data from backend on mount
   useEffect(() => {
-    const existing = getProviderProfile();
-    if (existing) {
-      if (existing.providerType) setProviderType(existing.providerType);
-      setFormData({
-        fullName: existing.fullName || "",
-        businessName: existing.businessName || "",
-        contactPerson: existing.contactPerson || "",
-        email: existing.email || "",
-        phone: existing.phone || "",
-        location: existing.location || "",
-        bio: existing.bio || "",
-      });
-      if (existing.imagePreview) {
-        setImagePreview(existing.imagePreview);
-      }
-      // If basic info is complete, start on Step 2 if user is continuing setup
-      if (existing.status === "PARTIALLY_COMPLETED") {
-        setCurrentStep(2);
+    async function loadProfile() {
+      try {
+        const existing = await getProviderProfile();
+        if (existing) {
+          if (existing.id) setProfileId(existing.id);
+          if (existing.providerType) setProviderType(existing.providerType);
+          setFormData({
+            fullName: existing.fullName || "",
+            businessName: existing.businessName || "",
+            contactPerson: existing.contactPerson || "",
+            email: existing.email || "",
+            phone: existing.phone || "",
+            location: existing.location || "",
+            bio: existing.bio || "",
+          });
+          if (existing.imagePreview) {
+            setImagePreview(existing.imagePreview);
+          }
+          if (existing.profileStatus === "PARTIALLY_COMPLETED") {
+            setCurrentStep(2);
+          }
+        }
+      } catch (err) {
+        console.error("Error initializing setup profile data:", err);
       }
     }
+    loadProfile();
   }, []);
 
   const handleInputChange = (field, value) => {
@@ -140,16 +150,27 @@ export default function ProviderSetup() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleNextFromStep1 = () => {
+  const handleNextFromStep1 = async () => {
     if (validateStep1()) {
-      // Save partial progress
-      saveProviderProfile({
-        ...formData,
-        providerType,
-        imagePreview,
-        status: "PARTIALLY_COMPLETED",
-      });
-      setCurrentStep(2);
+      try {
+        setSaving(true);
+        setSubmitError(null);
+        const saved = await saveProviderProfile(
+          {
+            ...formData,
+            providerType,
+            imagePreview,
+          },
+          profileId
+        );
+        if (saved && saved.id) setProfileId(saved.id);
+        setCurrentStep(2);
+      } catch (err) {
+        console.error("Error saving step 1:", err);
+        setSubmitError("Failed to save progress to server. Please try again.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -158,7 +179,7 @@ export default function ProviderSetup() {
     setCurrentStep(1);
   };
 
-  const handleStepClick = (targetStep) => {
+  const handleStepClick = async (targetStep) => {
     if (targetStep === 1) {
       setCurrentStep(1);
     } else if (targetStep === 2) {
@@ -168,25 +189,36 @@ export default function ProviderSetup() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (currentStep === 1) {
-      handleNextFromStep1();
+      await handleNextFromStep1();
       return;
     }
 
     if (validateStep2()) {
-      saveProviderProfile({
-        ...formData,
-        providerType,
-        imagePreview,
-        status: "COMPLETED",
-      });
+      try {
+        setSaving(true);
+        setSubmitError(null);
+        await saveProviderProfile(
+          {
+            ...formData,
+            providerType,
+            imagePreview,
+          },
+          profileId
+        );
 
-      setSubmittedSuccess(true);
-      setTimeout(() => {
-        navigate("/provider/profile");
-      }, 1000);
+        setSubmittedSuccess(true);
+        setTimeout(() => {
+          navigate("/provider/profile");
+        }, 800);
+      } catch (err) {
+        console.error("Error completing setup:", err);
+        setSubmitError("Failed to save profile to backend. Please try again.");
+      } finally {
+        setSaving(false);
+      }
     }
   };
 
@@ -240,6 +272,13 @@ export default function ProviderSetup() {
 
       {/* Main Form Card */}
       <form className="provider-setup-card" onSubmit={handleSubmit} noValidate>
+        {submitError && (
+          <div style={{ padding: 12, backgroundColor: "var(--cc-error-soft)", color: "var(--cc-error-text)", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
+            <AlertCircle size={18} />
+            <span>{submitError}</span>
+          </div>
+        )}
+
         {submittedSuccess && (
           <div className="success-banner">
             <CheckCircle2 size={20} />
@@ -386,12 +425,14 @@ export default function ProviderSetup() {
 
             {/* Step 1 Action Buttons */}
             <div className="setup-actions">
-              <Button variant="secondary" onClick={handleCancel}>
+              <Button variant="secondary" onClick={handleCancel} disabled={saving}>
                 Cancel
               </Button>
               <Button
                 variant="primary"
                 onClick={handleNextFromStep1}
+                loading={saving}
+                disabled={saving}
                 rightIcon={<ArrowRight size={16} />}
               >
                 Continue
@@ -493,11 +534,12 @@ export default function ProviderSetup() {
               <Button
                 variant="secondary"
                 onClick={handlePrevStep}
+                disabled={saving}
                 leftIcon={<ArrowLeft size={16} />}
               >
                 Back
               </Button>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" loading={saving} disabled={saving}>
                 Complete Profile
               </Button>
             </div>
