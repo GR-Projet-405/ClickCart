@@ -1,9 +1,11 @@
+import React from 'react';
 import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
+import SearchInput from "../../common/SearchInput";
 
 export default function ProviderHeader({ menuOpen, onMenuToggle }) {
   return (
@@ -23,8 +25,14 @@ export default function ProviderHeader({ menuOpen, onMenuToggle }) {
           to="/provider"
           aria-label="ClickCart provider home"
         >
-          <BrandLogo showTagline />
+          <BrandLogo size="shell" showTagline />
         </Link>
+        <div className="dashboard-header__search">
+          <SearchInput
+            aria-label="Provider workspace search"
+            placeholder="Search users, bookings, services, reports..."
+          />
+        </div>
         <div className="dashboard-header__spacer" />
         <div className="dashboard-header__actions">
           <IconButton
@@ -37,10 +45,10 @@ export default function ProviderHeader({ menuOpen, onMenuToggle }) {
             type="button"
             aria-label="Open provider account menu"
           >
-            <Avatar fallback="PN" size="sm" online />
+            <Avatar fallback="KP" size="lg" online />
             <span className="dashboard-header__identity-copy">
               <small>Hello,</small>
-              <strong>Provider Name</strong>
+              <strong>Kamal Perera</strong>
               <span className="dashboard-header__status">
                 <span className="dashboard-header__status-dot" />
                 Online
