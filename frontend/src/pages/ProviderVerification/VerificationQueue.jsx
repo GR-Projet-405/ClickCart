@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Search, Clock, CheckCircle2, XCircle, FileText, 
-  Check, X, RefreshCw, Filter, Calendar, Eye
+  Check, X, RefreshCw, Filter, Calendar, Eye,
+  ShieldCheck, Mail, Phone, MapPin, Download, User, Wrench
 } from 'lucide-react';
 
 const VerificationQueue = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
   
+  // Modal State
+  const [selectedProvider, setSelectedProvider] = useState(null);
+
   // Filters State
   const [searchTerm, setSearchTerm] = useState('');
   const [activeTab, setActiveTab] = useState('All');
@@ -69,7 +73,6 @@ const VerificationQueue = () => {
     }
   };
 
-  
   const parseProviderDate = (dateValue) => {
     if (!dateValue) return null;
 
@@ -366,54 +369,40 @@ const VerificationQueue = () => {
                       {/* Submitted Documents Column */}
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                          {(() => {
-                            let docsToRender = [];
+                          {Array.isArray(p.documents) && p.documents.length > 0 ? (
+                            p.documents.map((doc, idx) => {
+                              // Console Log for Inspection
+                              console.log("Document Item (Table):", doc);
 
-                            if (Array.isArray(p.documents) && p.documents.length > 0) {
-                              docsToRender = p.documents
-                                .map(doc => {
-                                  if (typeof doc === 'string') return doc;
-                                  if (typeof doc === 'object' && doc !== null) {
-                                    return doc.name || doc.documentName || doc.type || doc.title || null;
-                                  }
-                                  return null;
-                                })
-                                .filter(docName => docName && docName !== 'info' && docName !== 'purple');
-                            } 
-                            else if (p.documents && typeof p.documents === 'object') {
-                              docsToRender = Object.keys(p.documents)
-                                .filter(k => k !== 'info' && k !== 'purple')
-                                .map(k => k.toUpperCase());
-                            }
+                              const docLabel = typeof doc === 'string' 
+                                ? doc 
+                                : (doc?.name || doc?.documentType || doc?.docName || doc?.type || `Document ${idx + 1}`);
 
-                            if (docsToRender.length === 0) {
-                              docsToRender = isBusiness 
-                                ? ['BR Certificate', 'NIC Front/Back'] 
-                                : ['NIC Front/Back', 'Utility Bill'];
-                            }
-
-                            return docsToRender.map((docLabel, idx) => (
-                              <span 
-                                key={idx}
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '5px',
-                                  padding: '4px 10px',
-                                  borderRadius: '6px',
-                                  fontSize: '12px',
-                                  fontWeight: 600,
-                                  background: '#f1f5f9',
-                                  color: '#1e293b',
-                                  border: '1px solid #cbd5e1',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                <FileText size={13} style={{ color: '#0284c7' }} />
-                                {docLabel}
-                              </span>
-                            ));
-                          })()}
+                              return (
+                                <span 
+                                  key={idx}
+                                  style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    padding: '4px 10px',
+                                    borderRadius: '6px',
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    background: '#f1f5f9',
+                                    color: '#1e293b',
+                                    border: '1px solid #cbd5e1',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  <FileText size={13} style={{ color: '#0284c7' }} />
+                                  {docLabel}
+                                </span>
+                              );
+                            })
+                          ) : (
+                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>No verification documents submitted</span>
+                          )}
                         </div>
                       </td>
 
@@ -439,6 +428,7 @@ const VerificationQueue = () => {
                           
                           {/* View Details Button */}
                           <button 
+                            onClick={() => setSelectedProvider(p)}
                             style={{ 
                               background: '#0070f3', color: '#ffffff', border: 'none', 
                               padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
@@ -491,6 +481,238 @@ const VerificationQueue = () => {
         </div>
 
       </div>
+
+      {/* ==================== MODAL POPUP ==================== */}
+      {selectedProvider && (() => {
+        const pId = selectedProvider.id || selectedProvider._id;
+        const providerName = selectedProvider.ownerName || selectedProvider.businessName || 'Provider';
+        const isBusiness = (selectedProvider.providerType || '').toLowerCase() === 'business';
+
+        return (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(15, 23, 42, 0.65)',
+            backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 9999, padding: '16px'
+          }}>
+            <div style={{
+              background: '#ffffff',
+              borderRadius: '20px',
+              width: '100%',
+              maxWidth: '680px',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              display: 'flex',
+              flexDirection: 'column',
+              padding: '24px'
+            }}>
+              
+              {/* Modal Header */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ background: '#dcfce7', width: '36px', height: '36px', borderRadius: '10px', display: 'grid', placeItems: 'center', color: '#16a34a' }}>
+                    <ShieldCheck size={20} />
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
+                    Provider Verification Details - {providerName}
+                  </h2>
+                </div>
+                <button 
+                  onClick={() => setSelectedProvider(null)}
+                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px' }}
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Provider Main Info Box */}
+              <div style={{
+                background: '#f0f7ff',
+                border: '1px solid #e0f2fe',
+                borderRadius: '16px',
+                padding: '20px',
+                marginBottom: '20px',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                gap: '16px'
+              }}>
+                {/* Left Profile Info */}
+                <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
+                  <img 
+                    src={selectedProvider.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
+                    alt={providerName} 
+                    style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }}
+                  />
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>{providerName}</h3>
+                      <span style={{ 
+                        padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, 
+                        background: isBusiness ? '#f3e8ff' : '#e0f2fe', 
+                        color: isBusiness ? '#7e22ce' : '#0369a1' 
+                      }}>
+                        {selectedProvider.providerType || 'Business'}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px', fontSize: '12px', color: '#475569' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Mail size={13} style={{ color: '#64748b' }} />
+                        <span>{selectedProvider.email || 'N/A'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <Phone size={13} style={{ color: '#64748b' }} />
+                        <span>{selectedProvider.phone || 'N/A'}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <MapPin size={13} style={{ color: '#64748b' }} />
+                        <span>{selectedProvider.address || 'Colombo, Sri Lanka'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Service Meta Details */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', fontSize: '12px', color: '#475569', borderLeft: '1px dashed #cbd5e1', paddingLeft: '16px' }}>
+                  <div>
+                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>Service Category</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
+                      <Wrench size={13} style={{ color: '#0284c7' }} />
+                      <span>{selectedProvider.category || 'General Service'}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>Type</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#0f172a', marginTop: '2px' }}>
+                      <User size={13} style={{ color: '#0284c7' }} />
+                      <span>{selectedProvider.providerType || 'Business'}</span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>Submitted Date</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#0f172a', marginTop: '2px' }}>
+                      <Calendar size={13} style={{ color: '#0284c7' }} />
+                      <span>{formatDate(selectedProvider.createdAt || selectedProvider.date || selectedProvider.submittedDate)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Submitted Documents Section */}
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+                  <FileText size={16} style={{ color: '#0070f3' }} />
+                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Submitted Documents</h4>
+                </div>
+
+                {Array.isArray(selectedProvider.documents) && selectedProvider.documents.length > 0 ? (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+                    {selectedProvider.documents.map((doc, idx) => {
+                      // Console Log for Inspection
+                      console.log("Document Item (Modal):", doc);
+
+                      const docType = typeof doc === 'string' 
+                        ? doc 
+                        : (doc?.name || doc?.documentType || doc?.docName || doc?.type || `Document ${idx + 1}`);
+                      const docUrl = typeof doc === 'object' && doc?.url ? doc.url : '';
+
+                      return (
+                        <div key={idx} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
+                          
+                          {/* Document Title / Type */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>
+                            <FileText size={14} style={{ color: '#0284c7' }} />
+                            <span>{docType}</span>
+                          </div>
+
+                          {/* Image Preview */}
+                          <div style={{ height: '140px', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px', border: '1px solid #cbd5e1' }}>
+                            {docUrl ? (
+                              <img 
+                                src={docUrl} 
+                                alt={docType} 
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                onError={(e) => {
+                                  e.target.onerror = null;
+                                  e.target.src = 'https://via.placeholder.com/400x200?text=Image+Load+Error';
+                                }}
+                              />
+                            ) : (
+                              <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>
+                                No Preview Available
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Actions */}
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <button 
+                              onClick={() => docUrl && window.open(docUrl, '_blank')}
+                              disabled={!docUrl}
+                              style={{ flex: 1, padding: '6px', background: '#ffffff', border: '1px solid #0070f3', color: '#0070f3', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', opacity: docUrl ? 1 : 0.5 }}
+                            >
+                              <Eye size={13} /> View Full
+                            </button>
+                            <a 
+                              href={docUrl || '#'} download target="_blank" rel="noreferrer"
+                              style={{ flex: 1, padding: '6px', background: '#0070f3', border: 'none', color: '#ffffff', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', textDecoration: 'none', opacity: docUrl ? 1 : 0.5, pointerEvents: docUrl ? 'auto' : 'none' }}
+                            >
+                              <Download size={13} /> Download
+                            </a>
+                          </div>
+
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '13px', background: '#f8fafc', borderRadius: '12px', border: '1px dashed #cbd5e1' }}>
+                    No verification documents submitted
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer Actions */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                <button
+                  onClick={() => setSelectedProvider(null)}
+                  style={{ background: '#e2e8f0', color: '#475569', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+                >
+                  Cancel
+                </button>
+
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    onClick={() => {
+                      handleStatusChange(pId, 'APPROVED');
+                      setSelectedProvider(null);
+                    }}
+                    style={{ background: '#22c55e', color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <Check size={16} /> Approve
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      handleStatusChange(pId, 'REJECTED');
+                      setSelectedProvider(null);
+                    }}
+                    style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                  >
+                    <X size={16} /> Reject
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        );
+      })()}
+
     </div>
   );
 };
