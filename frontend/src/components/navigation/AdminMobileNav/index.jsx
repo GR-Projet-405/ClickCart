@@ -1,3 +1,4 @@
+import React from 'react';
 import { X } from "lucide-react";
 import IconButton from "../../common/IconButton";
 import AdminSidebar from "../AdminSidebar";

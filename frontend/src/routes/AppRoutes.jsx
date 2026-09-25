@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
@@ -10,8 +10,6 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
-
-import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
 
 export default function AppRoutes() {
   return (
@@ -67,8 +65,6 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
-        <Route path="customer/profile" element={<CustomerProfilePage />} />
-        <Route path="profile" element={<CustomerProfilePage />} />
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}

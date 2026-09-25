@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { Bell, Heart, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
@@ -33,7 +34,7 @@ export default function CustomerHeader() {
           to="/"
           aria-label="ClickCart home"
         >
-          <BrandLogo showTagline />
+          <BrandLogo size="shell" showTagline />
         </Link>
         <nav className="customer-header__nav" aria-label="Customer navigation">
           {customerNavigation.map((item) => (
@@ -57,6 +58,7 @@ export default function CustomerHeader() {
             to="/customer/profile"
             aria-label="View customer profile"
           >
+<<<<<<< HEAD
             <Avatar
               src={profile?.avatarUrl}
               fallback={avatarFallback}
@@ -65,6 +67,12 @@ export default function CustomerHeader() {
             <span>
               <small>Hello,</small>
               <strong>{displayName}</strong>
+=======
+            <Avatar fallback="TH" size="md" />
+            <span>
+              <small>Hello,</small>
+              <strong>Tharindu</strong>
+>>>>>>> dev
             </span>
           </Link>
           <Button className="customer-header__cta">Post a Service</Button>
