@@ -11,6 +11,8 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
+import MyBookingsPage from "../pages/customer/MyBookings";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -65,6 +67,8 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="my-bookings" element={<MyBookingsPage />} />
+        <Route path="bookings" element={<MyBookingsPage />} />
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}

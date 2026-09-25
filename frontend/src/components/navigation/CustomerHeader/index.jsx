@@ -51,17 +51,17 @@ export default function CustomerHeader() {
             label="Notifications"
             variant="ghost"
           />
-          <button
+          <Link
             className="customer-header__account"
-            type="button"
-            aria-label="Open account menu"
+            to="/my-bookings"
+            aria-label="View My Bookings"
           >
             <Avatar fallback="TH" size="md" />
             <span>
               <small>Hello,</small>
               <strong>Tharindu</strong>
             </span>
-          </button>
+          </Link>
           <Button className="customer-header__cta">Post a Service</Button>
           <IconButton
             className="customer-header__menu"
