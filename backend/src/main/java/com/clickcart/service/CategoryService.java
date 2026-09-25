@@ -28,8 +28,8 @@ public class CategoryService {
             category.setSubcategories(request.getSubcategories());
         }
         
-        if (request.getIsActive() != null) {
-            category.setActive(request.getIsActive());
+        if (request.getActive() != null) {
+            category.setActive(request.getActive());
         }
 
         Category savedCategory = categoryRepository.save(category);
@@ -58,8 +58,8 @@ public class CategoryService {
             category.setSubcategories(request.getSubcategories());
         }
         
-        if (request.getIsActive() != null) {
-            category.setActive(request.getIsActive());
+        if (request.getActive() != null) {
+            category.setActive(request.getActive());
         }
 
         Category updatedCategory = categoryRepository.save(category);

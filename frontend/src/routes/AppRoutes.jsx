@@ -1,7 +1,10 @@
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import CustomerExplorePage from "../pages/CustomerExplorePage"; // 🔥 Your new page imported here!
+import AdminCategoryDashboard from "../pages/AdminCategoryDashboard";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
@@ -14,6 +17,7 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route
           index
@@ -38,6 +42,7 @@ export default function AppRoutes() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
+
       <Route path="/admin" element={<AdminLayout />}>
         <Route
           index
@@ -48,6 +53,7 @@ export default function AppRoutes() {
             />
           }
         />
+        <Route path="categories" element={<AdminCategoryDashboard />} />
         {adminNavigation.map(({ path }) => (
           <Route
             key={path}
@@ -62,10 +68,18 @@ export default function AppRoutes() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
+
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
+        {/* 🍏 W route added here! It lives inside the CustomerLayout wrapper */}
+        <Route path="explore" element={<CustomerExplorePage />} />
+
         {customerNavigation.slice(1).map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          // Make sure to not double-map "explore" if it is already in your config!
+          to.slice(1) !== "explore" && (
+            <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          )
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>

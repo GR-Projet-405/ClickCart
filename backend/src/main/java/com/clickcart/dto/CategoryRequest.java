@@ -12,7 +12,7 @@ public class CategoryRequest {
 
     private List<String> subcategories;
 
-    private Boolean isActive;
+    private Boolean active;
 
     public CategoryRequest() {
     }
@@ -41,11 +41,11 @@ public class CategoryRequest {
         this.subcategories = subcategories;
     }
 
-    public Boolean getIsActive() {
-        return isActive;
+    public Boolean getActive() {
+        return active;
     }
 
-    public void setIsActive(Boolean isActive) {
-        this.isActive = isActive;
+    public void setActive(Boolean active) {
+        this.active = active;
     }
 }

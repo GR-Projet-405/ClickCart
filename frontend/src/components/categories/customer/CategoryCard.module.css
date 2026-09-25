@@ -1,0 +1,71 @@
+.card {
+  background-color: #ffffff;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.03);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: center;
+  height: 100%;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
+}
+
+.card.active {
+  border-color: #00B341;
+  background-color: #f6fcf8;
+}
+
+.iconWrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: #f3f4f6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.icon {
+  color: #4b5563;
+  transition: color 0.25s ease;
+}
+
+.card.active .iconWrapper {
+  background-color: #e6f7ec;
+}
+
+.card.active .icon {
+  color: #00B341;
+}
+
+.title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #111827;
+  margin: 0 0 8px 0;
+  font-family: inherit;
+}
+
+.serviceCount {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+  font-family: inherit;
+  transition: color 0.25s ease;
+}
+
+.card.active .serviceCount {
+  color: #00B341;
+  font-weight: 500;
+}
