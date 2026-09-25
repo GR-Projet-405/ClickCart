@@ -1,5 +1,5 @@
 import React from 'react';
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
@@ -10,6 +10,10 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
+import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
+import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
+import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 
 export default function AppRoutes() {
   return (
@@ -25,18 +29,26 @@ export default function AppRoutes() {
             />
           }
         />
-        {providerNavigation.map(({ path }) => (
-          <Route
-            key={path}
-            path={path.replace("/provider/", "")}
-            element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
-              />
-            }
-          />
-        ))}
+        {/* DEV-03 Provider Registration & Profile Routes */}
+        <Route path="profile" element={<ProviderProfileOverview />} />
+        <Route path="profile/setup" element={<ProviderSetup />} />
+        <Route path="profile/edit" element={<EditProviderProfile />} />
+        <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+
+        {providerNavigation
+          .filter(({ path }) => path !== "/provider/profile")
+          .map(({ path }) => (
+            <Route
+              key={path}
+              path={path.replace("/provider/", "")}
+              element={
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              }
+            />
+          ))}
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
@@ -65,6 +77,7 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
