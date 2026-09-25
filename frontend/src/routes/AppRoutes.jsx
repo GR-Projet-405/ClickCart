@@ -11,6 +11,8 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
+import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -25,18 +27,30 @@ export default function AppRoutes() {
             />
           }
         />
-        {providerNavigation.map(({ path }) => (
-          <Route
-            key={path}
-            path={path.replace("/provider/", "")}
-            element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
+        {providerNavigation.map(({ path }) => {
+          const subPath = path.replace("/provider/", "");
+          if (subPath === "earnings") {
+            return (
+              <Route
+                key={path}
+                path={subPath}
+                element={<EarningsDashboardPage />}
               />
-            }
-          />
-        ))}
+            );
+          }
+          return (
+            <Route
+              key={path}
+              path={subPath}
+              element={
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              }
+            />
+          );
+        })}
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
