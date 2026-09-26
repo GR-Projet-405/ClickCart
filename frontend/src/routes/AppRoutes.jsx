@@ -31,25 +31,20 @@ export default function AppRoutes() {
             />
           }
         />
+
         <Route path="services" element={<ProviderServicesPage />} />
-        {providerNavigation.filter(({ path }) => path !== "/provider/services").map(({ path }) => (
-          <Route
-            key={path}
-            path={path.replace("/provider/", "")}
-            element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
-              />
-            }
-          />
-        ))}
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
         <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+
+        {/* Update: Only one mapping loop for the remaining provider navigation */}
         {providerNavigation
-          .filter(({ path }) => path !== "/provider/service-areas")
+          .filter(({ path }) =>
+            path !== "/provider/services" &&
+            path !== "/provider/bookings" &&
+            path !== "/provider/service-areas"
+          )
           .map(({ path }) => (
             <Route
               key={path}
