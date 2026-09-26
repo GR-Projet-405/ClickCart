@@ -7,6 +7,7 @@ import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import SearchInput from "../../common/SearchInput";
 import kamalAvatar from "../../../assets/avatar-kamal.jpg";
+import { CheckCircle2 } from 'lucide-react';
 
 export default function ProviderHeader({ menuOpen, onMenuToggle }) {
   return (
