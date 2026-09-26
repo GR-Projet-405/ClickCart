@@ -15,6 +15,7 @@ import EditServiceAreaPage from "../pages/provider/serviceAreas/EditServiceAreaP
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
@@ -94,6 +95,9 @@ export default function AppRoutes() {
 
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="customer/profile" element={<CustomerProfilePage />} />
+        <Route path="profile" element={<CustomerProfilePage />} />
+        {customerNavigation.slice(1).map(({ to }) => (
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
