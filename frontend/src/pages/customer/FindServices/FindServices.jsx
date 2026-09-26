@@ -30,7 +30,7 @@ export default function FindServices() {
   const [isSearchingLocation, setIsSearchingLocation] = useState(location.state?.openLocationSearch || false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [minRating, setMinRating] = useState(0);
-  const [searchRadius, setSearchRadius] = useState(2);
+  const [searchRadius, setSearchRadius] = useState(20);
   const [hasLocationFilter, setHasLocationFilter] = useState(false);
   
   const { isLoaded } = useLoadScript({
@@ -42,6 +42,7 @@ export default function FindServices() {
   const [searchQuery, setSearchQuery] = useState('');
   const [locationResults, setLocationResults] = useState([]);
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   
   // Map state
   const [mapCenter, setMapCenter] = useState(defaultCenter);
@@ -66,7 +67,7 @@ export default function FindServices() {
             setMapCenter({ lat, lng });
             setMapZoom(13);
             setHasLocationFilter(true);
-            setSearchRadius(2);
+            setSearchRadius(20);
             setIsSearchingProviders(false);
           }, 1500); // Simulate finding providers
         } else {
@@ -79,7 +80,7 @@ export default function FindServices() {
         setMapCenter({ lat: loc.lat, lng: loc.lng });
         setMapZoom(13);
         setHasLocationFilter(true);
-        setSearchRadius(2);
+        setSearchRadius(20);
         setIsSearchingProviders(false);
       }, 1500);
     } else {
@@ -103,7 +104,7 @@ export default function FindServices() {
           
           setTimeout(() => {
             setHasLocationFilter(true);
-            setSearchRadius(2);
+            setSearchRadius(20);
             setIsSearchingProviders(false);
           }, 1500);
         },
@@ -133,7 +134,7 @@ export default function FindServices() {
             setMapCenter({ lat, lng });
             setMapZoom(13);
             setHasLocationFilter(true);
-            setSearchRadius(2);
+            setSearchRadius(20);
             setIsSearchingProviders(false);
           }, 1000);
         } else {
@@ -155,7 +156,7 @@ export default function FindServices() {
             setMapCenter({ lat, lng });
             setMapZoom(13);
             setHasLocationFilter(true);
-            setSearchRadius(2);
+            setSearchRadius(20);
             setIsSearchingProviders(false);
           }, 1000);
         } else {
@@ -177,14 +178,14 @@ export default function FindServices() {
               setMapCenter({ lat: match.lat, lng: match.lng });
               setMapZoom(13);
               setHasLocationFilter(true);
-              setSearchRadius(2);
+              setSearchRadius(20);
               setIsSearchingProviders(false);
             }, 1000);
           } else {
             // Absolute final fallback: just trigger empty state where the map is currently centered
             setTimeout(() => {
               setHasLocationFilter(true);
-              setSearchRadius(2);
+              setSearchRadius(20);
               setIsSearchingProviders(false);
             }, 1000);
           }
@@ -193,7 +194,7 @@ export default function FindServices() {
         // Absolute final fallback: just trigger empty state where the map is currently centered
         setTimeout(() => {
           setHasLocationFilter(true);
-          setSearchRadius(2);
+          setSearchRadius(20);
           setIsSearchingProviders(false);
         }, 1000);
       }
@@ -211,12 +212,12 @@ export default function FindServices() {
   useEffect(() => {
     const fetchProviders = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/providers');
+        const response = await fetch('http://localhost:8080/api/v1/services');
         if (response.ok) {
           const data = await response.json();
-          setProviders(data);
+          setProviders(data); // `data` is now an array of ServiceListing objects, keeping the `providers` state name for minimal disruption
           if (data.length > 0) {
-            setActiveProviderId(data[0].id); // Select first by default
+            setActiveProviderId(data[0].id);
           }
         }
       } catch (error) {
@@ -346,9 +347,13 @@ export default function FindServices() {
               type="text"
               className="find-services__search-input"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowDropdown(true);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
+                  setShowDropdown(false);
                   if (locationResults.length > 0) {
                     handleLocationSelect(locationResults[0]);
                   } else {
@@ -359,7 +364,7 @@ export default function FindServices() {
               placeholder="Search any location..."
             />
             {searchQuery && (
-              <div className="find-services__clear-btn" onClick={() => setSearchQuery('')} style={{ marginRight: '8px' }}>
+              <div className="find-services__clear-btn" onClick={() => { setSearchQuery(''); setShowDropdown(false); }} style={{ marginRight: '8px' }}>
                 <X size={12} color="#9CA3AF" strokeWidth={3} />
               </div>
             )}
@@ -369,6 +374,7 @@ export default function FindServices() {
                 padding: '6px 12px', fontSize: '13px', fontWeight: '600', cursor: 'pointer'
               }}
               onClick={() => {
+                setShowDropdown(false);
                 if (locationResults.length > 0) {
                   handleLocationSelect(locationResults[0]);
                 } else {
@@ -380,7 +386,7 @@ export default function FindServices() {
             </button>
           </div>
 
-          {searchQuery && locationResults.length > 0 && (
+          {showDropdown && searchQuery && locationResults.length > 0 && (
             <div className="find-services__dropdown">
               {locationResults.map((loc, idx) => {
                 const isFirst = idx === 0;
@@ -388,7 +394,7 @@ export default function FindServices() {
                   <div 
                     key={loc.id || idx} 
                     className={`find-services__dropdown-item ${isFirst ? 'find-services__dropdown-item--highlight' : ''}`}
-                    onClick={() => handleLocationSelect(loc)}
+                    onClick={() => { setShowDropdown(false); handleLocationSelect(loc); }}
                   >
                     <div className={`find-services__icon-container ${isFirst ? 'find-services__icon-container--highlight' : ''}`}>
                       <MapPin size={14} fill={isFirst ? "#1ABA1A" : "#9CA3AF"} color={isFirst ? "#1ABA1A" : "#9CA3AF"} />
@@ -406,7 +412,7 @@ export default function FindServices() {
 
               {locationResults.length > 0 && <div className="find-services__divider" />}
 
-              <div className="find-services__current-location" onClick={handleCurrentLocation}>
+              <div className="find-services__current-location" onClick={() => { setShowDropdown(false); handleCurrentLocation(); }}>
                 <div className="find-services__current-icon">
                   <Target size={16} />
                 </div>
@@ -465,9 +471,9 @@ export default function FindServices() {
               </div>
               <h3 className="find-services__empty-title">No providers found here</h3>
               <p className="find-services__empty-subtitle">Try widening your search radius or choosing a different area.</p>
-              <button className="find-services__empty-btn" onClick={() => setSearchRadius(10)}>
+              <button className="find-services__empty-btn" onClick={() => setSearchRadius(50)}>
                 <span style={{ fontSize: '18px', marginRight: '4px', fontWeight: '400' }}>+</span>
-                Expand search to 10 km
+                Expand search to 50 km
               </button>
               <button className="find-services__empty-btn-secondary" onClick={() => { setActiveFilter('All'); setHasLocationFilter(false); }}>
                 Browse all categories instead
@@ -480,16 +486,22 @@ export default function FindServices() {
                 className={`find-services__provider-card ${activeProviderId === provider.id ? 'find-services__provider-card--active' : ''}`}
                 onClick={() => handleProviderSelect(provider)}
               >
-                <div className="provider-card__avatar" style={{ backgroundColor: provider.color }}>
-                  {provider.initials}
+                <div className="provider-card__avatar" style={{ 
+                  backgroundColor: provider.color || '#1ABA1A',
+                  backgroundImage: provider.imageUrl ? `url(${provider.imageUrl})` : 'none',
+                  backgroundSize: 'cover',
+                  display: 'flex', justifyContent: 'center', alignItems: 'center',
+                  color: 'white', fontWeight: 'bold'
+                }}>
+                  {!provider.imageUrl && (provider.initials || (provider.providerName ? provider.providerName.substring(0, 2).toUpperCase() : 'SV'))}
                 </div>
                 <div className="provider-card__info">
-                  <h3 className="provider-card__name">{provider.name}</h3>
-                  <p className="provider-card__category">{provider.category}</p>
+                  <h3 className="provider-card__name">{provider.title || provider.name || 'Service'}</h3>
+                  <p className="provider-card__category">{provider.providerName || provider.category}</p>
                   <div className="provider-card__rating">
                     <Star fill="#F59E0B" color="#F59E0B" size={12} />
-                    <span className="provider-card__rating-value">{provider.rating}</span>
-                    <span className="provider-card__rating-count">({provider.reviewsCount})</span>
+                    <span className="provider-card__rating-value">{provider.rating ? parseFloat(provider.rating).toFixed(1) : '4.5'}</span>
+                    <span className="provider-card__rating-count">({provider.reviewsCount || 0})</span>
                   </div>
                 </div>
                 <div className="provider-card__distance">
@@ -506,127 +518,16 @@ export default function FindServices() {
           {/* Location Tag Removed (Now in Top Bar) */}
 
           {/* Filter Sidebar Overlay */}
-          {isFilterOpen && (
-            <>
-              <div className="find-services__filter-overlay-bg" onClick={() => setIsFilterOpen(false)} />
-              <div className="find-services__filter-sidebar">
-                <div className="filter-sidebar__header">
-                  <h2>Filters</h2>
-                  <div className="filter-sidebar__close" onClick={() => setIsFilterOpen(false)}>
-                    <X size={14} color="#6B7280" strokeWidth={2.5} />
-                  </div>
-                </div>
-                
-                <div className="filter-sidebar__content">
-                  {/* Category */}
-                  <div className="filter-section">
-                    <h3 className="filter-section__title">Category</h3>
-                    <div className="filter-category__grid">
-                      <button className="filter-category__btn filter-category__btn--active">
-                        <Home size={16} color="#008236" />
-                        <span className="filter-category__text" style={{ color: '#149114' }}>Home Cleaning</span>
-                        <div className="filter-category__check">
-                          <Check size={8} color="#FFFFFF" strokeWidth={4} />
-                        </div>
-                      </button>
-                      <button className="filter-category__btn">
-                        <Wrench size={16} color="#6A7282" />
-                        <span className="filter-category__text">Plumbing</span>
-                      </button>
-                      <button className="filter-category__btn">
-                        <Zap size={16} color="#6A7282" />
-                        <span className="filter-category__text">Electrical</span>
-                      </button>
-                      <button className="filter-category__btn filter-category__btn--active">
-                        <Snowflake size={16} color="#008236" />
-                        <span className="filter-category__text" style={{ color: '#149114' }}>AC Repair</span>
-                        <div className="filter-category__check">
-                          <Check size={8} color="#FFFFFF" strokeWidth={4} />
-                        </div>
-                      </button>
-                      <button className="filter-category__btn">
-                        <Scissors size={16} color="#6A7282" />
-                        <span className="filter-category__text">Beauty & Salon</span>
-                      </button>
-                      <button className="filter-category__btn">
-                        <BookOpen size={16} color="#6A7282" />
-                        <span className="filter-category__text">Tutoring</span>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Distance radius */}
-                  <div className="filter-section">
-                    <div className="filter-section__header-row">
-                      <h3 className="filter-section__title">Distance radius</h3>
-                      <span className="filter-section__value" style={{ color: '#149114' }}>Within 5 km</span>
-                    </div>
-                    <div className="filter-slider">
-                      <div className="filter-slider__track">
-                        <div className="filter-slider__fill" style={{ width: '25%' }} />
-                      </div>
-                      <div className="filter-slider__thumb" style={{ left: '25%' }} />
-                    </div>
-                    <div className="filter-slider__labels">
-                      <span>1 km</span>
-                      <span>20 km</span>
-                    </div>
-                  </div>
-                  
-                  {/* Price range */}
-                  <div className="filter-section">
-                    <div className="filter-section__header-row">
-                      <h3 className="filter-section__title">Price range</h3>
-                      <span className="filter-section__value" style={{ color: '#364153' }}>LKR 500 – 10,000</span>
-                    </div>
-                    <div className="filter-slider">
-                      <div className="filter-slider__track">
-                        <div className="filter-slider__fill" style={{ left: '5%', width: '45%' }} />
-                      </div>
-                      <div className="filter-slider__thumb" style={{ left: '5%' }} />
-                      <div className="filter-slider__thumb" style={{ left: '50%' }} />
-                    </div>
-                    <div className="filter-slider__labels">
-                      <span>LKR 0</span>
-                      <span>LKR 20,000</span>
-                    </div>
-                  </div>
-                  
-                  {/* Minimum rating */}
-                  <div className="filter-section">
-                    <h3 className="filter-section__title">Minimum rating</h3>
-                    <div className="filter-rating__btn filter-rating__btn--active">
-                      <div className="filter-rating__stars">
-                        <Star size={18} fill="#F59E0B" color="#F59E0B" />
-                        <Star size={18} fill="#F59E0B" color="#F59E0B" />
-                        <Star size={18} fill="#F59E0B" color="#F59E0B" />
-                        <Star size={18} fill="#F59E0B" color="#F59E0B" />
-                        <Star size={18} fill="#E5E7EB" color="#E5E7EB" />
-                      </div>
-                      <span className="filter-rating__text">4.0 & up</span>
-                      <div className="filter-category__check" style={{ marginLeft: 'auto' }}>
-                        <Check size={8} color="#FFFFFF" strokeWidth={4} />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Availability */}
-                  <div className="filter-section">
-                    <h3 className="filter-section__title">Availability</h3>
-                    <div className="filter-availability__row">
-                      <button className="filter-availability__btn">Available today</button>
-                      <button className="filter-availability__btn filter-availability__btn--active">Available this week</button>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="filter-sidebar__footer">
-                  <button className="filter-footer__clear" onClick={() => setIsFilterOpen(false)}>Clear all</button>
-                  <button className="filter-footer__show" onClick={() => setIsFilterOpen(false)}>Show 6 providers</button>
-                </div>
-              </div>
-            </>
-          )}
+          <FilterSidebar 
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            activeFilter={activeFilter}
+            setActiveFilter={setActiveFilter}
+            searchRadius={searchRadius}
+            setSearchRadius={setSearchRadius}
+            minRating={minRating}
+            setMinRating={setMinRating}
+          />
 
           {isLoaded && (
             <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: isSearchingProviders ? 0.3 : 1, transition: 'opacity 0.3s', pointerEvents: isSearchingProviders ? 'none' : 'auto' }}>
@@ -636,6 +537,23 @@ export default function FindServices() {
                 center={mapCenter}
                 options={{ disableDefaultUI: true, zoomControl: true }}
               >
+                {/* Searched Location Marker */}
+                {hasLocationFilter && (
+                  <OverlayView
+                    position={mapCenter}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                  >
+                    <div style={{ transform: 'translate(-50%, -100%)', position: 'absolute', display: 'flex', flexDirection: 'column', alignItems: 'center', pointerEvents: 'none' }}>
+                      <div style={{ background: '#101828', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px', whiteSpace: 'nowrap', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
+                        Searched Location
+                      </div>
+                      <div style={{ width: 40, height: 40, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                        <Target size={32} color="#101828" fill="white" />
+                      </div>
+                    </div>
+                  </OverlayView>
+                )}
+
                 {/* Map Pins */}
                 {filteredProviders.map(provider => {
                   const isActive = activeProviderId === provider.id;
@@ -670,23 +588,23 @@ export default function FindServices() {
                                     <Check size={10} color="white" strokeWidth={3} />
                                   </div>
                                 )}
-                                {!provider.imageUrl && provider.initials}
+                                {!provider.imageUrl && (provider.initials || (provider.providerName ? provider.providerName.substring(0, 2).toUpperCase() : 'SV'))}
                               </div>
                               
                               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                <h3 style={{ margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14, color: '#101828' }}>{provider.name}</h3>
-                                <p style={{ margin: '2px 0 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.category}</p>
+                                <h3 style={{ margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, fontSize: 14, color: '#101828' }}>{provider.title || provider.name}</h3>
+                                <p style={{ margin: '2px 0 0 0', fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.providerName || provider.category}</p>
                               </div>
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                               <div style={{ display: 'flex', gap: 2 }}>
                                 {[1, 2, 3, 4, 5].map((_, i) => (
-                                  <Star key={i} size={13} fill={i < Math.round(provider.rating) ? '#F59E0B' : '#E5E7EB'} color={i < Math.round(provider.rating) ? '#F59E0B' : '#E5E7EB'} />
+                                  <Star key={i} size={13} fill={i < Math.round(provider.rating || 4.5) ? '#F59E0B' : '#E5E7EB'} color={i < Math.round(provider.rating || 4.5) ? '#F59E0B' : '#E5E7EB'} />
                                 ))}
                               </div>
-                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#1E2939' }}>{provider.rating.toFixed(1)}</span>
-                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#99A1AF' }}>({provider.reviewsCount} reviews)</span>
+                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#1E2939' }}>{provider.rating ? parseFloat(provider.rating).toFixed(1) : '4.5'}</span>
+                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#99A1AF' }}>({provider.reviewsCount || 0} reviews)</span>
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginBottom: 14 }}>
@@ -696,7 +614,7 @@ export default function FindServices() {
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <MapPin size={11} color="#9CA3AF" />
-                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.locationName}</span>
+                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.locationName || 'Colombo'}</span>
                               </div>
                             </div>
                             
@@ -704,7 +622,7 @@ export default function FindServices() {
                             
                             <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', width: '100%' }}>
                               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, fontSize: 12, color: '#99A1AF', marginRight: 8 }}>Starting from</span>
-                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 20, color: '#101828' }}>LKR {provider.startingPrice.toLocaleString()}</span>
+                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800, fontSize: 20, color: '#101828' }}>LKR {parseInt(provider.priceFrom || provider.startingPrice || 0).toLocaleString()}</span>
                               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#99A1AF', marginLeft: 4 }}>/ visit</span>
                             </div>
                             
@@ -788,7 +706,7 @@ export default function FindServices() {
                   <span style={{ fontWeight: 'bold' }}>!</span> 
                 </div>
                 <span className="warning-text">No service providers found in this area</span>
-                <button className="warning-btn" onClick={() => setSearchRadius(10)}>Expand radius</button>
+                <button className="warning-btn" onClick={() => setSearchRadius(50)}>Expand to 50 km</button>
               </div>
             </>
           )}
