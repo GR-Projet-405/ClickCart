@@ -8,9 +8,15 @@ import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProvi
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
+import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
+import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
+import EditServiceAreaPage from "../pages/provider/serviceAreas/EditServiceAreaPage";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
+import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 
 export default function AppRoutes() {
   return (
@@ -22,6 +28,33 @@ export default function AppRoutes() {
         <Route path="dashboard" element={<ProviderDashboard />} />
         {providerNavigation
           .filter(({ path }) => path !== "/provider/dashboard")
+          .map(({ path }) => (
+            <Route
+              key={path}
+              path={path.replace("/provider/", "")}
+              element={
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              }
+            />
+          }
+        />
+
+        <Route path="services" element={<ProviderServicesPage />} />
+        <Route path="bookings" element={<BookingApprovalPage />} />
+        <Route path="service-areas" element={<ServiceAreasPage />} />
+        <Route path="service-areas/new" element={<AddServiceAreaPage />} />
+        <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+
+        {/* Update: Only one mapping loop for the remaining provider navigation */}
+        {providerNavigation
+          .filter(({ path }) =>
+            path !== "/provider/services" &&
+            path !== "/provider/bookings" &&
+            path !== "/provider/service-areas"
+          )
           .map(({ path }) => (
             <Route
               key={path}
@@ -62,7 +95,8 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
-        {customerNavigation.slice(1).map(({ to }) => (
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
         <Route path="*" element={<NotFound />} />
