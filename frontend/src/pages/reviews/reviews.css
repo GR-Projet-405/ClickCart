@@ -747,6 +747,11 @@
   cursor: pointer;
 }
 
+.ai-review-assistant__actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .ai-review-assistant__content small {
   display: block;
   margin-top: var(--cc-space-3);
@@ -812,6 +817,16 @@
   height: 0.5rem;
   border-radius: 50%;
   background: var(--cc-success);
+}
+
+.review-safety-check__status--warning {
+  color: #b42318;
+  background: #fff1f0;
+  border-color: #fecdca;
+}
+
+.review-safety-check__status--warning > span {
+  background: #d92d20;
 }
 
 .review-safety-check__items {

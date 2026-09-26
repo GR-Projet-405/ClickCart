@@ -11,6 +11,11 @@ import {
   Star,
   X,
 } from "lucide-react";
+import {
+  checkReview,
+  improveReviewWriting,
+  makeReviewClearer,
+} from "../../services/reviewAiService";
 
 const MAX_IMAGES = 3;
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -26,11 +31,14 @@ const ratingLabels = {
 export default function WriteReviewForm() {
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState(
-    "Kamal arrived right on time, explained the compressor issue clearly and had all required parts. He fixed our AC swiftly and left the area spotless."
+    "Kamal arrived right on time, explained the compressor issue clearly and had all required parts. He fixed our AC swiftly and left the area spotless.",
   );
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const [formMessage, setFormMessage] = useState("");
+  const [aiLoading, setAiLoading] = useState("");
+  const [aiMessage, setAiMessage] = useState("");
+  const [moderationResult, setModerationResult] = useState(null);
 
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
@@ -80,6 +88,61 @@ export default function WriteReviewForm() {
     });
   };
 
+  const handleAiAction = async (action) => {
+    if (!review.trim()) {
+      setAiMessage(
+        "Please write your review before using the AI Review Assistant.",
+      );
+      return;
+    }
+
+    setAiLoading(action);
+    setAiMessage("");
+
+    try {
+      let result;
+
+      if (action === "improve") {
+        result = await improveReviewWriting(review);
+      } else if (action === "clearer") {
+        result = await makeReviewClearer(review);
+      } else {
+        result = await checkReview(review);
+      }
+
+      setModerationResult({
+        status: result.moderationStatus,
+        flags: result.flags || [],
+      });
+
+      if (action !== "check" && result.suggestedContent) {
+        setReview(result.suggestedContent);
+
+        setAiMessage(
+          result.aiUsed
+            ? "AI suggestion applied to your review."
+            : "Writing cleanup applied using the safe fallback assistant.",
+        );
+      } else if (result.moderationStatus === "PUBLISHED") {
+        setAiMessage(
+          "Review check passed. No moderation issues were detected.",
+        );
+      } else {
+        setAiMessage(
+          `Review needs changes: ${
+            (result.flags || []).join(", ") || "Please review the content."
+          }`,
+        );
+      }
+    } catch (error) {
+      setAiMessage(
+        error.message || "The review assistant is temporarily unavailable.",
+      );
+    } finally {
+      setAiLoading("");
+    }
+  };
+
   const handleSubmit = (event) => {
     event.preventDefault();
 
@@ -88,15 +151,12 @@ export default function WriteReviewForm() {
     }
 
     setFormMessage(
-      "Review validated successfully. Backend submission will be connected later."
+      "Review validated successfully. Backend submission will be connected later.",
     );
   };
 
   return (
-    <section
-      className="write-review-module"
-      id="review-form-anchor"
-    >
+    <section className="write-review-module" id="review-form-anchor">
       <div className="write-review-module__banner">
         <div className="write-review-module__banner-left">
           <div className="write-review-module__icon">
@@ -107,8 +167,7 @@ export default function WriteReviewForm() {
             <h2>Leave a Review for Kamal Perera</h2>
 
             <p>
-              Service: AC Repair &amp; Installation • Completed on Mar 10,
-              2026
+              Service: AC Repair &amp; Installation • Completed on Mar 10, 2026
             </p>
           </div>
         </div>
@@ -156,13 +215,9 @@ export default function WriteReviewForm() {
 
         <div className="write-review-form__field">
           <div className="write-review-form__label-row">
-            <label htmlFor="review-content">
-              How was your experience? *
-            </label>
+            <label htmlFor="review-content">How was your experience? *</label>
 
-            <span>
-              {review.length} / 500 characters
-            </span>
+            <span>{review.length} / 500 characters</span>
           </div>
 
           <textarea
@@ -190,10 +245,7 @@ export default function WriteReviewForm() {
                 key={`${image.file.name}-${index}`}
                 className="write-review-photo"
               >
-                <img
-                  src={image.preview}
-                  alt={`Review upload ${index + 1}`}
-                />
+                <img src={image.preview} alt={`Review upload ${index + 1}`} />
 
                 <span>{image.file.name}</span>
 
@@ -225,9 +277,7 @@ export default function WriteReviewForm() {
             )}
           </div>
 
-          {imageError && (
-            <p className="review-form-error">{imageError}</p>
-          )}
+          {imageError && <p className="review-form-error">{imageError}</p>}
         </div>
 
         <aside className="ai-review-assistant">
@@ -246,27 +296,51 @@ export default function WriteReviewForm() {
             </div>
 
             <p>
-              Need help expressing your experience? AI can improve the
-              clarity and grammar of your review while keeping your authentic
-              evaluation completely unchanged.
+              Need help expressing your experience? AI can improve the clarity
+              and grammar of your review while keeping your authentic evaluation
+              completely unchanged.
             </p>
 
             <div className="ai-review-assistant__actions">
-              <button type="button">
+              <button
+                type="button"
+                disabled={Boolean(aiLoading)}
+                onClick={() => handleAiAction("improve")}
+              >
                 <Sparkles size={14} />
-                Improve Writing
+                {aiLoading === "improve" ? "Improving..." : "Improve Writing"}
               </button>
 
-              <button type="button">
+              <button
+                type="button"
+                disabled={Boolean(aiLoading)}
+                onClick={() => handleAiAction("clearer")}
+              >
                 <Search size={14} />
-                Make it Clearer
+                {aiLoading === "clearer" ? "Processing..." : "Make it Clearer"}
               </button>
 
-              <button type="button">
+              <button
+                type="button"
+                disabled={Boolean(aiLoading)}
+                onClick={() => handleAiAction("check")}
+              >
                 <ShieldCheck size={14} />
-                Check Review
+                {aiLoading === "check" ? "Checking..." : "Check Review"}
               </button>
             </div>
+
+            {aiMessage && (
+              <p
+                className={
+                  moderationResult?.status === "NEEDS_CHANGES"
+                    ? "review-form-error"
+                    : "review-form-success"
+                }
+              >
+                {aiMessage}
+              </p>
+            )}
 
             <small>
               <em>Note:</em> AI suggestions are optional. You are always in
@@ -285,14 +359,24 @@ export default function WriteReviewForm() {
               </h4>
 
               <p>
-                Content passes our community moderation standards in
-                real-time.
+                Content passes our community moderation standards in real-time.
               </p>
             </div>
 
-            <span className="review-safety-check__status">
+            <span
+              className={`review-safety-check__status ${
+                moderationResult?.status === "NEEDS_CHANGES"
+                  ? "review-safety-check__status--warning"
+                  : ""
+              }`}
+            >
               <span />
-              Ready to Publish
+
+              {moderationResult?.status === "NEEDS_CHANGES"
+                ? "Needs Changes"
+                : moderationResult?.status === "PENDING_REVIEW"
+                  ? "Pending Review"
+                  : "Ready to Publish"}
             </span>
           </div>
 
@@ -315,9 +399,9 @@ export default function WriteReviewForm() {
               <AlertTriangle size={16} />
 
               <span>
-                <strong>Sample Moderation Feedback:</strong>{" "}
-                Some wording may violate community standards. Highlighted
-                text will require revision before publishing.
+                <strong>Sample Moderation Feedback:</strong> Some wording may
+                violate community standards. Highlighted text will require
+                revision before publishing.
               </span>
             </div>
 
@@ -325,9 +409,7 @@ export default function WriteReviewForm() {
           </div>
         </aside>
 
-        {formMessage && (
-          <p className="review-form-success">{formMessage}</p>
-        )}
+        {formMessage && <p className="review-form-success">{formMessage}</p>}
 
         <div className="write-review-form__actions">
           <button
