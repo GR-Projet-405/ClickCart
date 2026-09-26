@@ -97,7 +97,6 @@ export default function AppRoutes() {
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
-        {customerNavigation.slice(1).map(({ to }) => (
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
