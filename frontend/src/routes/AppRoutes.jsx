@@ -97,9 +97,9 @@ export default function AppRoutes() {
         <Route index element={<CustomerWorkspace />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
-        {customerNavigation.slice(1).map(({ to }) => (
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         <Route path="find-services" element={<MarketplaceServicesPage />} />
+
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
