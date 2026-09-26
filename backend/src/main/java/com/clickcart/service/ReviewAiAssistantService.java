@@ -1,6 +1,8 @@
 package com.clickcart.service;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -10,42 +12,51 @@ import com.clickcart.dto.ReviewAiResponse;
 public class ReviewAiAssistantService {
 
     private final ReviewModerationService moderationService;
+    private final List<ReviewAiProvider> aiProviders;
 
     public ReviewAiAssistantService(
-            ReviewModerationService moderationService
+            ReviewModerationService moderationService,
+            List<ReviewAiProvider> aiProviders
     ) {
         this.moderationService = moderationService;
+        this.aiProviders = aiProviders;
     }
 
     public ReviewAiResponse improveWriting(String content) {
 
-        String cleaned = normalizeContent(content);
+        String normalized = normalizeContent(content);
 
-        ReviewModerationService.ModerationResult moderation =
-                moderationService.moderate(cleaned);
+        Optional<String> aiSuggestion =
+                getActiveProvider()
+                        .flatMap(provider ->
+                                provider.improveWriting(
+                                        normalized
+                                )
+                        );
 
-        return new ReviewAiResponse(
+        return buildResponse(
                 content,
-                cleaned,
-                moderation.status(),
-                new ArrayList<>(moderation.flags()),
-                false
+                normalized,
+                aiSuggestion
         );
     }
 
     public ReviewAiResponse makeClearer(String content) {
 
-        String cleaned = normalizeContent(content);
+        String normalized = normalizeContent(content);
 
-        ReviewModerationService.ModerationResult moderation =
-                moderationService.moderate(cleaned);
+        Optional<String> aiSuggestion =
+                getActiveProvider()
+                        .flatMap(provider ->
+                                provider.makeClearer(
+                                        normalized
+                                )
+                        );
 
-        return new ReviewAiResponse(
+        return buildResponse(
                 content,
-                cleaned,
-                moderation.status(),
-                new ArrayList<>(moderation.flags()),
-                false
+                normalized,
+                aiSuggestion
         );
     }
 
@@ -65,6 +76,35 @@ public class ReviewAiAssistantService {
         );
     }
 
+    private ReviewAiResponse buildResponse(
+            String originalContent,
+            String fallbackContent,
+            Optional<String> aiSuggestion
+    ) {
+        String suggestedContent =
+                aiSuggestion.orElse(fallbackContent);
+
+        ReviewModerationService.ModerationResult moderation =
+                moderationService.moderate(
+                        suggestedContent
+                );
+
+        return new ReviewAiResponse(
+                originalContent,
+                suggestedContent,
+                moderation.status(),
+                new ArrayList<>(moderation.flags()),
+                aiSuggestion.isPresent()
+        );
+    }
+
+    private Optional<ReviewAiProvider> getActiveProvider() {
+        return aiProviders
+                .stream()
+                .filter(ReviewAiProvider::isAvailable)
+                .findFirst();
+    }
+
     private String normalizeContent(String content) {
 
         if (content == null) {
@@ -80,11 +120,10 @@ public class ReviewAiAssistantService {
         }
 
         char first =
-                Character.toUpperCase(cleaned.charAt(0));
+                Character.toUpperCase(
+                        cleaned.charAt(0)
+                );
 
-        cleaned =
-                first + cleaned.substring(1);
-
-        return cleaned;
+        return first + cleaned.substring(1);
     }
 }
