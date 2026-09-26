@@ -12,7 +12,7 @@ export default function CustomerLayout() {
       <CustomerTopBar />
       <CustomerHeader />
       <CustomerTrustBar />
-      <main className="customer-layout__main">
+    <main className="customer-layout__main">
         <Outlet />
       </main>
       <CustomerFooter />

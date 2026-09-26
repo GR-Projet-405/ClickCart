@@ -11,10 +11,16 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
+// 1. Import your new MyFavorites page here
+import MyFavorites from '../pages/MyFavorites';
+
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+
+      {/* Provider Routes */}
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route
           index
@@ -39,6 +45,8 @@ export default function AppRoutes() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route
           index
@@ -63,11 +71,19 @@ export default function AppRoutes() {
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
+
+      {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
+        {/* 2. Add the explicit route for Favorites BEFORE the map */}
+        <Route path="favorites" element={<MyFavorites />} />
+
+        {/* Existing dynamic routes */}
         {customerNavigation.slice(1).map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
