@@ -28,7 +28,7 @@ const ratingLabels = {
   5: "5.0 - Exceptional service!",
 };
 
-export default function WriteReviewForm({ booking = null }) {
+export default function WriteReviewForm({ booking = null, onSubmitReview }) {
   const [rating, setRating] = useState(5);
   const [review, setReview] = useState("");
   const [images, setImages] = useState([]);
@@ -37,6 +37,8 @@ export default function WriteReviewForm({ booking = null }) {
   const [aiLoading, setAiLoading] = useState("");
   const [aiMessage, setAiMessage] = useState("");
   const [moderationResult, setModerationResult] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState("");
 
   const handleImageChange = (event) => {
     const selectedFiles = Array.from(event.target.files || []);
@@ -141,16 +143,60 @@ export default function WriteReviewForm({ booking = null }) {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!rating || !review.trim()) {
+    setFormError("");
+    setFormMessage("");
+
+    if (!rating) {
+      setFormError("Please select a rating before submitting.");
       return;
     }
 
-    setFormMessage(
-      "Review submission will be enabled when the completed booking is verified.",
-    );
+    if (!review.trim()) {
+      setFormError("Please write your review before submitting.");
+      return;
+    }
+
+    if (images.length > 0) {
+      setFormError(
+        "Photo upload storage is not connected yet. Please remove the selected photos before submitting your review.",
+      );
+      return;
+    }
+
+    if (!booking?.bookingId) {
+      setFormError("A verified completed booking is required.");
+      return;
+    }
+
+    if (!onSubmitReview) {
+      setFormError("Review submission is temporarily unavailable.");
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      await onSubmitReview({
+        bookingId: booking.bookingId,
+        rating,
+        content: review.trim(),
+        photoUrls: [],
+      });
+
+      setRating(5);
+      setReview("");
+      setModerationResult(null);
+      setAiMessage("");
+
+      setFormMessage("Your verified review was submitted successfully.");
+    } catch (error) {
+      setFormError(error.message || "Your review could not be submitted.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (!booking) {
@@ -249,7 +295,11 @@ export default function WriteReviewForm({ booking = null }) {
             maxLength={500}
             value={review}
             placeholder="Tell us about the provider punctuality, quality of work, cleanliness, and communication..."
-            onChange={(event) => setReview(event.target.value)}
+            onChange={(event) => {
+              setReview(event.target.value);
+              setModerationResult(null);
+              setAiMessage("");
+            }}
           />
         </div>
 
@@ -382,7 +432,9 @@ export default function WriteReviewForm({ booking = null }) {
               </h4>
 
               <p>
-                Content passes our community moderation standards in real-time.
+                {moderationResult
+                  ? "Review safety check completed for the current content."
+                  : "Run Check Review to scan the current content before publishing."}
               </p>
             </div>
 
@@ -395,11 +447,13 @@ export default function WriteReviewForm({ booking = null }) {
             >
               <span />
 
-              {moderationResult?.status === "NEEDS_CHANGES"
-                ? "Needs Changes"
-                : moderationResult?.status === "PENDING_REVIEW"
-                  ? "Pending Review"
-                  : "Ready to Publish"}
+              {!moderationResult
+                ? "Not Checked Yet"
+                : moderationResult.status === "NEEDS_CHANGES"
+                  ? "Needs Changes"
+                  : moderationResult.status === "PENDING_REVIEW"
+                    ? "Pending Review"
+                    : "Ready to Publish"}
             </span>
           </div>
 
@@ -432,6 +486,12 @@ export default function WriteReviewForm({ booking = null }) {
           </div>
         </aside>
 
+        {formError && (
+          <p className="review-form-error" role="alert">
+            {formError}
+          </p>
+        )}
+
         {formMessage && <p className="review-form-success">{formMessage}</p>}
 
         <div className="write-review-form__actions">
@@ -450,10 +510,11 @@ export default function WriteReviewForm({ booking = null }) {
           <button
             className="write-review-form__submit"
             type="submit"
-            disabled={!rating || !review.trim()}
+            disabled={submitting || !rating || !review.trim()}
           >
             <Check size={16} />
-            Submit Verified Review
+
+            {submitting ? "Submitting..." : "Submit Verified Review"}
           </button>
         </div>
       </form>

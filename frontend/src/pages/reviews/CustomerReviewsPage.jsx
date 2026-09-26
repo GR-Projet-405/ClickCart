@@ -9,7 +9,10 @@ import WriteReviewForm from "../../components/reviews/WriteReviewForm";
 import CustomerReviewsList from "../../components/reviews/CustomerReviewsList";
 
 import {
+  createVerifiedReview,
+  DEV_CUSTOMER_ID,
   DEV_PROVIDER_ID,
+  fetchReviewEligibility,
   fetchProviderRatingSummary,
   fetchPublishedProviderReviews,
   markReviewHelpful,
@@ -19,9 +22,11 @@ import {
 import "./reviews.css";
 
 export default function CustomerReviewsPage() {
-  const eligibleBooking = null;
-
   const [reviews, setReviews] = useState([]);
+
+  const [eligibleBooking, setEligibleBooking] = useState(null);
+
+  const [eligibilityLoading, setEligibilityLoading] = useState(true);
 
   const [summary, setSummary] = useState({
     averageRating: 0,
@@ -37,14 +42,19 @@ export default function CustomerReviewsPage() {
 
   async function loadReviewData() {
     setLoading(true);
+    setEligibilityLoading(true);
     setError("");
 
     try {
-      const [reviewData, summaryData] = await Promise.all([
+      const [reviewData, summaryData, eligibilityData] = await Promise.all([
         fetchPublishedProviderReviews(DEV_PROVIDER_ID),
 
         fetchProviderRatingSummary(DEV_PROVIDER_ID),
+
+        fetchReviewEligibility(DEV_CUSTOMER_ID),
       ]);
+
+      setEligibleBooking(eligibilityData);
 
       setReviews(reviewData || []);
 
@@ -59,6 +69,7 @@ export default function CustomerReviewsPage() {
       setError(loadError.message || "Reviews could not be loaded.");
     } finally {
       setLoading(false);
+      setEligibilityLoading(false);
     }
   }
 
@@ -107,6 +118,26 @@ export default function CustomerReviewsPage() {
     }
   }
 
+  async function handleReviewSubmit(reviewData) {
+    setError("");
+    setMessage("");
+
+    const createdReview = await createVerifiedReview(
+      reviewData,
+      DEV_CUSTOMER_ID,
+    );
+
+    setMessage(
+      createdReview.moderationStatus === "PUBLISHED"
+        ? "Your verified review was published successfully."
+        : "Your review was submitted successfully and is being moderated.",
+    );
+
+    await loadReviewData();
+
+    return createdReview;
+  }
+
   return (
     <PageContainer className="reviews-page">
       <header className="reviews-page__header">
@@ -136,11 +167,17 @@ export default function CustomerReviewsPage() {
       <section className="reviews-overview">
         <RatingSummaryCard summary={summary} loading={loading} />
 
-        <ReviewEligibilityCard booking={eligibleBooking} />
+        <ReviewEligibilityCard
+          booking={eligibleBooking}
+          loading={eligibilityLoading}
+        />
       </section>
 
       <section className="reviews-write-section">
-        <WriteReviewForm booking={eligibleBooking} />
+        <WriteReviewForm
+          booking={eligibleBooking}
+          onSubmitReview={handleReviewSubmit}
+        />
       </section>
 
       <CustomerReviewsList
