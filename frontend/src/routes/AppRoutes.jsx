@@ -5,6 +5,7 @@ import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
+import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
 import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
@@ -20,14 +21,23 @@ import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 export default function AppRoutes() {
   return (
     <Routes>
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
       <Route path="/provider" element={<ServiceProviderLayout />}>
-        <Route
-          index
-          element={
-            <WorkspacePlaceholder
-              title="Service Provider Workspace"
-              description="This area is reserved for service provider feature pages."
+        <Route index element={<ProviderDashboard />} />
+        <Route path="dashboard" element={<ProviderDashboard />} />
+        {providerNavigation
+          .filter(({ path }) => path !== "/provider/dashboard")
+          .map(({ path }) => (
+            <Route
+              key={path}
+              path={path.replace("/provider/", "")}
+              element={
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              }
             />
           }
         />
