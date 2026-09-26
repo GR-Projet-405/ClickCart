@@ -3,6 +3,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import CustomerRefunds from "../pages/customer/CustomerRefunds";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
@@ -95,6 +96,8 @@ export default function AppRoutes() {
 
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="customer/refunds" element={<CustomerRefunds />} />
+        {customerNavigation.slice(1).map(({ to }) => (
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
