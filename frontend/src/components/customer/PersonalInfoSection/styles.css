@@ -1,0 +1,112 @@
+.personal-info-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-5);
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-xl);
+  padding: var(--cc-space-5);
+}
+
+.personal-info-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--cc-space-3);
+  border-bottom: 1px solid var(--cc-border-soft);
+  gap: var(--cc-space-3);
+  flex-wrap: wrap;
+}
+
+.personal-info-card__title {
+  margin: 0;
+  color: var(--cc-text-primary);
+  font-size: 1.15rem;
+}
+
+.personal-info-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--cc-space-4);
+}
+
+.personal-info-card__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-3);
+  background: var(--cc-bg-muted);
+  border-radius: var(--cc-radius-lg);
+  border: 1px solid var(--cc-border-soft);
+}
+
+.personal-info-card__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--cc-bg-surface);
+  color: var(--cc-primary-dark);
+  border-radius: var(--cc-radius-md);
+  border: 1px solid var(--cc-border);
+  flex-shrink: 0;
+}
+
+.personal-info-card__item-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.personal-info-card__item-label {
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--cc-text-muted);
+  font-weight: 600;
+}
+
+.personal-info-card__item-val-row {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  flex-wrap: wrap;
+}
+
+.personal-info-card__item-val {
+  font-size: var(--cc-text-body-sm-size);
+  color: var(--cc-text-primary);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.personal-info-card__badge {
+  font-size: 0.625rem;
+  padding: 1px 6px;
+}
+
+.personal-info-card__bio-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-1);
+  padding: var(--cc-space-3) var(--cc-space-4);
+  background: var(--cc-primary-softer);
+  border: 1px solid var(--cc-primary-border-soft);
+  border-radius: var(--cc-radius-lg);
+}
+
+.personal-info-card__bio-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--cc-primary-dark);
+}
+
+.personal-info-card__bio-text {
+  margin: 0;
+  font-size: var(--cc-text-body-sm-size);
+  color: var(--cc-text-secondary);
+  line-height: 1.5;
+}
