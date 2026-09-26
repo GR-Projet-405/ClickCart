@@ -10,6 +10,9 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import LocationPermission from "../pages/customer/LocationPermission/LocationPermission";
+import FindServices from "../pages/customer/FindServices/FindServices";
+import SearchResultsPlaceholder from "../pages/placeholders/SearchResultsPlaceholder";
 
 export default function AppRoutes() {
   return (
@@ -65,8 +68,16 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="location-permission" element={<LocationPermission />} />
+        
+        {/* DEV-12 Kasuni's List View */}
+        <Route path="find-services" element={<SearchResultsPlaceholder />} />
+        
+        {/* DEV-13 Meranga's Map View */}
+        <Route path="find-services/map" element={<FindServices />} />
+        
         {customerNavigation.slice(1).map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          to !== '/find-services' && <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
