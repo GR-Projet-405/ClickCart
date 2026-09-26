@@ -23,6 +23,8 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
 export default function AppRoutes() {
   return (
@@ -44,6 +46,7 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
 
         {/* Update: Only one mapping loop for the remaining provider navigation */}
         {providerNavigation
@@ -52,6 +55,7 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
+            path !== "/provider/reviews" &&
             path !== "/provider/profile"
           )
           .map(({ path }) => (
@@ -96,6 +100,7 @@ export default function AppRoutes() {
 
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
