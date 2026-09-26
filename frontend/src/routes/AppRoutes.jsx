@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
@@ -11,6 +11,7 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
 export default function AppRoutes() {
   return (
@@ -31,10 +32,14 @@ export default function AppRoutes() {
             key={path}
             path={path.replace("/provider/", "")}
             element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
-              />
+              path === "/provider/reviews" ? (
+                <ProviderReviewsPage />
+              ) : (
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              )
             }
           />
         ))}

@@ -28,11 +28,9 @@ const ratingLabels = {
   5: "5.0 - Exceptional service!",
 };
 
-export default function WriteReviewForm() {
+export default function WriteReviewForm({ booking = null }) {
   const [rating, setRating] = useState(5);
-  const [review, setReview] = useState(
-    "Kamal arrived right on time, explained the compressor issue clearly and had all required parts. He fixed our AC swiftly and left the area spotless.",
-  );
+  const [review, setReview] = useState("");
   const [images, setImages] = useState([]);
   const [imageError, setImageError] = useState("");
   const [formMessage, setFormMessage] = useState("");
@@ -151,9 +149,31 @@ export default function WriteReviewForm() {
     }
 
     setFormMessage(
-      "Review validated successfully. Backend submission will be connected later.",
+      "Review submission will be enabled when the completed booking is verified.",
     );
   };
+
+  if (!booking) {
+    return (
+      <section className="write-review-module" id="review-form-anchor">
+        <div className="reviews-empty-state">
+          A completed booking must be verified before you can submit a review.
+        </div>
+      </section>
+    );
+  }
+
+  const providerName = booking.providerName || "Service Provider";
+
+  const serviceName = booking.serviceName || "Booked Service";
+
+  const completedDate = booking.completedAt
+    ? new Date(booking.completedAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : "Completed booking";
 
   return (
     <section className="write-review-module" id="review-form-anchor">
@@ -164,10 +184,13 @@ export default function WriteReviewForm() {
           </div>
 
           <div>
-            <h2>Leave a Review for Kamal Perera</h2>
+            <h2>Leave a Review for {providerName}</h2>
 
             <p>
-              Service: AC Repair &amp; Installation • Completed on Mar 10, 2026
+              Service: {serviceName} •{" "}
+              {booking.completedAt
+                ? `Completed on ${completedDate}`
+                : completedDate}
             </p>
           </div>
         </div>
@@ -289,7 +312,7 @@ export default function WriteReviewForm() {
             <div className="ai-review-assistant__heading">
               <h3>
                 AI Review Assistant
-                <span>Privacy Safe</span>
+                <span>AI Assisted</span>
               </h3>
 
               <strong>Original meaning strictly preserved</strong>

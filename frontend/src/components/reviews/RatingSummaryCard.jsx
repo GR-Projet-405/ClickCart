@@ -2,15 +2,60 @@ import React from "react";
 import { ChevronRight, Star } from "lucide-react";
 import Card from "../common/Card";
 
-const ratingDistribution = [
-  { stars: 5, percentage: 82, tone: "primary" },
-  { stars: 4, percentage: 12, tone: "primary" },
-  { stars: 3, percentage: 4, tone: "warning" },
-  { stars: 2, percentage: 1, tone: "orange" },
-  { stars: 1, percentage: 1, tone: "error" },
-];
+export default function RatingSummaryCard({
+  summary,
+  loading = false,
+}) {
+  const averageRating = Number(
+    summary?.averageRating || 0
+  );
 
-export default function RatingSummaryCard() {
+  const totalReviews = Number(
+    summary?.totalReviews || 0
+  );
+
+  const distribution =
+    summary?.distribution || {};
+
+  const ratingDistribution = [5, 4, 3, 2, 1].map(
+    (stars) => {
+      const count =
+        Number(
+          distribution[stars] ??
+            distribution[String(stars)] ??
+            0
+        );
+
+      const percentage =
+        totalReviews > 0
+          ? Math.round(
+              (count / totalReviews) * 100
+            )
+          : 0;
+
+      let tone = "primary";
+
+      if (stars === 3) {
+        tone = "warning";
+      }
+
+      if (stars === 2) {
+        tone = "orange";
+      }
+
+      if (stars === 1) {
+        tone = "error";
+      }
+
+      return {
+        stars,
+        count,
+        percentage,
+        tone,
+      };
+    }
+  );
+
   return (
     <Card className="rating-summary-card">
       <div>
@@ -20,19 +65,29 @@ export default function RatingSummaryCard() {
 
         <div className="rating-summary-card__main">
           <div className="rating-summary-card__score">
-            <span className="rating-summary-card__number">4.8</span>
+            <span className="rating-summary-card__number">
+              {loading
+                ? "..."
+                : averageRating.toFixed(1)}
+            </span>
 
             <div
               className="rating-summary-card__stars"
-              aria-label="4.8 out of 5 stars"
+              aria-label={`${averageRating} out of 5 stars`}
             >
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
                   key={star}
                   size={17}
-                  fill="currentColor"
+                  fill={
+                    star <=
+                    Math.round(averageRating)
+                      ? "currentColor"
+                      : "none"
+                  }
                   className={
-                    star === 5
+                    star >
+                    Math.round(averageRating)
                       ? "rating-summary-card__star--muted"
                       : ""
                   }
@@ -41,13 +96,17 @@ export default function RatingSummaryCard() {
             </div>
 
             <span className="rating-summary-card__review-count">
-              Based on 248 reviews
+              Based on {totalReviews} reviews
             </span>
           </div>
 
           <div className="rating-summary-card__distribution">
             {ratingDistribution.map(
-              ({ stars, percentage, tone }) => (
+              ({
+                stars,
+                percentage,
+                tone,
+              }) => (
                 <div
                   className="rating-summary-card__row"
                   key={stars}
@@ -59,7 +118,9 @@ export default function RatingSummaryCard() {
                   <div className="rating-summary-card__bar">
                     <div
                       className={`rating-summary-card__bar-fill rating-summary-card__bar-fill--${tone}`}
-                      style={{ width: `${percentage}%` }}
+                      style={{
+                        width: `${percentage}%`,
+                      }}
                     />
                   </div>
 
@@ -76,7 +137,7 @@ export default function RatingSummaryCard() {
       <div className="rating-summary-card__footer">
         <span className="rating-summary-card__verified">
           <span className="rating-summary-card__verified-dot" />
-          100% Verified Customer Reviews
+          Verified Customer Reviews
         </span>
 
         <a href="#review-form-anchor">

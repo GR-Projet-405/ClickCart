@@ -3,16 +3,28 @@ package com.clickcart.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clickcart.dto.ProviderReplyRequest;
 import com.clickcart.dto.RatingSummaryResponse;
 import com.clickcart.dto.ReviewResponse;
 import com.clickcart.service.ReviewService;
 
+import jakarta.validation.Valid;
+
+@CrossOrigin(
+        originPatterns = {
+                "http://localhost:*",
+                "http://127.0.0.1:*"
+        }
+)
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
@@ -84,6 +96,21 @@ public class ReviewController {
     ) {
         return ResponseEntity.ok(
                 reviewService.reportReview(reviewId)
+        );
+    }
+
+    @PostMapping("/{reviewId}/response")
+    public ResponseEntity<ReviewResponse> addProviderResponse(
+            @PathVariable String reviewId,
+            @RequestHeader("X-Provider-Id") String providerId,
+            @Valid @RequestBody ProviderReplyRequest request
+    ) {
+        return ResponseEntity.ok(
+                reviewService.addProviderResponse(
+                        reviewId,
+                        providerId,
+                        request.getResponse()
+                )
         );
     }
 }

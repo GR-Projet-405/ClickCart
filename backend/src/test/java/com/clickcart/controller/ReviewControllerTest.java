@@ -4,14 +4,15 @@ import com.clickcart.dto.RatingSummaryResponse;
 import com.clickcart.dto.ReviewResponse;
 import com.clickcart.exception.GlobalExceptionHandler;
 import com.clickcart.exception.ReviewNotFoundException;
+import com.clickcart.model.ModerationStatus;
 import com.clickcart.service.ReviewService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,7 +30,7 @@ class ReviewControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+        @MockitoBean
     private ReviewService reviewService;
 
     @Test
@@ -205,6 +206,187 @@ class ReviewControllerTest {
                         jsonPath("$.message")
                                 .value(
                                         "Review operation conflict"
+                                )
+                );
+    }
+
+    @Test
+    void shouldMarkReviewHelpful() throws Exception {
+
+        ReviewResponse response = new ReviewResponse();
+
+        response.setId("review-1");
+        response.setHelpfulCount(3);
+
+        when(
+                reviewService.markHelpful("review-1")
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        post("/api/reviews/review-1/helpful")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.id")
+                                .value("review-1")
+                )
+                .andExpect(
+                        jsonPath("$.helpfulCount")
+                                .value(3)
+                );
+    }
+
+    @Test
+    void shouldReportReview() throws Exception {
+
+        ReviewResponse response = new ReviewResponse();
+
+        response.setId("review-1");
+        response.setReported(true);
+        response.setModerationStatus(
+                ModerationStatus.PENDING_REVIEW
+        );
+
+        when(
+                reviewService.reportReview("review-1")
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        post("/api/reviews/review-1/report")
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.id")
+                                .value("review-1")
+                )
+                .andExpect(
+                        jsonPath("$.reported")
+                                .value(true)
+                )
+                .andExpect(
+                        jsonPath("$.moderationStatus")
+                                .value("PENDING_REVIEW")
+                );
+    }
+
+    @Test
+    void shouldAddProviderResponse() throws Exception {
+
+        ReviewResponse response = new ReviewResponse();
+        response.setId("review-1");
+        response.setProviderId("provider-1");
+        response.setProviderResponse(
+                "Thank you for your feedback."
+        );
+
+        when(
+                reviewService.addProviderResponse(
+                        "review-1",
+                        "provider-1",
+                        "Thank you for your feedback."
+                )
+        ).thenReturn(response);
+
+        mockMvc.perform(
+                        post("/api/reviews/review-1/response")
+                                .header(
+                                        "X-Provider-Id",
+                                        "provider-1"
+                                )
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content("""
+                                        {
+                                          "response":
+                                          "Thank you for your feedback."
+                                        }
+                                        """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(
+                        jsonPath("$.id")
+                                .value("review-1")
+                )
+                .andExpect(
+                        jsonPath("$.providerId")
+                                .value("provider-1")
+                )
+                .andExpect(
+                        jsonPath("$.providerResponse")
+                                .value(
+                                        "Thank you for your feedback."
+                                )
+                );
+    }
+
+    @Test
+    void shouldRejectEmptyProviderResponse()
+            throws Exception {
+
+        mockMvc.perform(
+                        post("/api/reviews/review-1/response")
+                                .header(
+                                        "X-Provider-Id",
+                                        "provider-1"
+                                )
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content("""
+                                        {
+                                          "response": ""
+                                        }
+                                        """)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(
+                        jsonPath("$.message")
+                                .value("Validation failed")
+                )
+                .andExpect(
+                        jsonPath(
+                                "$.validationErrors.response"
+                        )
+                                .value(
+                                        "Provider response is required"
+                                )
+                );
+    }
+
+    @Test
+    void shouldRejectProviderResponseOver300Characters()
+            throws Exception {
+
+        String longResponse = "a".repeat(301);
+
+        String requestBody =
+                """
+                {
+                  "response": "%s"
+                }
+                """.formatted(longResponse);
+
+        mockMvc.perform(
+                        post("/api/reviews/review-1/response")
+                                .header(
+                                        "X-Provider-Id",
+                                        "provider-1"
+                                )
+                                .contentType(
+                                        MediaType.APPLICATION_JSON
+                                )
+                                .content(requestBody)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(
+                        jsonPath(
+                                "$.validationErrors.response"
+                        )
+                                .value(
+                                        "Provider response must not exceed 300 characters"
                                 )
                 );
     }
