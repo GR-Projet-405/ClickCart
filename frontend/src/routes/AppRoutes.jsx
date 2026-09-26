@@ -1,5 +1,4 @@
 import React from 'react';
-import { Navigate, Route, Routes } from "react-router-dom";
 import { Route, Routes, Navigate } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
@@ -38,35 +37,21 @@ export default function AppRoutes() {
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
         <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
 
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
-        {providerNavigation
-          .filter(({ path }) =>
-            path !== "/provider/dashboard" &&
-            path !== "/provider/services" &&
-            path !== "/provider/bookings" &&
-            path !== "/provider/service-areas"
-          )
-          .map(({ path }) => (
-            <Route
-              key={path}
-              path={path.replace("/provider/", "")}
-              element={
-                <WorkspacePlaceholder
-                  title="Service Provider Workspace"
-                  description="This area is reserved for service provider feature pages."
-                />
-              }
-            />
-          }
-        />
         {/* DEV-03 Provider Registration & Profile Routes */}
         <Route path="profile" element={<ProviderProfileOverview />} />
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
+        {/* Update: Only one mapping loop for the remaining provider navigation */}
         {providerNavigation
-          .filter(({ path }) => path !== "/provider/profile")
+          .filter(({ path }) =>
+            path !== "/provider/dashboard" &&
+            path !== "/provider/services" &&
+            path !== "/provider/bookings" &&
+            path !== "/provider/service-areas" &&
+            path !== "/provider/profile"
+          )
           .map(({ path }) => (
             <Route
               key={path}
@@ -110,7 +95,6 @@ export default function AppRoutes() {
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
-        {customerNavigation.slice(1).map(({ to }) => (
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
