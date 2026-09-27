@@ -23,12 +23,16 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import LoginPage from "../pages/auth/LoginPage";
 
 export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+
+      {/* DEV-01 Authentication (public pages, outside the role layouts) */}
+      <Route path="/login" element={<LoginPage />} />
 
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
