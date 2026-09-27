@@ -8,10 +8,26 @@ const SRI_LANKA_MOBILE_PATTERN = /^(?:\+94|0)?[\s-]*7(?:[\s-]*\d){8}$/;
 const FULL_NAME_PATTERN = /^[\p{L} .'-]+$/u;
 
 export const PASSWORD_RULES = [
-  { id: "length", label: "At least 8 characters", test: (value) => value.length >= 8 && value.length <= 64 },
-  { id: "case", label: "Upper & lowercase letter", test: (value) => /[a-z]/.test(value) && /[A-Z]/.test(value) },
-  { id: "number", label: "One number", test: (value) => /\d/.test(value) },
-  { id: "symbol", label: "One symbol (!@#$)", test: (value) => /[^A-Za-z0-9\s]/.test(value), optional: true },
+  {
+    id: "length",
+    label: "At least 8 characters",
+    hint: "more characters",
+    test: (value) => value.length >= 8 && value.length <= 64,
+  },
+  {
+    id: "case",
+    label: "Upper & lowercase letter",
+    hint: "upper & lowercase letters",
+    test: (value) => /[a-z]/.test(value) && /[A-Z]/.test(value),
+  },
+  { id: "number", label: "One number", hint: "a number", test: (value) => /\d/.test(value) },
+  {
+    id: "symbol",
+    label: "One symbol (!@#$)",
+    hint: "a symbol",
+    test: (value) => /[^A-Za-z0-9\s]/.test(value),
+    optional: true,
+  },
 ];
 
 export function validateEmail(value) {

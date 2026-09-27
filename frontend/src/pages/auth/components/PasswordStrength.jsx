@@ -8,7 +8,7 @@ import { PASSWORD_RULES, passwordStrength } from "../validation";
 export default function PasswordStrength({ password, showRules = true, id }) {
   const { score, label } = passwordStrength(password);
   const level = score <= 1 ? "weak" : score === 2 ? "fair" : "strong";
-  const missing = PASSWORD_RULES.filter((rule) => !rule.test(password)).map((rule) => rule.label.toLowerCase());
+  const missing = PASSWORD_RULES.filter((rule) => !rule.test(password)).map((rule) => rule.hint);
 
   return (
     <div className="auth-strength" id={id}>
