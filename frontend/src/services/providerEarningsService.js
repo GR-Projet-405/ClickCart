@@ -29,53 +29,197 @@ const DEFAULT_CATEGORIES = [
   { category: "Other", amount: 28450, percentage: 10 },
 ];
 
-const DEFAULT_RECENT_JOBS = [
+const ALL_MOCK_TRANSACTIONS = [
   {
     id: "tx-1",
-    date: "Jun 24, 2024",
-    bookingRef: "#BK-89021",
-    serviceTitle: "Full House Deep Cleaning",
-    grossAmount: 12500.00,
-    commissionAmount: 1250.00,
+    transactionId: "CC-24052801",
+    date: "May 28, 2024",
+    bookingRef: "BK10492",
+    serviceTitle: "Home Plumbing Repair",
+    category: "Plumbing",
+    customerName: "Sarah J.",
+    grossAmount: 10000.00,
     commissionRate: 0.10,
-    netAmount: 11250.00,
-    status: "COMPLETED",
+    commissionAmount: 1000.00,
+    netAmount: 9000.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240529",
     currency: "LKR"
   },
   {
     id: "tx-2",
-    date: "Jun 22, 2024",
-    bookingRef: "#BK-88945",
-    serviceTitle: "Kitchen Sink Repair",
-    grossAmount: 4200.00,
-    commissionAmount: 420.00,
+    transactionId: "CC-24052703",
+    date: "May 28, 2024",
+    bookingRef: "BK10481",
+    serviceTitle: "Electric Maintenance",
+    category: "Electrical",
+    customerName: "Nimal Perera",
+    grossAmount: 6500.00,
     commissionRate: 0.10,
-    netAmount: 3780.00,
-    status: "COMPLETED",
+    commissionAmount: 650.00,
+    netAmount: 5850.00,
+    status: "PENDING",
+    settlementBatchId: null,
     currency: "LKR"
   },
   {
     id: "tx-3",
-    date: "Jun 21, 2024",
-    bookingRef: "#BK-88712",
-    serviceTitle: "Wall Painting - Living Area",
-    grossAmount: 28000.00,
-    commissionAmount: 2800.00,
-    commissionRate: 0.10,
-    netAmount: 25200.00,
-    status: "COMPLETED",
+    transactionId: "CC-24052501",
+    date: "May 26, 2024",
+    bookingRef: "BK10475",
+    serviceTitle: "Cleaning Service",
+    category: "Cleaning",
+    customerName: "Dilum Randira",
+    grossAmount: 3200.00,
+    commissionRate: 0.12,
+    commissionAmount: 384.00,
+    netAmount: 2816.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240527",
     currency: "LKR"
   },
   {
     id: "tx-4",
-    date: "Jun 19, 2024",
-    bookingRef: "#BK-88604",
+    transactionId: "CC-24052410",
+    date: "May 24, 2024",
+    bookingRef: "BK10468",
     serviceTitle: "AC Filter Maintenance",
+    category: "Electrical",
+    customerName: "Jayani Dasanayaka",
     grossAmount: 8500.00,
-    commissionAmount: 850.00,
     commissionRate: 0.10,
+    commissionAmount: 850.00,
     netAmount: 7650.00,
-    status: "COMPLETED",
+    status: "AVAILABLE",
+    settlementBatchId: null,
+    currency: "LKR"
+  },
+  {
+    id: "tx-5",
+    transactionId: "CC-24052309",
+    date: "May 23, 2024",
+    bookingRef: "BK10452",
+    serviceTitle: "Full House Deep Cleaning",
+    category: "Cleaning",
+    customerName: "Ruwan Fernando",
+    grossAmount: 14000.00,
+    commissionRate: 0.10,
+    commissionAmount: 1400.00,
+    netAmount: 12600.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240524",
+    currency: "LKR"
+  },
+  {
+    id: "tx-6",
+    transactionId: "CC-24052204",
+    date: "May 22, 2024",
+    bookingRef: "BK10440",
+    serviceTitle: "Plumbing Leak Inspection",
+    category: "Plumbing",
+    customerName: "Kasun Madeesha",
+    grossAmount: 5000.00,
+    commissionRate: 0.10,
+    commissionAmount: 500.00,
+    netAmount: 4500.00,
+    status: "REFUNDED",
+    settlementBatchId: "CC-REF-240523",
+    currency: "LKR"
+  },
+  {
+    id: "tx-7",
+    transactionId: "CC-24052108",
+    date: "May 21, 2024",
+    bookingRef: "BK10432",
+    serviceTitle: "Wall Painting - Living Area",
+    category: "Painting",
+    customerName: "Thushara Karunaratne",
+    grossAmount: 22000.00,
+    commissionRate: 0.10,
+    commissionAmount: 2200.00,
+    netAmount: 19800.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240522",
+    currency: "LKR"
+  },
+  {
+    id: "tx-8",
+    transactionId: "CC-24052002",
+    date: "May 20, 2024",
+    bookingRef: "BK10420",
+    serviceTitle: "Garden Landscaping",
+    category: "Maintenance",
+    customerName: "Minoli Silva",
+    grossAmount: 16500.00,
+    commissionRate: 0.10,
+    commissionAmount: 1650.00,
+    netAmount: 14850.00,
+    status: "AVAILABLE",
+    settlementBatchId: null,
+    currency: "LKR"
+  },
+  {
+    id: "tx-9",
+    transactionId: "CC-24051911",
+    date: "May 19, 2024",
+    bookingRef: "BK10411",
+    serviceTitle: "Bathroom Tile Repair",
+    category: "Plumbing",
+    customerName: "Aathil Hakam",
+    grossAmount: 9200.00,
+    commissionRate: 0.10,
+    commissionAmount: 920.00,
+    netAmount: 8280.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240520",
+    currency: "LKR"
+  },
+  {
+    id: "tx-10",
+    transactionId: "CC-24051805",
+    date: "May 18, 2024",
+    bookingRef: "BK10398",
+    serviceTitle: "Distribution Board Upgrade",
+    category: "Electrical",
+    customerName: "Shermi Weerasinghe",
+    grossAmount: 11000.00,
+    commissionRate: 0.10,
+    commissionAmount: 1100.00,
+    netAmount: 9900.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240519",
+    currency: "LKR"
+  },
+  {
+    id: "tx-11",
+    transactionId: "CC-24051701",
+    date: "May 17, 2024",
+    bookingRef: "BK10385",
+    serviceTitle: "Kitchen Sink Drain Replacement",
+    category: "Plumbing",
+    customerName: "Chamalsha Induwara",
+    grossAmount: 4500.00,
+    commissionRate: 0.10,
+    commissionAmount: 450.00,
+    netAmount: 4050.00,
+    status: "PENDING",
+    settlementBatchId: null,
+    currency: "LKR"
+  },
+  {
+    id: "tx-12",
+    transactionId: "CC-24051512",
+    date: "May 15, 2024",
+    bookingRef: "BK10370",
+    serviceTitle: "Sofa Deep Shampooing",
+    category: "Cleaning",
+    customerName: "Lahiru Welagedara",
+    grossAmount: 7500.00,
+    commissionRate: 0.10,
+    commissionAmount: 750.00,
+    netAmount: 6750.00,
+    status: "SETTLED",
+    settlementBatchId: "CC-PAY-240516",
     currency: "LKR"
   }
 ];
@@ -125,11 +269,36 @@ export const providerEarningsService = {
       if (!res.ok) throw new Error("Failed to fetch transactions from API");
       return await res.json();
     } catch {
+      // Local robust mock filter
+      let filtered = [...ALL_MOCK_TRANSACTIONS];
+
+      if (status && status !== "ALL") {
+        filtered = filtered.filter(
+          (t) => t.status.toLowerCase() === status.toLowerCase()
+        );
+      }
+
+      if (search && search.trim() !== "") {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (t) =>
+            t.transactionId.toLowerCase().includes(q) ||
+            t.bookingRef.toLowerCase().includes(q) ||
+            t.serviceTitle.toLowerCase().includes(q) ||
+            t.customerName.toLowerCase().includes(q)
+        );
+      }
+
+      const totalElements = filtered.length;
+      const totalPages = Math.ceil(totalElements / size) || 1;
+      const start = page * size;
+      const content = filtered.slice(start, start + size);
+
       return {
-        content: DEFAULT_RECENT_JOBS,
-        totalElements: DEFAULT_RECENT_JOBS.length,
-        totalPages: 1,
-        number: 0
+        content,
+        totalElements,
+        totalPages,
+        number: page
       };
     }
   },

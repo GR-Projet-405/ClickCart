@@ -12,6 +12,7 @@ import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
 export default function AppRoutes() {
   return (
@@ -27,16 +28,12 @@ export default function AppRoutes() {
             />
           }
         />
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
         {providerNavigation.map(({ path }) => {
           const subPath = path.replace("/provider/", "");
           if (subPath === "earnings") {
-            return (
-              <Route
-                key={path}
-                path={subPath}
-                element={<EarningsDashboardPage />}
-              />
-            );
+            return null;
           }
           return (
             <Route
