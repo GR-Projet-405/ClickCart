@@ -14,6 +14,9 @@ public class AuthException extends RuntimeException {
     public static final String ACCOUNT_LOCKED = "ACCOUNT_LOCKED";
     public static final String ACCOUNT_SUSPENDED = "ACCOUNT_SUSPENDED";
     public static final String SESSION_EXPIRED = "SESSION_EXPIRED";
+    public static final String INVALID_RESET_CODE = "INVALID_RESET_CODE";
+    public static final String RESET_SESSION_EXPIRED = "RESET_SESSION_EXPIRED";
+    public static final String PASSWORD_REUSED = "PASSWORD_REUSED";
 
     private final HttpStatus status;
     private final String code;
@@ -48,6 +51,21 @@ public class AuthException extends RuntimeException {
     public static AuthException sessionExpired() {
         return new AuthException(HttpStatus.UNAUTHORIZED, SESSION_EXPIRED,
                 "Your session has expired. Please log in again.", null, null);
+    }
+
+    public static AuthException invalidResetCode() {
+        return new AuthException(HttpStatus.BAD_REQUEST, INVALID_RESET_CODE,
+                "That code is incorrect or has expired. Request a new one.", null, null);
+    }
+
+    public static AuthException resetSessionExpired() {
+        return new AuthException(HttpStatus.BAD_REQUEST, RESET_SESSION_EXPIRED,
+                "Your reset session has expired. Please start again.", null, null);
+    }
+
+    public static AuthException passwordReused() {
+        return new AuthException(HttpStatus.BAD_REQUEST, PASSWORD_REUSED,
+                "Choose a password you haven't used before.", null, null);
     }
 
     public HttpStatus getStatus() {

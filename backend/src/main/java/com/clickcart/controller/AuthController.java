@@ -17,11 +17,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.clickcart.dto.ApiResponse;
 import com.clickcart.dto.auth.AuthResponse;
 import com.clickcart.dto.auth.AuthenticatedUser;
+import com.clickcart.dto.auth.ForgotPasswordRequest;
+import com.clickcart.dto.auth.ForgotPasswordResponse;
 import com.clickcart.dto.auth.LoginRequest;
+import com.clickcart.dto.auth.PasswordResetResponse;
 import com.clickcart.dto.auth.RegisterRequest;
+import com.clickcart.dto.auth.ResetPasswordRequest;
 import com.clickcart.dto.auth.UserResponse;
+import com.clickcart.dto.auth.VerifyResetCodeRequest;
+import com.clickcart.dto.auth.VerifyResetCodeResponse;
 import com.clickcart.exception.UnauthorizedException;
 import com.clickcart.service.AuthService;
+import com.clickcart.service.PasswordResetService;
 import com.clickcart.service.AuthService.AuthSession;
 import com.clickcart.util.AuthCookies;
 
@@ -39,10 +46,13 @@ import jakarta.validation.constraints.Size;
 public class AuthController {
 
     private final AuthService authService;
+    private final PasswordResetService passwordResetService;
     private final AuthCookies authCookies;
 
-    public AuthController(AuthService authService, AuthCookies authCookies) {
+    public AuthController(AuthService authService, PasswordResetService passwordResetService,
+                          AuthCookies authCookies) {
         this.authService = authService;
+        this.passwordResetService = passwordResetService;
         this.authCookies = authCookies;
     }
 
@@ -83,6 +93,30 @@ public class AuthController {
             String email) {
         boolean available = authService.isEmailAvailable(email);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("available", available)));
+    }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<ForgotPasswordResponse>> forgotPassword(
+            @Valid @RequestBody ForgotPasswordRequest request) {
+        ForgotPasswordResponse response = passwordResetService.requestCode(request.email());
+        return ResponseEntity.ok(ApiResponse.ok(
+                "If an account exists for this email, we've sent a 6-digit code.", response));
+    }
+
+    @PostMapping("/verify-reset-code")
+    public ResponseEntity<ApiResponse<VerifyResetCodeResponse>> verifyResetCode(
+            @Valid @RequestBody VerifyResetCodeRequest request) {
+        VerifyResetCodeResponse response = passwordResetService.verifyCode(request.email(), request.code());
+        return ResponseEntity.ok(ApiResponse.ok("Code verified", response));
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<PasswordResetResponse>> resetPassword(
+            @Valid @RequestBody ResetPasswordRequest request) {
+        PasswordResetResponse response = passwordResetService.resetPassword(request.resetToken(), request.newPassword());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, authCookies.clearedRefreshCookie().toString())
+                .body(ApiResponse.ok("Password updated. Other devices have been signed out.", response));
     }
 
     @GetMapping("/me")

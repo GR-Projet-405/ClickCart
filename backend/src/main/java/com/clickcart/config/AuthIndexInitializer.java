@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.Index;
 import org.springframework.stereotype.Component;
 
+import com.clickcart.model.PasswordResetCode;
 import com.clickcart.model.RefreshToken;
 import com.clickcart.model.User;
 
@@ -41,6 +42,14 @@ public class AuthIndexInitializer {
             // MongoDB deletes each token document automatically once expiresAt has passed.
             refreshTokens.ensureIndex(new Index("expiresAt", Sort.Direction.ASC)
                     .expire(Duration.ZERO).named("ttl_refresh_tokens_expires"));
+
+            var resetCodes = mongoTemplate.indexOps(PasswordResetCode.class);
+            resetCodes.ensureIndex(new Index().on("userId", Sort.Direction.ASC).on("createdAt", Sort.Direction.DESC)
+                    .named("ix_reset_codes_user_created"));
+            resetCodes.ensureIndex(new Index("resetTokenHash", Sort.Direction.ASC).sparse()
+                    .named("ix_reset_codes_token"));
+            resetCodes.ensureIndex(new Index("purgeAt", Sort.Direction.ASC)
+                    .expire(Duration.ZERO).named("ttl_reset_codes_purge"));
         } catch (RuntimeException ex) {
             // The code still guards duplicates and expiry; do not stop the application.
             log.warn("Could not ensure auth indexes: {}", ex.getMessage());

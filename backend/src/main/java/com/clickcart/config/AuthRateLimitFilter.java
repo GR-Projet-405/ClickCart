@@ -36,7 +36,10 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
             new Rule("POST", "/api/auth/login", 10, Duration.ofMinutes(1)),
             new Rule("POST", "/api/auth/register", 10, Duration.ofMinutes(15)),
             new Rule("GET", "/api/auth/email-availability", 30, Duration.ofMinutes(1)),
-            new Rule("POST", "/api/auth/refresh", 30, Duration.ofMinutes(1)));
+            new Rule("POST", "/api/auth/refresh", 30, Duration.ofMinutes(1)),
+            new Rule("POST", "/api/auth/forgot-password", 5, Duration.ofMinutes(15)),
+            new Rule("POST", "/api/auth/verify-reset-code", 10, Duration.ofMinutes(15)),
+            new Rule("POST", "/api/auth/reset-password", 10, Duration.ofMinutes(15)));
 
     private final FixedWindowRateLimiter limiter = new FixedWindowRateLimiter(Clock.systemUTC());
     private final ObjectMapper objectMapper;
