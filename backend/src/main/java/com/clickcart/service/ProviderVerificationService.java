@@ -6,6 +6,7 @@ import com.clickcart.repository.ProviderRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,6 +22,18 @@ public class ProviderVerificationService {
         return providerRepository.findAll().stream()
                 .map(this::mapToDto)
                 .collect(Collectors.toList());
+    }
+
+    public void saveProviderDocuments(String providerId, List<Map<String, String>> documentList) {
+        Provider provider = providerRepository.findById(providerId)
+                .orElseThrow(() -> new RuntimeException("Provider not found with ID: " + providerId));
+
+        List<Provider.DocumentItem> docs = documentList.stream().map(map -> 
+            new Provider.DocumentItem(map.get("type"), map.get("url"))
+        ).collect(Collectors.toList());
+
+        provider.setDocuments(docs);
+        providerRepository.save(provider);
     }
 
     private ProviderResponseDto mapToDto(Provider provider) {

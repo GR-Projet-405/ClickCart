@@ -53,6 +53,15 @@ public class Provider {
         private String type;
         private String url;
 
+        // Default Constructor
+        public DocumentItem() {}
+
+        // Parameterized Constructor
+        public DocumentItem(String type, String url) {
+            this.type = type;
+            this.url = url;
+        }
+
         public String getType() { return type; }
         public void setType(String type) { this.type = type; }
 

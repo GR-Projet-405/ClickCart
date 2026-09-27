@@ -45,34 +45,40 @@ const VerificationQueue = () => {
 
   const safeProviders = Array.isArray(providers) ? providers : [];
 
-  // Document Name Resolver Helper
+  // Document Name / Label Resolver Helper (Optimized for Cloudinary Links)
   const getDocumentLabel = (doc, idx) => {
     if (typeof doc === 'string') return doc;
     if (!doc) return `Document ${idx + 1}`;
 
-    // 1. Direct name properties
     if (doc.name) return doc.name;
     if (doc.documentType) return doc.documentType;
-    if (doc.docName) return doc.docName;
 
-    // 2. Custom label if 'type' is not just a badge color
     if (doc.type && doc.type !== 'info' && doc.type !== 'purple') {
       return doc.type;
     }
 
-    // 3. Derive from URL filename
     if (doc.url) {
-      const filename = doc.url.split('/').pop().split('?')[0].toLowerCase();
-      if (filename.includes('nic')) return 'NIC / Identity';
-      if (filename.includes('br')) return 'Business Registration';
-      if (filename.includes('cert')) return 'Certificate / License';
+      const urlLower = doc.url.toLowerCase();
+      if (urlLower.includes('nic') || urlLower.includes('identity')) return 'NIC / Identity';
+      if (urlLower.includes('br') || urlLower.includes('business')) return 'Business Registration';
+      if (urlLower.includes('cert') || urlLower.includes('license')) return 'Certificate / License';
     }
 
-    // 4. Fallback based on badge type color names
     if (doc.type === 'info') return 'NIC / Identity';
     if (doc.type === 'purple') return 'Business Registration';
 
-    return `Document ${idx + 1}`;
+    return idx === 0 ? 'NIC / Identity' : 'Business Registration';
+  };
+
+  // Helper for Direct Downloading Cloudinary Images
+  const handleDownload = (docUrl, fileName = 'document') => {
+    if (!docUrl) return;
+    // Cloudinary direct image link forced download
+    const fetchUrl = docUrl.includes('cloudinary.com') 
+      ? docUrl.replace('/upload/', '/upload/fl_attachment/') 
+      : docUrl;
+
+    window.open(fetchUrl, '_blank');
   };
 
   const handleRefresh = () => {
@@ -109,10 +115,10 @@ const VerificationQueue = () => {
     if (typeof dateValue === 'string' && dateValue.includes('IST')) {
       const parts = dateValue.trim().split(/\s+/);
       if (parts.length >= 6) {
-        const monthStr = parts[1]; // Sep
-        const day = parts[2];      // 23
-        const time = parts[3];     // 15:30:00
-        const year = parts[5];     // 2026
+        const monthStr = parts[1]; 
+        const day = parts[2];      
+        const time = parts[3];     
+        const year = parts[5];     
         const parsed = new Date(`${monthStr} ${day}, ${year} ${time}`);
         if (!isNaN(parsed.getTime())) return parsed;
       }
@@ -122,7 +128,6 @@ const VerificationQueue = () => {
     return isNaN(d.getTime()) ? null : d;
   };
 
-  // Date Formatter
   const formatDate = (dateValue) => {
     const dateObj = parseProviderDate(dateValue);
     if (!dateObj) return 'N/A';
@@ -265,7 +270,6 @@ const VerificationQueue = () => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             
-            {/* Search Input */}
             <div style={{ position: 'relative', flex: '1', minWidth: '260px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
               <input 
@@ -277,7 +281,6 @@ const VerificationQueue = () => {
               />
             </div>
 
-            {/* Status Tabs */}
             <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', gap: '4px' }}>
               {['All', 'Pending', 'Approved', 'Rejected'].map((tab) => (
                 <button
@@ -296,7 +299,6 @@ const VerificationQueue = () => {
             </div>
           </div>
 
-          {/* Secondary Filters */}
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
               <Filter size={14} />
@@ -361,7 +363,6 @@ const VerificationQueue = () => {
 
                   return (
                     <tr key={pId} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      {/* Name & Avatar */}
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img 
@@ -378,7 +379,6 @@ const VerificationQueue = () => {
                         </div>
                       </td>
 
-                      {/* Type */}
                       <td style={{ padding: '12px 14px' }}>
                         <span style={{ 
                           padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, 
@@ -389,10 +389,8 @@ const VerificationQueue = () => {
                         </span>
                       </td>
 
-                      {/* Service Category */}
                       <td style={{ padding: '12px 14px', fontWeight: 600 }}>{p.category || 'General Service'}</td>
 
-                      {/* Submitted Documents Column */}
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                           {Array.isArray(p.documents) && p.documents.length > 0 ? (
@@ -427,12 +425,10 @@ const VerificationQueue = () => {
                         </div>
                       </td>
 
-                      {/* Submitted Date */}
                       <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '13px', whiteSpace: 'nowrap' }}>
                         {formatDate(p.createdAt || p.date || p.submittedDate)}
                       </td>
 
-                      {/* Status */}
                       <td style={{ padding: '12px 14px' }}>
                         <span style={{ 
                           padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, 
@@ -443,11 +439,8 @@ const VerificationQueue = () => {
                         </span>
                       </td>
 
-                      {/* Actions Column */}
                       <td style={{ padding: '12px 14px', textAlign: 'left' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px', whiteSpace: 'nowrap' }}>
-                          
-                          {/* View Details Button */}
                           <button 
                             onClick={() => setSelectedProvider(p)}
                             style={{ 
@@ -460,7 +453,6 @@ const VerificationQueue = () => {
                             View Details
                           </button>
 
-                          {/* Approve/Reject Buttons */}
                           {statusFormatted === 'PENDING' && (
                             <>
                               <button
@@ -469,8 +461,7 @@ const VerificationQueue = () => {
                                 style={{
                                   background: '#22c55e', color: '#ffffff', border: 'none',
                                   width: '28px', height: '28px', borderRadius: '6px',
-                                  display: 'inline-grid', placeItems: 'center', cursor: 'pointer',
-                                  flexShrink: 0
+                                  display: 'inline-grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0
                                 }}
                               >
                                 <Check size={16} />
@@ -482,15 +473,13 @@ const VerificationQueue = () => {
                                 style={{
                                   background: '#ef4444', color: '#ffffff', border: 'none',
                                   width: '28px', height: '28px', borderRadius: '6px',
-                                  display: 'inline-grid', placeItems: 'center', cursor: 'pointer',
-                                  flexShrink: 0
+                                  display: 'inline-grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0
                                 }}
                               >
                                 <X size={16} />
                               </button>
                             </>
                           )}
-
                         </div>
                       </td>
                     </tr>
@@ -503,7 +492,7 @@ const VerificationQueue = () => {
 
       </div>
 
-      {/* ==================== MODAL POPUP ==================== */}
+      {/* ==================== MODAL POPUP (Cloudinary Document Preview) ==================== */}
       {selectedProvider && (() => {
         const pId = selectedProvider.id || selectedProvider._id;
         const providerName = selectedProvider.ownerName || selectedProvider.businessName || 'Provider';
@@ -559,7 +548,6 @@ const VerificationQueue = () => {
                 gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
                 gap: '16px'
               }}>
-                {/* Left Profile Info */}
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                   <img 
                     src={selectedProvider.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
@@ -595,21 +583,12 @@ const VerificationQueue = () => {
                   </div>
                 </div>
 
-                {/* Right Service Meta Details */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', justifyContent: 'center', fontSize: '12px', color: '#475569', borderLeft: '1px dashed #cbd5e1', paddingLeft: '16px' }}>
                   <div>
                     <span style={{ color: '#94a3b8', fontSize: '11px' }}>Service Category</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700, color: '#0f172a', marginTop: '2px' }}>
                       <Wrench size={13} style={{ color: '#0284c7' }} />
                       <span>{selectedProvider.category || 'General Service'}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <span style={{ color: '#94a3b8', fontSize: '11px' }}>Type</span>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 600, color: '#0f172a', marginTop: '2px' }}>
-                      <User size={13} style={{ color: '#0284c7' }} />
-                      <span>{selectedProvider.providerType || 'Business'}</span>
                     </div>
                   </div>
 
@@ -623,7 +602,7 @@ const VerificationQueue = () => {
                 </div>
               </div>
 
-              {/* Submitted Documents Section */}
+              {/* Submitted Documents Section (Cloudinary Preview) */}
               <div style={{ marginBottom: '24px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
                   <FileText size={16} style={{ color: '#0070f3' }} />
@@ -634,7 +613,7 @@ const VerificationQueue = () => {
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
                     {selectedProvider.documents.map((doc, idx) => {
                       const docType = getDocumentLabel(doc, idx);
-                      const docUrl = typeof doc === 'object' && doc?.url ? doc.url : '';
+                      const docUrl = typeof doc === 'object' && doc?.url ? doc.url : (typeof doc === 'string' ? doc : '');
 
                       return (
                         <div key={idx} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
@@ -645,40 +624,51 @@ const VerificationQueue = () => {
                             <span>{docType}</span>
                           </div>
 
-                          {/* Image Preview */}
-                          <div style={{ height: '140px', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px', border: '1px solid #cbd5e1' }}>
+                          {/* Image Preview Window */}
+                          <div style={{ height: '150px', background: '#e2e8f0', borderRadius: '8px', overflow: 'hidden', marginBottom: '10px', border: '1px solid #cbd5e1', position: 'relative' }}>
                             {docUrl ? (
                               <img 
                                 src={docUrl} 
                                 alt={docType} 
-                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: 'pointer' }}
+                                onClick={() => window.open(docUrl, '_blank')}
                                 onError={(e) => {
                                   e.target.onerror = null;
-                                  e.target.src = 'https://via.placeholder.com/400x200?text=Image+Load+Error';
+                                  e.target.src = 'https://placehold.co/400x200/e2e8f0/64748b?text=Document+Preview+Unavailable';
                                 }}
                               />
                             ) : (
                               <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>
-                                No Preview Available
+                                No Document Link Provided
                               </div>
                             )}
                           </div>
 
-                          {/* Actions */}
+                          {/* Action Buttons */}
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button 
                               onClick={() => docUrl && window.open(docUrl, '_blank')}
                               disabled={!docUrl}
-                              style={{ flex: 1, padding: '6px', background: '#ffffff', border: '1px solid #0070f3', color: '#0070f3', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', opacity: docUrl ? 1 : 0.5 }}
+                              style={{ 
+                                flex: 1, padding: '8px', background: '#ffffff', border: '1px solid #0070f3', color: '#0070f3', 
+                                borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', opacity: docUrl ? 1 : 0.5 
+                              }}
                             >
-                              <Eye size={13} /> View Full
+                              <Eye size={14} /> View Full
                             </button>
-                            <a 
-                              href={docUrl || '#'} download target="_blank" rel="noreferrer"
-                              style={{ flex: 1, padding: '6px', background: '#0070f3', border: 'none', color: '#ffffff', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', textDecoration: 'none', opacity: docUrl ? 1 : 0.5, pointerEvents: docUrl ? 'auto' : 'none' }}
+                            
+                            <button 
+                              onClick={() => handleDownload(docUrl, docType)}
+                              disabled={!docUrl}
+                              style={{ 
+                                flex: 1, padding: '8px', background: '#0070f3', border: 'none', color: '#ffffff', 
+                                borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: docUrl ? 'pointer' : 'not-allowed', 
+                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px', opacity: docUrl ? 1 : 0.5 
+                              }}
                             >
-                              <Download size={13} /> Download
-                            </a>
+                              <Download size={14} /> Download
+                            </button>
                           </div>
 
                         </div>
