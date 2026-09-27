@@ -10,6 +10,16 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+<<<<<<< Updated upstream
+=======
+import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
+import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
+import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
+import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
+import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
+import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
+import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
+>>>>>>> Stashed changes
 
 export default function AppRoutes() {
   return (
@@ -65,7 +75,17 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+<<<<<<< Updated upstream
         {customerNavigation.slice(1).map(({ to }) => (
+=======
+        <Route path="customer/refunds" element={<CustomerRefunds />} />
+        <Route path="customer/profile" element={<CustomerProfilePage />} />
+        <Route path="profile" element={<CustomerProfilePage />} />
+        <Route path="providers/:providerId" element={<PublicProviderProfile />} />
+        <Route path="find-services" element={<AiServiceSearchPage />} />
+
+        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
+>>>>>>> Stashed changes
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
         <Route path="*" element={<NotFound />} />

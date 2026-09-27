@@ -3,4 +3,10 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+<<<<<<< Updated upstream
+=======
+  server: {
+    open: "/provider/dashboard",
+  },
+>>>>>>> Stashed changes
 });
