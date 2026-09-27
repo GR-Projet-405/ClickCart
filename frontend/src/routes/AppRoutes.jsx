@@ -23,6 +23,7 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 
 export default function AppRoutes() {
   return (
@@ -45,6 +46,9 @@ export default function AppRoutes() {
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
+        {/* Settlement Tracking */}
+        <Route path="settlements" element={<SettlementTrackingPage />} />
+
         {/* Update: Only one mapping loop for the remaining provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
@@ -52,7 +56,8 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/profile" &&
+            path !== "/provider/settlements"
           )
           .map(({ path }) => (
             <Route
