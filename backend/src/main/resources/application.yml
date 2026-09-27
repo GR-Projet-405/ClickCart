@@ -3,7 +3,8 @@ spring:
     name: clickcart-backend
   data:
     mongodb:
-      # Direct URI to ensure it connects to your Atlas database
-      uri:
+      uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+
