@@ -13,18 +13,21 @@ import com.clickcart.dto.auth.AuthResponse;
 import com.clickcart.dto.auth.LoginRequest;
 import com.clickcart.dto.auth.RegisterRequest;
 import com.clickcart.dto.auth.UserResponse;
+import com.clickcart.exception.AuthException;
 import com.clickcart.exception.DuplicateResourceException;
-import com.clickcart.exception.ForbiddenException;
 import com.clickcart.exception.UnauthorizedException;
 import com.clickcart.model.AccountStatus;
 import com.clickcart.model.Role;
 import com.clickcart.model.User;
 import com.clickcart.repository.UserRepository;
+import com.clickcart.service.LoginAttemptService.FailureOutcome;
+import com.clickcart.service.RefreshTokenService.IssuedRefreshToken;
+import com.clickcart.service.RefreshTokenService.Rotation;
 import com.clickcart.util.JwtUtil;
 import com.clickcart.util.PhoneNumbers;
 
 /**
- * DEV-01 Authentication & Account Security: registration, login and current-user lookup.
+ * DEV-01 Authentication & Account Security: registration, login, session refresh/logout and current user.
  */
 @Service
 public class AuthService {
@@ -32,23 +35,33 @@ public class AuthService {
     /** Security audit trail (SRS IAM-012). Logs ids and outcomes only, never passwords or tokens. */
     private static final Logger audit = LoggerFactory.getLogger("clickcart.audit.auth");
 
-    static final String INVALID_CREDENTIALS = "Incorrect email or password";
+    /** Remaining attempts are only revealed when the user is close to being locked out. */
+    static final int SHOW_REMAINING_AT_OR_BELOW = 2;
+
+    /** Access token for the response body plus the refresh token the controller puts in a cookie. */
+    public record AuthSession(AuthResponse response, IssuedRefreshToken refreshToken) {
+    }
 
     private final UserRepository users;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenService refreshTokens;
+    private final LoginAttemptService loginAttempts;
 
     /** Compared against when the email is unknown so response time does not reveal whether an account exists. */
     private final String dummyPasswordHash;
 
-    public AuthService(UserRepository users, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+    public AuthService(UserRepository users, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+                       RefreshTokenService refreshTokens, LoginAttemptService loginAttempts) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
         this.jwtUtil = jwtUtil;
+        this.refreshTokens = refreshTokens;
+        this.loginAttempts = loginAttempts;
         this.dummyPasswordHash = passwordEncoder.encode("clickcart-timing-equalizer");
     }
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthSession register(RegisterRequest request) {
         Role role = request.role();
         if (!role.isSelfRegistrable()) {
             throw new IllegalArgumentException("Admin accounts cannot be created through registration");
@@ -85,49 +98,83 @@ public class AuthService {
         }
 
         audit.info("event=REGISTER userId={} role={}", user.getId(), user.getRole());
-        return issueTokens(user);
+        return startSession(user, false);
     }
 
-    public AuthResponse login(LoginRequest request) {
+    public AuthSession login(LoginRequest request) {
         String email = normalizeEmail(request.email());
         User user = users.findByEmail(email).orElse(null);
 
         if (user == null) {
             passwordEncoder.matches(request.password(), dummyPasswordHash);
             audit.info("event=LOGIN_FAILED reason=UNKNOWN_EMAIL");
-            throw new UnauthorizedException(INVALID_CREDENTIALS);
+            throw AuthException.invalidCredentials(null);
+        }
+
+        Instant now = Instant.now();
+        if (user.getLockedUntil() != null && user.getLockedUntil().isAfter(now)) {
+            audit.info("event=LOGIN_BLOCKED userId={} reason=LOCKED", user.getId());
+            throw AuthException.accountLocked(user.getLockedUntil());
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            FailureOutcome outcome = loginAttempts.recordFailure(user.getId());
+            if (outcome.locked()) {
+                audit.warn("event=ACCOUNT_LOCKED userId={} until={}", user.getId(), outcome.lockedUntil());
+                throw AuthException.accountLocked(outcome.lockedUntil());
+            }
             audit.info("event=LOGIN_FAILED userId={} reason=BAD_PASSWORD", user.getId());
-            throw new UnauthorizedException(INVALID_CREDENTIALS);
+            int remaining = outcome.attemptsRemaining();
+            throw AuthException.invalidCredentials(remaining <= SHOW_REMAINING_AT_OR_BELOW ? remaining : null);
         }
 
         // Checked only after the password matches, so suspension status is not revealed to guessers.
         if (user.getStatus() == AccountStatus.SUSPENDED) {
             audit.info("event=LOGIN_BLOCKED userId={} reason=SUSPENDED", user.getId());
-            throw new ForbiddenException("This account has been suspended. Please contact support.");
+            throw AuthException.accountSuspended();
         }
 
-        Instant now = Instant.now();
+        user.setFailedLoginAttempts(0);
+        user.setLockedUntil(null);
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
         users.save(user);
 
-        audit.info("event=LOGIN_SUCCESS userId={} role={}", user.getId(), user.getRole());
-        return issueTokens(user);
+        audit.info("event=LOGIN_SUCCESS userId={} role={} rememberMe={}", user.getId(), user.getRole(),
+                request.rememberMe());
+        return startSession(user, request.rememberMe());
+    }
+
+    public AuthSession refresh(String rawRefreshToken) {
+        Rotation rotation = refreshTokens.rotate(rawRefreshToken);
+        User user = rotation.user();
+        return new AuthSession(accessResponse(user), rotation.refreshToken());
+    }
+
+    public void logout(String rawRefreshToken) {
+        refreshTokens.revoke(rawRefreshToken);
+        audit.info("event=LOGOUT");
+    }
+
+    public boolean isEmailAvailable(String email) {
+        return !users.existsByEmail(normalizeEmail(email));
     }
 
     public UserResponse getCurrentUser(String userId) {
         User user = users.findById(userId)
                 .orElseThrow(() -> new UnauthorizedException("Your session is no longer valid. Please log in again."));
         if (user.getStatus() == AccountStatus.SUSPENDED) {
-            throw new ForbiddenException("This account has been suspended. Please contact support.");
+            throw AuthException.accountSuspended();
         }
         return UserResponse.from(user);
     }
 
-    private AuthResponse issueTokens(User user) {
+    private AuthSession startSession(User user, boolean rememberMe) {
+        IssuedRefreshToken refreshToken = refreshTokens.issue(user.getId(), rememberMe);
+        return new AuthSession(accessResponse(user), refreshToken);
+    }
+
+    private AuthResponse accessResponse(User user) {
         String accessToken = jwtUtil.generateAccessToken(user);
         return AuthResponse.bearer(accessToken, jwtUtil.getAccessTokenTtlSeconds(), UserResponse.from(user));
     }

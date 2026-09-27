@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Authentication identity shared by all roles (SRS 6.1 "User").
- * The unique email index is created by {@link com.clickcart.config.UserIndexInitializer}.
+ * The unique email index is created by {@link com.clickcart.config.AuthIndexInitializer}.
  * Never expose this document directly; map it to {@link com.clickcart.dto.auth.UserResponse}.
  */
 @Document(collection = "users")
