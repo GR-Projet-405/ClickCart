@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -38,11 +39,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
     private static final String BEARER_PREFIX = "Bearer ";
 
-    private final JwtUtil jwtUtil;
+    /**
+     * Resolved lazily so @WebMvcTest slices (which do not load JwtUtil) can still create this filter.
+     * If JwtUtil is absent, bearer tokens are simply not accepted.
+     */
+    private final ObjectProvider<JwtUtil> jwtUtil;
     private final boolean devAuthFallback;
 
     public JwtAuthenticationFilter(
-            JwtUtil jwtUtil,
+            ObjectProvider<JwtUtil> jwtUtil,
             @Value("${CLICKCART_DEV_AUTH_FALLBACK:true}") boolean devAuthFallback) {
         this.jwtUtil = jwtUtil;
         this.devAuthFallback = devAuthFallback;
@@ -61,8 +66,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(authHeader) && authHeader.startsWith(BEARER_PREFIX)) {
             String token = authHeader.substring(BEARER_PREFIX.length()).trim();
-            jwtUtil.parseAccessToken(token).ifPresent(user -> setAuthentication(request, user,
-                    List.of(new SimpleGrantedAuthority(user.role().authority()))));
+            JwtUtil util = jwtUtil.getIfAvailable();
+            if (util != null) {
+                util.parseAccessToken(token).ifPresent(user -> setAuthentication(request, user,
+                        List.of(new SimpleGrantedAuthority(user.role().authority()))));
+            }
         } else if (devAuthFallback) {
             applyDevFallback(request);
         }
