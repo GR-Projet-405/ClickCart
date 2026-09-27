@@ -23,6 +23,7 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import PricingSetupPage from "../pages/Provider/PricingSetupPage"; // <-- ADDED IMPORT
 
 export default function AppRoutes() {
   return (
@@ -34,6 +35,7 @@ export default function AppRoutes() {
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} /> {/* <-- ADDED ROUTE */}
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
@@ -50,6 +52,7 @@ export default function AppRoutes() {
           .filter(({ path }) =>
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
+            path !== "/provider/pricing-setup" && // <-- Added to filter so it doesn't conflict
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
             path !== "/provider/profile"
