@@ -23,7 +23,7 @@ export default function AdminHeader({ menuOpen, onMenuToggle }) {
         />
         <Link
           className="dashboard-header__brand"
-          to="/admin"
+          to="/Commission_management"
           aria-label="ClickCart admin home"
         >
           <BrandLogo size="shell" showTagline />

@@ -1,11 +1,13 @@
 import React from 'react';
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
+import CommissionDashboard from "../pages/commission/CommissionDashboard";
+import CommissionTransactionPage from "../pages/commission/CommissionTransactionPage";
 import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
@@ -15,6 +17,10 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+      <Route path="/Commission_management" element={<AdminLayout />}>
+        <Route index element={<CommissionDashboard />} />
+        <Route path="transactions/new" element={<CommissionTransactionPage />} />
+      </Route>
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route
           index
@@ -40,16 +46,8 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
-        <Route
-          index
-          element={
-            <WorkspacePlaceholder
-              title="Platform Admin Workspace"
-              description="This area is reserved for platform admin feature pages."
-            />
-          }
-        />
-        {adminNavigation.map(({ path }) => (
+        <Route index element={<Navigate to="/Commission_management" replace />} />
+        {adminNavigation.filter(({ path }) => path !== "/Commission_management").map(({ path }) => (
           <Route
             key={path}
             path={path.replace("/admin/", "")}
