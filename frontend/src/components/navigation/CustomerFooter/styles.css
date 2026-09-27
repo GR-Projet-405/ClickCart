@@ -1,4 +1,5 @@
 .customer-footer {
+  position: relative;
   color: var(--cc-text-secondary);
   background: var(--cc-bg-surface);
   border-top: 1px solid var(--cc-border);
@@ -6,7 +7,7 @@
 .customer-footer__main {
   display: grid;
   gap: var(--cc-space-6);
-  padding-block: var(--cc-space-8);
+  padding-block: var(--cc-space-6);
 }
 .customer-footer__links,
 .customer-footer__social {
@@ -23,14 +24,32 @@
 .customer-footer__links a:hover {
   color: var(--cc-primary-dark);
 }
-.customer-footer__bottom {
-  padding-block: var(--cc-space-3);
-  border-top: 1px solid var(--cc-border-soft);
-  color: var(--cc-text-muted);
+.customer-footer__community {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  margin: 0;
+  font-size: var(--cc-text-caption-size);
+  white-space: nowrap;
+}
+.customer-footer__community svg {
+  color: #f04468;
+}
+.customer-footer__chat {
+  position: absolute;
+  right: var(--cc-space-5);
+  bottom: var(--cc-space-5);
+  width: 3.25rem;
+  height: 3.25rem;
+  color: var(--cc-text-on-primary);
+  background: var(--cc-primary);
+  border-radius: 50%;
+  box-shadow: var(--cc-shadow-md);
 }
 @media (min-width: 1024px) {
   .customer-footer__main {
-    grid-template-columns: 1fr auto auto;
+    max-width: none;
+    grid-template-columns: minmax(15rem, 1fr) auto auto minmax(15rem, 1fr);
     align-items: center;
   }
   .customer-footer__links {
@@ -38,5 +57,13 @@
   }
   .customer-footer__social {
     justify-content: flex-end;
+  }
+  .customer-footer__chat {
+    right: var(--cc-space-8);
+  }
+}
+@media (max-width: 1023px) {
+  .customer-footer__community {
+    white-space: normal;
   }
 }
