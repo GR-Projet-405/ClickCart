@@ -7,6 +7,7 @@ import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import ServiceMedia from "../pages/provider/ServiceMedia";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
@@ -37,6 +38,7 @@ export default function AppRoutes() {
             }
           />
         ))}
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="/admin" element={<AdminLayout />}>
