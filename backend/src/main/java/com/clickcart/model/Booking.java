@@ -6,13 +6,20 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "bookings")
+@CompoundIndex(
+    name = "provider_status_created",
+    def = "{'providerId': 1, 'status': 1, 'createdAt': -1}"
+)
 public class Booking {
 
     @Id
     private String id;
+
+    // Customer booking fields
     private String customerId;
     private String serviceId;
     private String providerId;
@@ -26,8 +33,22 @@ public class Booking {
     private String contactEmail;
     private String preferredContactMethod;
     private PriceSnapshot priceSnapshot;
-    private String status;
+
+    // Provider booking fields
+    private String serviceName;
+    private String customerName;
+    private String city;
+    private String country;
+    private Instant scheduledAt;
+    private String timeSlot;
+    private BigDecimal estimatedPay;
+    private String currency;
+    private String notes;
+
+    private BookingStatus status;
+    private boolean unread;
     private Instant createdAt;
+    private Instant updatedAt;
 
     public Booking() {
     }
@@ -144,12 +165,92 @@ public class Booking {
         this.priceSnapshot = priceSnapshot;
     }
 
-    public String getStatus() {
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
+    public String getTimeSlot() {
+        return timeSlot;
+    }
+
+    public void setTimeSlot(String timeSlot) {
+        this.timeSlot = timeSlot;
+    }
+
+    public BigDecimal getEstimatedPay() {
+        return estimatedPay;
+    }
+
+    public void setEstimatedPay(BigDecimal estimatedPay) {
+        this.estimatedPay = estimatedPay;
+    }
+
+    public String getCurrency() {
+        return currency;
+    }
+
+    public void setCurrency(String currency) {
+        this.currency = currency;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
+
+    public BookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public boolean isUnread() {
+        return unread;
+    }
+
+    public void setUnread(boolean unread) {
+        this.unread = unread;
     }
 
     public Instant getCreatedAt() {
@@ -158,6 +259,14 @@ public class Booking {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Instant getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Instant updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public static class PriceSnapshot {
@@ -214,7 +323,7 @@ public class Booking {
 
         public BigDecimal getPlatformFee() {
             return platformFee;
-        }
+            }
 
         public void setPlatformFee(BigDecimal platformFee) {
             this.platformFee = platformFee;
@@ -232,7 +341,7 @@ public class Booking {
                 .add(valueOrZero(platformFee));
         }
 
-        private static BigDecimal valueOrZero(BigDecimal value) {
+        private BigDecimal valueOrZero(BigDecimal value) {
             return value == null ? BigDecimal.ZERO : value;
         }
     }
