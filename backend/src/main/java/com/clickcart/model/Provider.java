@@ -17,6 +17,7 @@ public class Provider {
     private String category;
     private String status;
     private String createdAt;
+    private String avatar; 
     private List<DocumentItem> documents;
 
     public String getId() { return id; }
@@ -46,6 +47,9 @@ public class Provider {
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
+
     public List<DocumentItem> getDocuments() { return documents; }
     public void setDocuments(List<DocumentItem> documents) { this.documents = documents; }
 
@@ -53,10 +57,8 @@ public class Provider {
         private String type;
         private String url;
 
-        // Default Constructor
         public DocumentItem() {}
 
-        // Parameterized Constructor
         public DocumentItem(String type, String url) {
             this.type = type;
             this.url = url;

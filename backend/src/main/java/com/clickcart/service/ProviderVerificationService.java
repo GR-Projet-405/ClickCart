@@ -91,6 +91,7 @@ public class ProviderVerificationService {
         dto.setCategory(provider.getCategory());
         dto.setStatus(provider.getStatus());
         dto.setCreatedAt(provider.getCreatedAt());
+        dto.setAvatar(provider.getAvatar()); 
         
         if (provider.getDocuments() != null) {
             dto.setDocuments(provider.getDocuments().stream()

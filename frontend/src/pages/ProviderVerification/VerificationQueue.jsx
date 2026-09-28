@@ -51,6 +51,21 @@ const VerificationQueue = () => {
 
   const safeProviders = Array.isArray(providers) ? providers : [];
 
+  
+  const getAvatarUrl = (provider) => {
+    if (!provider) return 'https://ui-avatars.com/api/?name=User&background=0284c7&color=fff&bold=true';
+    
+    
+    const profileImg = provider.avatar || provider.profilePic || provider.profilePicture || provider.imageUrl || provider.profileImage;
+    if (profileImg && profileImg.trim() !== '') {
+      return profileImg;
+    }
+    
+    
+    const name = provider.ownerName || provider.businessName || 'Provider';
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0284c7&color=fff&bold=true`;
+  };
+
   const getDocumentLabel = (doc, idx) => {
     if (typeof doc === 'string') return doc;
     if (!doc) return `Document ${idx + 1}`;
@@ -402,19 +417,24 @@ const VerificationQueue = () => {
                   const pId = p.id || p._id || i;
                   const statusFormatted = (p.status || 'PENDING').toUpperCase();
                   const isBusiness = (p.providerType || '').toLowerCase() === 'business';
+                  const providerName = p.ownerName || p.businessName || 'Provider';
 
                   return (
                     <tr key={pId} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img 
-                            src={p.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
-                            alt={p.ownerName || p.businessName || 'Provider'} 
+                            src={getAvatarUrl(p)} 
+                            alt={providerName} 
+                            onError={(e) => {
+                              e.target.onerror = null;
+                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(providerName)}&background=0284c7&color=fff&bold=true`;
+                            }}
                             style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} 
                           />
                           <div>
                             <div style={{ fontWeight: 700, color: '#0f172a' }}>
-                              {p.ownerName || p.businessName || 'N/A'}
+                              {providerName}
                             </div>
                             <div style={{ fontSize: '12px', color: '#64748b' }}>{p.email || 'N/A'}</div>
                           </div>
@@ -574,8 +594,12 @@ const VerificationQueue = () => {
                 {/* Left Side: Profile Info */}
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
                   <img 
-                    src={selectedProvider.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100'} 
+                    src={getAvatarUrl(selectedProvider)} 
                     alt={providerName} 
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(providerName)}&background=0284c7&color=fff&bold=true`;
+                    }}
                     style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} 
                   />
                   <div>

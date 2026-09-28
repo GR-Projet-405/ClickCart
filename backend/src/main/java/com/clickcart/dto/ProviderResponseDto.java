@@ -13,6 +13,7 @@ public class ProviderResponseDto {
     private String category;
     private String status;
     private String createdAt;
+    private String avatar; 
     private List<DocumentDto> documents;
 
     public String getId() { return id; }
@@ -41,6 +42,9 @@ public class ProviderResponseDto {
 
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 
     public List<DocumentDto> getDocuments() { return documents; }
     public void setDocuments(List<DocumentDto> documents) { this.documents = documents; }
