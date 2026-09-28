@@ -23,6 +23,8 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
@@ -47,6 +49,7 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
 
         {/* DEV-28 Provider Earnings Routes */}
         <Route path="earnings" element={<EarningsDashboardPage />} />
@@ -59,6 +62,8 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
+            path !== "/provider/reviews" &&
+            path !== "/provider/profile"
             path !== "/provider/profile" &&
             path !== "/provider/earnings"
           )
@@ -104,6 +109,7 @@ export default function AppRoutes() {
 
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
