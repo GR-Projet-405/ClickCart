@@ -8,6 +8,7 @@ export const SERVICE_CATEGORIES = [
   "Automotive",
   "Other",
 ];
+<<<<<<< HEAD
 
 // Category groups shown as AI-suggested chips on the AI Search page
 // (matches "Example Service Categories" in the project proposal / SRS Appendix A).
@@ -20,3 +21,5 @@ export const AI_CATEGORY_GROUPS = [
   { id: "creative-events", label: "Creative & Events", icon: "Sparkles" },
   { id: "personal-services", label: "Personal Services", icon: "Droplet" },
 ];
+=======
+>>>>>>> dev
