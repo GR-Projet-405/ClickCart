@@ -26,17 +26,30 @@ import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
+import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
+
+// 1. Import your new MyFavorites page here
+import MyFavorites from '../pages/MyFavorites';
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+
+      {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
       {/* DEV-01 Authentication (public pages, outside the role layouts) */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      {/* Provider Routes */}
+
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+
+
 
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
@@ -52,15 +65,22 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
 
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
+        {/* DEV-28 Provider Earnings Routes */}
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        {/* Only one mapping loop for the remaining unassigned provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/reviews" &&
+            path !== "/provider/profile" &&
+            path !== "/provider/earnings"
           )
           .map(({ path }) => (
             <Route
@@ -76,6 +96,10 @@ export default function AppRoutes() {
           ))}
         <Route path="*" element={<NotFound />} />
       </Route>
+
+
+      {/* Admin Routes */}
+
 
       <Route path="/admin" element={<AdminLayout />}>
         <Route
@@ -102,17 +126,26 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+
+      {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
+        {/* 2. Add the explicit route for Favorites BEFORE the map */}
+        <Route path="favorites" element={<MyFavorites />} />
+
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         <Route path="find-services" element={<MarketplaceServicesPage />} />
 
+        {/* Existing dynamic routes */}
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
