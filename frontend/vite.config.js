@@ -5,5 +5,5 @@ export default defineConfig({
   plugins: [react()],
   server: {
     open: "/provider/dashboard",
-  }
+  },
 });

@@ -27,6 +27,9 @@ import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfi
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 
+import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -50,14 +53,19 @@ export default function AppRoutes() {
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
+        {/* DEV-28 Provider Earnings Routes */}
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        {/* Only one mapping loop for the remaining unassigned provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/profile" &&
+            path !== "/provider/earnings"
           )
           .map(({ path }) => (
             <Route
