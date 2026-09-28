@@ -9,6 +9,4 @@ export default function WorkspacePlaceholder({ title, description }) {
       <p className="cc-body cc-text-secondary">{description}</p>
     </PageContainer>
   );
-export default function WorkspacePlaceholder() {
-  return null;
 }

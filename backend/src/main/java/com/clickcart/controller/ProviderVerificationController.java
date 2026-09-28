@@ -1,6 +1,7 @@
 package com.clickcart.controller;
 
 import com.clickcart.dto.ProviderResponseDto;
+import com.clickcart.dto.RejectionRequestDto;
 import com.clickcart.service.CloudinaryService;
 import com.clickcart.service.ProviderVerificationService;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,38 @@ public class ProviderVerificationController {
     @GetMapping("/verifications")
     public ResponseEntity<List<ProviderResponseDto>> getAllVerifications() {
         return ResponseEntity.ok(verificationService.getAllVerifications());
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateProviderStatus(
+            @PathVariable("id") String id,
+            @RequestBody Map<String, String> statusUpdate) {
+        try {
+            String newStatus = statusUpdate.get("status");
+            ProviderResponseDto updatedProvider = verificationService.updateProviderStatus(id, newStatus);
+            return ResponseEntity.ok(updatedProvider);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    // Provider Reject කිරීම සඳහා Endpoint එක
+    @PatchMapping("/{id}/reject")
+    public ResponseEntity<?> rejectProvider(
+            @PathVariable("id") String id,
+            @RequestBody RejectionRequestDto rejectDto) {
+        try {
+            ProviderResponseDto updatedProvider = verificationService.rejectProvider(id, rejectDto);
+            return ResponseEntity.ok(updatedProvider);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("success", false);
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 
     @PostMapping(value = "/upload-documents", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

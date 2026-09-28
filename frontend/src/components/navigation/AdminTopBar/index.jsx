@@ -1,6 +1,5 @@
 import React from 'react';
-import { ChevronDown, Globe2, Phone } from "lucide-react";
-import { ChevronDown, ExternalLink, Phone } from "lucide-react";
+import { ChevronDown, Globe2, Phone, ExternalLink } from "lucide-react";
 import PageContainer from "../../common/PageContainer";
 
 export default function AdminTopBar() {

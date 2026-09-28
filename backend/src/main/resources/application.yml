@@ -5,11 +5,28 @@ spring:
     name: clickcart-backend
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://Admin:ABC123@cluster0.2ndv7.mongodb.net/Clickcart_db?authSource=admin&retryWrites=true&w=majority&appName=Cluster0}
+      uri: ${MONGODB_URI}
+
+  # Gmail / SMTP Settings
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 server:
   port: ${SERVER_PORT:8080}
 
-CLOUDINARY_CLOUD_NAME: p9vv6uqp
-CLOUDINARY_API_KEY: "375111711487698"
-CLOUDINARY_API_SECRET: "PIYm_qC1JFXSTWaK_q0cqooSuZQ"
+CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
