@@ -23,6 +23,10 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
+import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
 // 1. Import your new MyFavorites page here
 import MyFavorites from '../pages/MyFavorites';
@@ -54,15 +58,22 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
 
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
+        {/* DEV-28 Provider Earnings Routes */}
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        {/* Only one mapping loop for the remaining unassigned provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/reviews" &&
+            path !== "/provider/profile" &&
+            path !== "/provider/earnings"
           )
           .map(({ path }) => (
             <Route
@@ -112,10 +123,14 @@ export default function AppRoutes() {
       {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+<<<<<<< HEAD
 
         {/* 2. Add the explicit route for Favorites BEFORE the map */}
         <Route path="favorites" element={<MyFavorites />} />
 
+=======
+        <Route path="reviews" element={<CustomerReviewsPage />} />
+>>>>>>> dev
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
