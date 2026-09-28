@@ -10,6 +10,7 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import ConversationsPage from "../pages/messaging/ConversationsPage";
 
 export default function AppRoutes() {
   return (
@@ -25,6 +26,8 @@ export default function AppRoutes() {
             />
           }
         />
+        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
         {providerNavigation.map(({ path }) => (
           <Route
             key={path}
@@ -65,8 +68,10 @@ export default function AppRoutes() {
       </Route>
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="messages" element={<ConversationsPage role="CUSTOMER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
         {customerNavigation.slice(1).map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          to === "/messages" ? null : <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
         <Route path="*" element={<NotFound />} />
       </Route>
