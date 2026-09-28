@@ -23,6 +23,9 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
@@ -38,6 +41,10 @@ export default function AppRoutes() {
       {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
+      {/* DEV-01 Authentication (public pages, outside the role layouts) */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       {/* Provider Routes */}
 
       <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
