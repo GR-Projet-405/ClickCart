@@ -24,11 +24,12 @@ public class ClickCartApplication {
     }
 
     private static void loadDotEnv() {
-        Path[] candidates = new Path[4];
+        Path[] candidates = new Path[5]; // 🍏 Changed 4 to 5
         candidates[0] = Paths.get(".env");
         candidates[1] = Paths.get("backend", ".env");
         candidates[2] = Paths.get("..", ".env");
         candidates[3] = Paths.get("..", "backend", ".env");
+        candidates[4] = Paths.get("ClickCart", "backend", ".env"); // 🔥 Added for your specific VS Code workspace
 
         for (Path path : candidates) {
             if (!Files.exists(path)) {
