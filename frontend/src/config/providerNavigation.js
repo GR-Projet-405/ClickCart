@@ -1,6 +1,7 @@
 import {
   CalendarCheck,
   CalendarDays,
+  Clock,
   Home,
   Mail,
   Settings,
@@ -16,6 +17,7 @@ export const providerNavigation = [
   { label: "Bookings", path: "/provider/bookings", icon: CalendarCheck },
   { label: "Messages", path: "/provider/messages", icon: Mail, demoCount: 3 },
   { label: "Calendar", path: "/provider/calendar", icon: CalendarDays },
+  { label: "Availability", path: "/provider/availability", icon: Clock },
   { label: "Earnings", path: "/provider/earnings", icon: WalletCards },
   { label: "Reviews", path: "/provider/reviews", icon: Star },
   { label: "Profile", path: "/provider/profile", icon: UserRound },
