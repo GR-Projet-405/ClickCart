@@ -25,7 +25,6 @@ import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
-
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
@@ -63,7 +62,6 @@ export default function AppRoutes() {
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
             path !== "/provider/reviews" &&
-            path !== "/provider/profile"
             path !== "/provider/profile" &&
             path !== "/provider/earnings"
           )
