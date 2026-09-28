@@ -22,20 +22,44 @@ import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
+import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
-import PricingSetupPage from "../pages/Provider/PricingSetupPage"; // <-- ADDED IMPORT
+
+// DEV-07: Service Pricing & Packages
+import PricingSetupPage from "../pages/Provider/PricingSetupPage";
+
+// DEV-01, DEV-28, DEV-30, DEV-32 (Merged from dev branch)
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
+import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
+import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
+import MyFavorites from "../pages/MyFavorites";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+      {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+
+      {/* DEV-01 Authentication (public pages, outside the role layouts) */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      {/* Provider Routes */}
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
 
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
-        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} /> {/* <-- ADDED ROUTE */}
+        
+        {/* DEV-07: Service Pricing & Packages Route */}
+        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
+        
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
@@ -46,16 +70,22 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
 
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
+        {/* DEV-28 Provider Earnings Routes */}
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        {/* Only one mapping loop for the remaining unassigned provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
-            path !== "/provider/pricing-setup" && // <-- Added to filter so it doesn't conflict
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/reviews" &&
+            path !== "/provider/profile" &&
+            path !== "/provider/earnings"
           )
           .map(({ path }) => (
             <Route
@@ -72,6 +102,7 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+      {/* Admin Routes */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route
           index
@@ -97,17 +128,26 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+      {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
+        {/* Explicit routes BEFORE the map */}
+        <Route path="favorites" element={<MyFavorites />} />
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
-        <Route path="find-services" element={<MarketplaceServicesPage />} />
 
+        {/* DEV-14: AI Assisted Search Route */}
+        <Route path="find-services" element={<AiServiceSearchPage />} />
+
+        {/* Existing dynamic routes */}
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

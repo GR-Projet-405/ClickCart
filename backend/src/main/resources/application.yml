@@ -7,3 +7,8 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.clickcart: DEBUG
