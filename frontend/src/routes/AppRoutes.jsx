@@ -123,14 +123,11 @@ export default function AppRoutes() {
       {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
-<<<<<<< HEAD
 
         {/* 2. Add the explicit route for Favorites BEFORE the map */}
         <Route path="favorites" element={<MyFavorites />} />
 
-=======
         <Route path="reviews" element={<CustomerReviewsPage />} />
->>>>>>> dev
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
