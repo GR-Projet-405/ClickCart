@@ -28,11 +28,21 @@ import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
+// 1. Import your new MyFavorites page here
+import MyFavorites from '../pages/MyFavorites';
+
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+
+      {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
+
+      {/* Provider Routes */}
+
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+
+
 
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
@@ -80,6 +90,10 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+
+      {/* Admin Routes */}
+
+
       <Route path="/admin" element={<AdminLayout />}>
         <Route
           index
@@ -105,18 +119,29 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
+
+      {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+<<<<<<< HEAD
+
+        {/* 2. Add the explicit route for Favorites BEFORE the map */}
+        <Route path="favorites" element={<MyFavorites />} />
+
+=======
         <Route path="reviews" element={<CustomerReviewsPage />} />
+>>>>>>> dev
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         <Route path="find-services" element={<MarketplaceServicesPage />} />
 
+        {/* Existing dynamic routes */}
         {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
