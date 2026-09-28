@@ -1,7 +1,9 @@
 import axios from 'axios';
 
-const PUBLIC_API_URL = 'http://localhost:8080/api/categories';
-const ADMIN_API_URL = 'http://localhost:8080/api/admin/categories';
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+const PUBLIC_API_URL = `${API_BASE}/api/categories`;
+const ADMIN_API_URL = `${API_BASE}/api/admin/categories`;
 
 const categoryService = {
   getAllCategories: async () => {
