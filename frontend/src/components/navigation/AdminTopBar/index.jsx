@@ -1,4 +1,5 @@
-import { ChevronDown, Globe2, Phone } from "lucide-react";
+import React from 'react';
+import { ChevronDown, ExternalLink, Phone } from "lucide-react";
 import PageContainer from "../../common/PageContainer";
 
 export default function AdminTopBar() {
@@ -14,11 +15,13 @@ export default function AdminTopBar() {
           className="dashboard-topbar__links"
           aria-label="Admin utility navigation"
         >
-          <a href="/">Visit Marketplace</a>
+          <a href="/">
+            Visit Marketplace <ExternalLink size={12} aria-hidden="true" />
+          </a>
           <a href="#help-center">Help Center</a>
           <span>USD</span>
           <button type="button" aria-label="Language: English">
-            <Globe2 size={13} aria-hidden="true" />
+            <span aria-hidden="true">🇺🇸</span>
             <span>Eng</span>
             <ChevronDown size={12} aria-hidden="true" />
           </button>

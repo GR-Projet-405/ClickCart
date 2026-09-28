@@ -1,3 +1,4 @@
+import React from 'react';
 import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import AdminHeader from "../../components/navigation/AdminHeader";

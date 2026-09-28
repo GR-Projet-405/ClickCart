@@ -1,3 +1,5 @@
+<img width="2172" height="724" alt="clickcartcover" src="https://github.com/user-attachments/assets/8cb56884-15ea-4f92-b8e4-260bf8fce081" />
+
 # ClickCart
 
 AI-Powered Local Services Marketplace
@@ -30,11 +32,23 @@ ClickCart/
 
 ### Frontend
 
+macOS or Linux:
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
+
+Windows PowerShell:
+
+```powershell
+cd frontend
+npm.cmd install
+npm.cmd run dev
+```
+
+Use `npm.cmd` in PowerShell if the `npm` command is blocked by the script execution policy.
 
 The default development URL is `http://localhost:5173`.
 
@@ -69,7 +83,7 @@ Backend:
 - `MONGODB_URI` — MongoDB connection URI, default `mongodb://localhost:27017/clickcart`
 - `SERVER_PORT` — backend HTTP port, default `8080`
 
-Spring Boot does not automatically load `backend/.env`; define backend variables in the shell or runtime environment.
+For local development, the backend automatically loads `backend/.env`. Environment variables supplied by the shell or deployment runtime take precedence.
 
 ## Useful routes
 

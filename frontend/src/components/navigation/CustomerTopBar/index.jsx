@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 import React from "react";
 import { ChevronDown, Globe2, Phone } from "lucide-react";
+=======
+import React from 'react';
+import { ChevronDown, Phone } from "lucide-react";
+>>>>>>> 7e7349105484b574b794e987e35787f491ce9490
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
 
@@ -17,7 +22,7 @@ export default function CustomerTopBar() {
           <a href="#help-center">Help Center</a>
           <span>LKR</span>
           <button type="button" aria-label="Language: English">
-            <Globe2 size={13} aria-hidden="true" />
+            <span aria-hidden="true">🇱🇰</span>
             <span>Eng</span>
             <ChevronDown size={12} aria-hidden="true" />
           </button>

@@ -1,5 +1,6 @@
+import React from 'react';
 import { useEffect, useState } from "react";
-import { Bell, Heart, Menu, UserRound, X } from "lucide-react";
+import { Bell, Heart, Menu, X } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
@@ -7,6 +8,7 @@ import Button from "../../common/Button";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import { customerNavigation } from "../../../config/customerNavigation";
+import { useCustomer } from "../../../context/CustomerContext";
 import CustomerMobileNav from "../CustomerMobileNav";
 import NavItem from "../NavItem";
 import "./styles.css";
@@ -14,6 +16,7 @@ import "./styles.css";
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
+  const { profile, displayName, avatarFallback } = useCustomer();
 
   useEffect(() => setMenuOpen(false), [pathname]);
   useEffect(() => {
@@ -31,7 +34,7 @@ export default function CustomerHeader() {
           to="/"
           aria-label="ClickCart home"
         >
-          <BrandLogo showTagline />
+          <BrandLogo size="shell" showTagline />
         </Link>
         <nav className="customer-header__nav" aria-label="Customer navigation">
           {customerNavigation.map((item) => (
@@ -50,17 +53,21 @@ export default function CustomerHeader() {
             label="Notifications"
             variant="ghost"
           />
-          <button
+          <Link
             className="customer-header__account"
-            type="button"
-            aria-label="Open account menu"
+            to="/customer/profile"
+            aria-label="View customer profile"
           >
-            <Avatar fallback="GU" size="sm" />
+            <Avatar
+              src={profile?.avatarUrl}
+              fallback={avatarFallback || "TH"}
+              size="sm"
+            />
             <span>
               <small>Hello,</small>
-              <strong>Guest</strong>
+              <strong>{displayName || "Tharindu"}</strong>
             </span>
-          </button>
+          </Link>
           <Button className="customer-header__cta">Post a Service</Button>
           <IconButton
             className="customer-header__menu"

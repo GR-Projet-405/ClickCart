@@ -1,3 +1,4 @@
+import React from 'react';
 import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import Avatar from "../../common/Avatar";
@@ -25,7 +26,7 @@ export default function AdminHeader({ menuOpen, onMenuToggle }) {
           to="/admin"
           aria-label="ClickCart admin home"
         >
-          <BrandLogo />
+          <BrandLogo size="shell" showTagline />
         </Link>
         <div className="dashboard-header__search">
           <SearchInput
@@ -35,9 +36,6 @@ export default function AdminHeader({ menuOpen, onMenuToggle }) {
         </div>
         <div className="dashboard-header__spacer" />
         <div className="dashboard-header__actions">
-          <Badge className="dashboard-header__role" variant="primary">
-            Platform Admin
-          </Badge>
           <IconButton
             icon={<Bell size={18} />}
             label="Notifications"
@@ -55,6 +53,9 @@ export default function AdminHeader({ menuOpen, onMenuToggle }) {
             </span>
             <ChevronDown size={15} aria-hidden="true" />
           </button>
+          <Badge className="dashboard-header__role" variant="primary">
+            Platform Admin
+          </Badge>
         </div>
       </PageContainer>
     </header>
