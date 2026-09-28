@@ -1,36 +1,52 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/recommendations';
+const API_BASE_URL = 'http://localhost:9001/api/v1/recommendations';
+
+const normalizeRecommendationResponse = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload?.data)) return payload.data;
+  if (Array.isArray(payload?.providers)) return payload.providers;
+
+  return [];
+};
 
 export const recommendationService = {
-  /**
-   * Fetch matching providers based on category, location, and distance.
-   */
-  async getMatchedProviders(service = 'Plumbing', location = 'Panadura', maxDistance = 10.0) {
-    try {
-      const response = await axios.get(`${API_BASE_URL}/match`, {
-        params: { service, location, maxDistance }
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching recommendations, attempting fallback...', error);
-      // Fallback mechanism handling (AIF-007)
-      return this.getFallbackProviders(service);
-    }
-  },
+  async getMatchedProviders(
+    service = 'Plumbing',
+    location = 'Panadura Town',
+    maxDistance = 10.0
+  ) {
+    console.log('Calling recommendation API...');
 
-  /**
-   * Fallback mechanism if primary engine fails
-   */
-  async getFallbackProviders(service) {
     try {
-      const response = await axios.get(`${API_BASE_URL}/fallback`, {
-        params: { service }
-      });
-      return response.data;
-    } catch (err) {
-      console.error('Fallback failed:', err);
-      return { status: 'ERROR', totalMatches: 0, data: [] };
+      const response = await axios.get(
+        `${API_BASE_URL}/match`,
+        {
+          params: {
+            service,
+            location,
+            maxDistance
+          }
+        }
+      );
+
+      const normalizedData = normalizeRecommendationResponse(response?.data);
+
+      console.log('Recommendation API response:', response.data);
+
+      return {
+        ...response.data,
+        data: normalizedData,
+        totalMatches: response.data?.totalMatches ?? normalizedData.length
+      };
+    } catch (error) {
+      console.error('Recommendation API error:', error);
+
+      return {
+        status: 'ERROR',
+        totalMatches: 0,
+        data: []
+      };
     }
   }
 };

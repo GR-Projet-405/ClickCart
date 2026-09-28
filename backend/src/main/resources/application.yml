@@ -4,6 +4,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+      auto-index-creation: true
 
 server:
   port: ${SERVER_PORT:9001}

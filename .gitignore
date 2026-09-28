@@ -25,5 +25,5 @@ Desktop.ini
 *.log
 *.tmp
 *.swp
-.env
+.env.example
 
