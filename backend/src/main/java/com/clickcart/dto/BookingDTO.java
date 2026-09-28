@@ -56,7 +56,7 @@ public class BookingDTO {
             this.address = booking.getAddress();
             this.totalCost = booking.getTotalCost();
             this.currency = booking.getCurrency();
-            this.status = booking.getStatus();
+            this.status = booking.getStatus() != null ? booking.getStatus().name() : null;
             this.statusLabel = booking.getStatusLabel();
             this.notes = booking.getNotes();
             this.createdAt = booking.getCreatedAt();

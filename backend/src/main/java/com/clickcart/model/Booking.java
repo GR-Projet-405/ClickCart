@@ -1,11 +1,14 @@
 package com.clickcart.model;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import java.math.BigDecimal;
 import java.time.Instant;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 @Document(collection = "bookings")
+@CompoundIndex(name = "provider_status_created", def = "{'providerId': 1, 'status': 1, 'createdAt': -1}")
 public class Booking {
 
     @Id
@@ -16,6 +19,7 @@ public class Booking {
     private String customerPhone;
     private String serviceId;
     private String serviceTitle;
+    private String serviceName;
     private String serviceCategory;
     private String imageUrl;
     private String providerId;
@@ -24,13 +28,18 @@ public class Booking {
     private Double providerRating;
     private Integer providerReviewCount;
     private String bookingDate;
+    private String city;
+    private String country;
+    private Instant scheduledAt;
     private String timeSlot;
     private String location;
     private String address;
     private Double totalCost;
+    private BigDecimal estimatedPay;
     private String currency;
-    private String status; // UPCOMING, ACTIVE, COMPLETED, CANCELLED
-    private String statusLabel; // Confirmed, In Progress, Completed, Cancelled
+    private BookingStatus status;
+    private String statusLabel;
+    private boolean unread;
     private String notes;
     private Instant createdAt;
     private Instant updatedAt;
@@ -42,7 +51,7 @@ public class Booking {
                    String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
                    String providerId, String providerName, String providerAvatar, Double providerRating,
                    Integer providerReviewCount, String bookingDate, String timeSlot, String location,
-                   String address, Double totalCost, String currency, String status, String statusLabel,
+                   String address, Double totalCost, String currency, BookingStatus status, String statusLabel,
                    String notes, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.customerId = customerId;
@@ -51,6 +60,7 @@ public class Booking {
         this.customerPhone = customerPhone;
         this.serviceId = serviceId;
         this.serviceTitle = serviceTitle;
+        this.serviceName = serviceTitle;
         this.serviceCategory = serviceCategory;
         this.imageUrl = imageUrl;
         this.providerId = providerId;
@@ -63,12 +73,28 @@ public class Booking {
         this.location = location;
         this.address = address;
         this.totalCost = totalCost;
+        if (totalCost != null) {
+            this.estimatedPay = BigDecimal.valueOf(totalCost);
+        }
         this.currency = currency;
         this.status = status;
         this.statusLabel = statusLabel;
         this.notes = notes;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+    }
+
+    public Booking(String id, String customerId, String customerName, String customerEmail, String customerPhone,
+                   String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
+                   String providerId, String providerName, String providerAvatar, Double providerRating,
+                   Integer providerReviewCount, String bookingDate, String timeSlot, String location,
+                   String address, Double totalCost, String currency, String status, String statusLabel,
+                   String notes, Instant createdAt, Instant updatedAt) {
+        this(id, customerId, customerName, customerEmail, customerPhone, serviceId, serviceTitle, serviceCategory,
+                imageUrl, providerId, providerName, providerAvatar, providerRating, providerReviewCount,
+                bookingDate, timeSlot, location, address, totalCost, currency,
+                status != null ? BookingStatus.valueOf(status.toUpperCase().replace(" ", "_")) : null,
+                statusLabel, notes, createdAt, updatedAt);
     }
 
     public String getId() {
@@ -125,6 +151,20 @@ public class Booking {
 
     public void setServiceTitle(String serviceTitle) {
         this.serviceTitle = serviceTitle;
+        if (this.serviceName == null) {
+            this.serviceName = serviceTitle;
+        }
+    }
+
+    public String getServiceName() {
+        return serviceName;
+    }
+
+    public void setServiceName(String serviceName) {
+        this.serviceName = serviceName;
+        if (this.serviceTitle == null) {
+            this.serviceTitle = serviceName;
+        }
     }
 
     public String getServiceCategory() {
@@ -191,6 +231,30 @@ public class Booking {
         this.bookingDate = bookingDate;
     }
 
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public Instant getScheduledAt() {
+        return scheduledAt;
+    }
+
+    public void setScheduledAt(Instant scheduledAt) {
+        this.scheduledAt = scheduledAt;
+    }
+
     public String getTimeSlot() {
         return timeSlot;
     }
@@ -221,6 +285,17 @@ public class Booking {
 
     public void setTotalCost(Double totalCost) {
         this.totalCost = totalCost;
+        if (totalCost != null && this.estimatedPay == null) {
+            this.estimatedPay = BigDecimal.valueOf(totalCost);
+        }
+    }
+
+    public BigDecimal getEstimatedPay() {
+        return estimatedPay;
+    }
+
+    public void setEstimatedPay(BigDecimal estimatedPay) {
+        this.estimatedPay = estimatedPay;
     }
 
     public String getCurrency() {
@@ -231,12 +306,24 @@ public class Booking {
         this.currency = currency;
     }
 
-    public String getStatus() {
+    public BookingStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(BookingStatus status) {
         this.status = status;
+    }
+
+    public void setStatus(String status) {
+        if (status != null) {
+            try {
+                this.status = BookingStatus.valueOf(status.toUpperCase().replace(" ", "_"));
+            } catch (IllegalArgumentException e) {
+                this.status = null;
+            }
+        } else {
+            this.status = null;
+        }
     }
 
     public String getStatusLabel() {
@@ -245,6 +332,14 @@ public class Booking {
 
     public void setStatusLabel(String statusLabel) {
         this.statusLabel = statusLabel;
+    }
+
+    public boolean isUnread() {
+        return unread;
+    }
+
+    public void setUnread(boolean unread) {
+        this.unread = unread;
     }
 
     public String getNotes() {

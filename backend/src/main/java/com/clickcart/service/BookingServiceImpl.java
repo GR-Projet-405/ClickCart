@@ -1,19 +1,25 @@
 package com.clickcart.service;
 
-import com.clickcart.dto.BookingCreateDTO;
-import com.clickcart.dto.BookingDTO;
-import com.clickcart.dto.BookingSummaryDTO;
-import com.clickcart.exception.ResourceNotFoundException;
-import com.clickcart.model.Booking;
-import com.clickcart.repository.BookingRepository;
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.clickcart.dto.BookingCreateDTO;
+import com.clickcart.dto.BookingDTO;
+import com.clickcart.dto.BookingResponse;
+import com.clickcart.dto.BookingSummaryDTO;
+import com.clickcart.exception.BookingException;
+import com.clickcart.exception.ResourceNotFoundException;
+import com.clickcart.model.Booking;
+import com.clickcart.model.BookingStatus;
+import com.clickcart.repository.BookingRepository;
+
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class BookingServiceImpl implements BookingService {
@@ -46,7 +52,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-1", "Kamal Perera", "", 4.9, 120,
                         "16 Sep 2026", "10:00 AM - 11:30 AM", "Colombo",
                         "No. 45, Galle Road, Colombo 03", 3000.0, "LKR",
-                        "UPCOMING", "Confirmed", "Regular maintenance and coil cleaning", now, now),
+                        BookingStatus.UPCOMING, "Confirmed", "Regular maintenance and coil cleaning", now, now),
 
                 new Booking("bk-102", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-2", "House Cleaning", "Cleaning",
@@ -54,7 +60,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-2", "Nisansala Silva", "", 4.8, 95,
                         "20 Sep 2026", "2:00 PM - 4:00 PM", "Colombo",
                         "No. 45, Galle Road, Colombo 03", 2500.0, "LKR",
-                        "UPCOMING", "Confirmed", "Deep cleaning for living room and kitchen", now, now),
+                        BookingStatus.UPCOMING, "Confirmed", "Deep cleaning for living room and kitchen", now, now),
 
                 new Booking("bk-103", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-3", "Plumbing & Pipe Leak Repair", "Plumbing",
@@ -62,7 +68,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-3", "Ruwan Jayasinghe", "", 4.7, 84,
                         "25 Sep 2026", "11:00 AM - 1:00 PM", "Kandy",
                         "No. 12, Peradeniya Road, Kandy", 4200.0, "LKR",
-                        "ACTIVE", "In Progress", "Fix bathroom sink leak and inspect pipes", now, now),
+                        BookingStatus.ACTIVE, "In Progress", "Fix bathroom sink leak and inspect pipes", now, now),
 
                 new Booking("bk-104", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-4", "Sofa & Carpet Deep Cleaning", "Cleaning",
@@ -70,7 +76,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-4", "Nimali Fernando", "", 4.9, 150,
                         "10 Aug 2026", "9:00 AM - 12:00 PM", "Colombo",
                         "No. 45, Galle Road, Colombo 03", 5500.0, "LKR",
-                        "COMPLETED", "Completed", "Shampooing 5-seater sofa set and carpet", now, now),
+                        BookingStatus.COMPLETED, "Completed", "Shampooing 5-seater sofa set and carpet", now, now),
 
                 new Booking("bk-105", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-5", "Electrical Wiring & Socket Repair", "Electrical",
@@ -78,7 +84,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-5", "Sunil Shantha", "", 4.8, 62,
                         "02 Jul 2026", "3:00 PM - 5:00 PM", "Galle",
                         "No. 8, Beach Road, Galle", 3500.0, "LKR",
-                        "COMPLETED", "Completed", "Repaired main distribution box and replaced burnt sockets", now, now),
+                        BookingStatus.COMPLETED, "Completed", "Repaired main distribution box and replaced burnt sockets", now, now),
 
                 new Booking("bk-106", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-6", "Lawn Mowing & Garden Care", "Gardening",
@@ -86,7 +92,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-6", "Kasun Wickramasinghe", "", 4.6, 41,
                         "15 May 2026", "8:00 AM - 10:00 AM", "Negombo",
                         "No. 3, Main Street, Negombo", 2800.0, "LKR",
-                        "CANCELLED", "Cancelled", "Cancelled by customer due to heavy rain", now, now)
+                        BookingStatus.CANCELLED, "Cancelled", "Cancelled by customer due to heavy rain", now, now)
         );
 
         bookingRepository.saveAll(mockBookings);
@@ -97,11 +103,11 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
 
         if (tab == null || tab.trim().isEmpty() || "upcoming".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList("UPCOMING", "CONFIRMED"));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
         } else if ("active".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList("ACTIVE", "IN_PROGRESS"));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
         } else if ("history".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList("COMPLETED", "CANCELLED"));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
         } else {
             bookings = bookingRepository.findByCustomerId(customerId);
         }
@@ -113,9 +119,9 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingSummaryDTO getCustomerBookingSummary(String customerId) {
-        long upcoming = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList("UPCOMING", "CONFIRMED"));
-        long active = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList("ACTIVE", "IN_PROGRESS"));
-        long history = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList("COMPLETED", "CANCELLED"));
+        long upcoming = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
+        long active = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
+        long history = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
         long total = upcoming + active + history;
 
         return new BookingSummaryDTO(upcoming, active, history, total);
@@ -151,7 +157,7 @@ public class BookingServiceImpl implements BookingService {
         booking.setAddress(createDTO.getAddress());
         booking.setTotalCost(createDTO.getTotalCost());
         booking.setCurrency(createDTO.getCurrency() != null ? createDTO.getCurrency() : "LKR");
-        booking.setStatus("UPCOMING");
+        booking.setStatus(BookingStatus.UPCOMING);
         booking.setStatusLabel("Confirmed");
         booking.setNotes(createDTO.getNotes());
         booking.setCreatedAt(now);
@@ -166,7 +172,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
 
-        booking.setStatus("CANCELLED");
+        booking.setStatus(BookingStatus.CANCELLED);
         booking.setStatusLabel("Cancelled");
         if (reason != null && !reason.trim().isEmpty()) {
             booking.setNotes((booking.getNotes() != null ? booking.getNotes() + " | " : "") + "Cancellation reason: " + reason);
@@ -175,5 +181,71 @@ public class BookingServiceImpl implements BookingService {
 
         Booking updated = bookingRepository.save(booking);
         return new BookingDTO(updated);
+    }
+
+    @Override
+    public List<BookingResponse> listPending(String providerId, String sort) {
+        List<Booking> found;
+        if (sort == null || "newest".equals(sort)) {
+            found = bookingRepository.findByProviderIdAndStatusOrderByCreatedAtDesc(
+                    providerId, BookingStatus.PENDING_APPROVAL);
+        } else if ("oldest".equals(sort)) {
+            found = bookingRepository.findByProviderIdAndStatusOrderByCreatedAtAsc(
+                    providerId, BookingStatus.PENDING_APPROVAL);
+        } else {
+            throw new BookingException(HttpStatus.BAD_REQUEST, "Sort must be newest or oldest");
+        }
+        return found.stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    public BookingResponse get(String bookingId, String providerId) {
+        return toResponse(requireOwned(bookingId, providerId));
+    }
+
+    @Override
+    public BookingResponse decide(String bookingId, String providerId, BookingStatus nextStatus) {
+        if (nextStatus != BookingStatus.ACCEPTED && nextStatus != BookingStatus.DECLINED) {
+            throw new BookingException(HttpStatus.BAD_REQUEST, "Choose ACCEPTED or DECLINED");
+        }
+        Booking booking = requireOwned(bookingId, providerId);
+        if (booking.getStatus() != BookingStatus.PENDING_APPROVAL) {
+            throw new BookingException(
+                    HttpStatus.CONFLICT,
+                    "Only a pending booking can be accepted or declined");
+        }
+        booking.setStatus(nextStatus);
+        booking.setUnread(false);
+        booking.setUpdatedAt(Instant.now());
+        return toResponse(bookingRepository.save(booking));
+    }
+
+    private Booking requireOwned(String bookingId, String providerId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new BookingException(HttpStatus.NOT_FOUND, "Booking not found"));
+        if (providerId == null || !providerId.equals(booking.getProviderId())) {
+            throw new BookingException(
+                    HttpStatus.FORBIDDEN,
+                    "This booking is assigned to another provider");
+        }
+        return booking;
+    }
+
+    private BookingResponse toResponse(Booking booking) {
+        BookingResponse response = new BookingResponse();
+        response.setId(booking.getId());
+        response.setServiceName(booking.getServiceName() != null ? booking.getServiceName() : booking.getServiceTitle());
+        response.setCustomerName(booking.getCustomerName());
+        response.setCity(booking.getCity() != null ? booking.getCity() : booking.getLocation());
+        response.setCountry(booking.getCountry());
+        response.setScheduledAt(booking.getScheduledAt());
+        response.setTimeSlot(booking.getTimeSlot());
+        response.setEstimatedPay(booking.getEstimatedPay());
+        response.setCurrency(booking.getCurrency());
+        response.setNotes(booking.getNotes());
+        response.setStatus(booking.getStatus());
+        response.setUnread(booking.isUnread());
+        response.setCreatedAt(booking.getCreatedAt());
+        return response;
     }
 }
