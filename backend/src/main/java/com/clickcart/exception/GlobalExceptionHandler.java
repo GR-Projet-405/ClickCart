@@ -1,5 +1,6 @@
 package com.clickcart.exception;
 
+<<<<<<< Updated upstream
 import java.util.HashMap;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -95,3 +96,73 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
+=======
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Global exception handler — returns consistent JSON error bodies
+ * without leaking stack traces to clients.
+ */
+@RestControllerAdvice
+public class GlobalExceptionHandler {
+
+    // ── Custom application exceptions ─────────────────────────────────────────
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<Map<String, Object>> handleNotFound(ResourceNotFoundException ex) {
+        return error(HttpStatus.NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(AccessDeniedException ex) {
+        return error(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidAttachmentException.class)
+    public ResponseEntity<Map<String, Object>> handleInvalidAttachment(InvalidAttachmentException ex) {
+        return error(HttpStatus.UNPROCESSABLE_ENTITY, ex.getMessage());
+    }
+
+    // ── Spring / Servlet exceptions ───────────────────────────────────────────
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Map<String, Object>> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return error(HttpStatus.BAD_REQUEST, message);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, Object>> handleTooLarge(MaxUploadSizeExceededException ex) {
+        return error(HttpStatus.PAYLOAD_TOO_LARGE, "File too large. Maximum allowed size is 10 MB.");
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, Object>> handleGeneric(Exception ex) {
+        // Log internally but do not expose details to the client
+        ex.printStackTrace();
+        return error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected error occurred. Please try again.");
+    }
+
+    // ── Helper ────────────────────────────────────────────────────────────────
+
+    private ResponseEntity<Map<String, Object>> error(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(Map.of(
+                "status", status.value(),
+                "error", status.getReasonPhrase(),
+                "message", message,
+                "timestamp", Instant.now().toString()
+        ));
+    }
+}
+>>>>>>> Stashed changes

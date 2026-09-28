@@ -23,6 +23,7 @@ import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import MessagesPage from "../pages/Messages/MessagesPage";
 
 export default function AppRoutes() {
   return (
@@ -45,6 +46,9 @@ export default function AppRoutes() {
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+
         {/* Update: Only one mapping loop for the remaining provider navigation */}
         {providerNavigation
           .filter(({ path }) =>
@@ -52,7 +56,8 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/profile"
+            path !== "/provider/profile" &&
+            path !== "/provider/messages"
           )
           .map(({ path }) => (
             <Route
@@ -101,8 +106,11 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
         <Route path="find-services" element={<MarketplaceServicesPage />} />
+        
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage />} />
 
-        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
+        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services" && to !== "/messages").map(({ to }) => (
           <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
         ))}
         <Route path="*" element={<NotFound />} />
