@@ -1,0 +1,2 @@
+$jar = "C:\Users\sachi\.m2\repository\org\springframework\spring-web\6.2.3\spring-web-6.2.3.jar"
+& "C:\Program Files\Java\jdk-24\bin\jar.exe" tf $jar 2>$null | Where-Object { $_ -match "annotation" -and $_ -match "Variable" }
