@@ -9,6 +9,7 @@ import {
   UserRound,
   WalletCards,
   Wrench,
+  MapPin,
 } from "lucide-react";
 
 export const providerNavigation = [
@@ -18,6 +19,7 @@ export const providerNavigation = [
   { label: "Messages", path: "/provider/messages", icon: Mail, demoCount: 3 },
   { label: "Calendar", path: "/provider/calendar", icon: CalendarDays },
   { label: "Availability", path: "/provider/availability", icon: Clock },
+  { label: "Service Areas", path: "/provider/service-areas", icon: MapPin },
   { label: "Earnings", path: "/provider/earnings", icon: WalletCards },
   { label: "Reviews", path: "/provider/reviews", icon: Star },
   { label: "Profile", path: "/provider/profile", icon: UserRound },
