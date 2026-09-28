@@ -9,6 +9,7 @@ import NotFound from "../pages/placeholders/NotFound";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import RecommendationsPage from "../pages/recommendations/RecommendationsPage";
 
 export default function AppRoutes() {
   return (
@@ -63,12 +64,23 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route element={<CustomerLayout />}>
-        <Route index element={<CustomerWorkspace />} />
-        {customerNavigation.slice(1).map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-        ))}
+  <Route index element={<CustomerWorkspace />} />
+
+  {customerNavigation.slice(1).map(({ to }) => (
+    <Route
+      key={to}
+      path={to.slice(1)}
+      element={<CustomerWorkspace />}
+    />
+  ))}
+
+  {/* Provider Matching & Recommendations */}
+        <Route path="recommendations" element={<RecommendationsPage />} />
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+
+    
   );
 }
