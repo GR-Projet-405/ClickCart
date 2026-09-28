@@ -22,9 +22,22 @@ export const marketplaceServicesApi = {
     const response = await fetch(`${endpoint}${buildQueryString(params)}`);
     const text = await response.text();
     const body = text ? JSON.parse(text) : null;
+
     if (!response.ok) {
       throw new Error(body?.detail || body?.message || "Services could not be loaded.");
     }
-    return Array.isArray(body) ? body : [];
+
+    if (body && typeof body === "object") {
+      return body;
+    }
+
+    return {
+      content: Array.isArray(body) ? body : [],
+      page: 0,
+      size: 0,
+      totalElements: Array.isArray(body) ? body.length : 0,
+      totalPages: 0,
+      last: true,
+    };
   },
 };

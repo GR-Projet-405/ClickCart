@@ -9,6 +9,7 @@ import FilterSidebar from "../../components/search/FilterSidebar";
 import ServiceCard from "../../components/search/ServiceCard";
 import SortDropdown from "../../components/search/SortDropdown";
 import { marketplaceServicesApi } from "../../services/marketplaceServices";
+import { SERVICE_CATEGORIES } from "../../config/serviceCategories";
 import "../../components/search/search.css";
 import "./marketplace-services.css";
 
@@ -96,44 +97,22 @@ function normalizeService(service) {
   };
 }
 
-function parseAvailability(service) {
-  const raw = String(service.availability || service.nextAvailable || "").trim().toLowerCase();
-  if (!raw) {
-    return null;
+function mapSelectedAvailability(selectedAvailability) {
+  if (!selectedAvailability.length) {
+    return undefined;
   }
 
-  if (raw.includes("today") || raw.includes("tomorrow")) {
-    return "today-or-tomorrow";
+  // Prefer the broader "within_3_days" filter when both availability options are selected,
+  // because it covers both the Today/Tomorrow and Within 3 Days match windows.
+  if (selectedAvailability.includes("Within 3 Days")) {
+    return "within_3_days";
   }
 
-  if (raw.includes("3 day") || raw.includes("within 3")) {
-    return "within-3-days";
+  if (selectedAvailability.includes("Today/Tomorrow")) {
+    return "today_tomorrow";
   }
 
-  return raw;
-}
-
-function getEffectivePriceRange(service) {
-  const low = Number(service.priceFrom ?? service.priceTo ?? 0) || 0;
-  const high = Number(service.priceTo ?? service.priceFrom ?? low) || low;
-  return { low, high };
-}
-
-function matchesAvailability(service, label) {
-  const availability = parseAvailability(service);
-  if (!availability) {
-    return false;
-  }
-
-  if (label === "Today/Tomorrow") {
-    return availability === "today-or-tomorrow";
-  }
-
-  if (label === "Within 3 Days") {
-    return availability === "within-3-days";
-  }
-
-  return false;
+  return undefined;
 }
 
 export default function MarketplaceServicesPage() {
@@ -150,16 +129,35 @@ export default function MarketplaceServicesPage() {
   const [selectedAvailability, setSelectedAvailability] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedService, setSelectedService] = useState(null);
+  const [totalElements, setTotalElements] = useState(0);
+  const [catalogServices, setCatalogServices] = useState([]);
+
+  const loadCatalogServices = async () => {
+    try {
+      const response = await marketplaceServicesApi.listActive({ page: 0, size: 200 });
+      const items = Array.isArray(response?.content) ? response.content : [];
+      setCatalogServices(items.map(normalizeService));
+    } catch (reason) {
+      setCatalogServices([]);
+    }
+  };
 
   const loadServices = async (nextParams = {}) => {
     setLoading(true);
     setError("");
 
     try {
-      const items = await marketplaceServicesApi.listActive(nextParams);
+      const response = await marketplaceServicesApi.listActive(nextParams);
+      const items = Array.isArray(response?.content) ? response.content : [];
       setServices(items.map(normalizeService));
+      setTotalElements(Number(response?.totalElements ?? items.length));
+      const serverPage = Number(response?.page ?? 0);
+      if (Number.isFinite(serverPage) && serverPage >= 0) {
+        setCurrentPage(serverPage + 1);
+      }
     } catch (reason) {
       setServices([]);
+      setTotalElements(0);
       setError(reason.message || "Services could not be loaded.");
     } finally {
       setLoading(false);
@@ -167,6 +165,17 @@ export default function MarketplaceServicesPage() {
   };
 
   useEffect(() => {
+    loadCatalogServices();
+  }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy]);
+
+  useEffect(() => {
+    const supportedSortValues = new Set(["relevance", "price_asc", "price_desc", "rating"]);
+    const normalizedSortBy = supportedSortValues.has(sortBy) ? sortBy : undefined;
+
     const params = {
       q: query.trim() || undefined,
       category: category !== "All categories" ? category : undefined,
@@ -174,120 +183,45 @@ export default function MarketplaceServicesPage() {
       minPrice: minPrice !== DEFAULT_MIN_PRICE ? minPrice : undefined,
       maxPrice: maxPrice !== DEFAULT_MAX_PRICE ? maxPrice : undefined,
       minRating: selectedRatings.length ? Math.min(...selectedRatings) : undefined,
-      availability: selectedAvailability.length ? selectedAvailability.join(",") : undefined,
-      sort: sortBy !== "relevance" ? sortBy : undefined,
+      availability: mapSelectedAvailability(selectedAvailability),
+      sortBy: normalizedSortBy,
+      page: Math.max(currentPage - 1, 0),
+      size: PAGE_SIZE,
     };
 
-    // TODO: move these filters and sort to the server once the backend supports them.
     loadServices(params);
-  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy]);
+  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy, currentPage]);
 
   const categories = useMemo(
-    () => [...new Set(services.map((service) => service.category).filter(Boolean))].sort(),
-    [services],
+    () =>
+      [...new Set([...SERVICE_CATEGORIES, ...catalogServices.map((service) => service.category).filter(Boolean)])].sort(),
+    [catalogServices],
   );
 
   const locations = useMemo(
-    () => [...new Set(services.map((service) => service.location).filter(Boolean))].sort(),
-    [services],
+    () => [...new Set(catalogServices.map((service) => service.location).filter(Boolean))].sort(),
+    [catalogServices],
   );
 
-  const baseSearchServices = useMemo(() => {
-    const search = query.trim().toLowerCase();
-    return services.filter((service) => {
-      const matchesSearch =
-        !search || [service.title, service.category, service.description].some((value) => value?.toLowerCase().includes(search));
-      if (!matchesSearch) {
-        return false;
-      }
+  const ratingOptions = useMemo(
+    () => [
+      { label: "4+ Stars", value: 4, count: 0 },
+      { label: "3+ Stars", value: 3, count: 0 },
+      { label: "2+ Stars", value: 2, count: 0 },
+      { label: "1+ Stars", value: 1, count: 0 },
+    ],
+    [],
+  );
 
-      if (category !== "All categories" && service.category !== category) {
-        return false;
-      }
+  const availabilityOptions = useMemo(
+    () => [
+      { label: "Today/Tomorrow", value: "Today/Tomorrow", count: 0 },
+      { label: "Within 3 Days", value: "Within 3 Days", count: 0 },
+    ],
+    [],
+  );
 
-      if (location !== "All locations" && !String(service.location || "").toLowerCase().includes(location.toLowerCase())) {
-        return false;
-      }
-
-      const { low, high } = getEffectivePriceRange(service);
-      if (low > maxPrice || high < minPrice) {
-        return false;
-      }
-
-      return true;
-    });
-  }, [category, location, maxPrice, minPrice, query, services]);
-
-  const ratingOptions = useMemo(() => {
-    const counts = { 4: 0, 3: 0, 2: 0, 1: 0 };
-
-    baseSearchServices.forEach((service) => {
-      const rating = Number(service.rating ?? 0);
-      if (rating >= 4) counts[4] += 1;
-      if (rating >= 3) counts[3] += 1;
-      if (rating >= 2) counts[2] += 1;
-      if (rating >= 1) counts[1] += 1;
-    });
-
-    return [
-      { label: "4+ Stars", value: 4, count: counts[4] },
-      { label: "3+ Stars", value: 3, count: counts[3] },
-      { label: "2+ Stars", value: 2, count: counts[2] },
-      { label: "1+ Stars", value: 1, count: counts[1] },
-    ];
-  }, [baseSearchServices]);
-
-  const availabilityOptions = useMemo(() => {
-    const counts = {
-      "Today/Tomorrow": 0,
-      "Within 3 Days": 0,
-    };
-
-    baseSearchServices.forEach((service) => {
-      if (matchesAvailability(service, "Today/Tomorrow")) counts["Today/Tomorrow"] += 1;
-      if (matchesAvailability(service, "Within 3 Days")) counts["Within 3 Days"] += 1;
-    });
-
-    return [
-      { label: "Today/Tomorrow", value: "Today/Tomorrow", count: counts["Today/Tomorrow"] },
-      { label: "Within 3 Days", value: "Within 3 Days", count: counts["Within 3 Days"] },
-    ];
-  }, [baseSearchServices]);
-
-  const filteredServices = useMemo(() => {
-    let result = [...baseSearchServices];
-
-    if (selectedRatings.length > 0) {
-      const minRequired = Math.min(...selectedRatings);
-      result = result.filter((service) => Number(service.rating ?? 0) >= minRequired);
-    }
-
-    if (selectedAvailability.length > 0) {
-      result = result.filter((service) =>
-        selectedAvailability.some((option) => matchesAvailability(service, option)),
-      );
-    }
-
-    if (sortBy === "price-low-to-high") {
-      result.sort((left, right) => getEffectivePriceRange(left).low - getEffectivePriceRange(right).low);
-    } else if (sortBy === "price-high-to-low") {
-      result.sort((left, right) => getEffectivePriceRange(right).low - getEffectivePriceRange(left).low);
-    } else if (sortBy === "rating") {
-      result.sort((left, right) => Number(right.rating ?? 0) - Number(left.rating ?? 0));
-    }
-
-    return result;
-  }, [baseSearchServices, selectedAvailability, selectedRatings, sortBy]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredServices.length / PAGE_SIZE));
-  const pagedServices = useMemo(() => {
-    const start = (currentPage - 1) * PAGE_SIZE;
-    return filteredServices.slice(start, start + PAGE_SIZE);
-  }, [currentPage, filteredServices]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy]);
+  const totalPages = Math.max(0, Math.ceil(totalElements / PAGE_SIZE));
 
   const activeFilters = useMemo(() => {
     const items = [];
@@ -407,7 +341,7 @@ export default function MarketplaceServicesPage() {
 
             <div className="marketplace-results-summary">
               <h2>{hasSearchQuery ? `Search Results for "${query}"` : "Search Results"}</h2>
-              <p>Showing {filteredServices.length} results</p>
+              <p>Showing {totalElements} results</p>
             </div>
 
             <ActiveFilterChips filters={activeFilters} onRemove={removeFilter} />
@@ -444,7 +378,7 @@ export default function MarketplaceServicesPage() {
 
             <div className="marketplace-search-main">
               <div className="marketplace-search-toolbar">
-                <span className="marketplace-search-toolbar__meta">Showing {filteredServices.length} results</span>
+                <span className="marketplace-search-toolbar__meta">Showing {totalElements} results</span>
                 <SortDropdown value={sortBy} onChange={setSortBy} />
               </div>
 
@@ -465,7 +399,7 @@ export default function MarketplaceServicesPage() {
                   title="No services available yet"
                   description="New local service listings will appear here when providers publish them."
                 />
-              ) : filteredServices.length === 0 ? (
+              ) : totalElements === 0 ? (
                 <EmptyState
                   icon={<Search size={24} />}
                   title="No services found"
@@ -482,7 +416,7 @@ export default function MarketplaceServicesPage() {
               ) : (
                 <>
                   <div className="marketplace-results-grid">
-                    {pagedServices.map((service) => (
+                    {services.map((service) => (
                       <ServiceCard key={service.id} service={service} onViewService={setSelectedService} />
                     ))}
                   </div>

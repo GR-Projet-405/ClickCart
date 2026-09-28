@@ -61,6 +61,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/health", "/api/public/**").permitAll()
+                .requestMatchers("/api/services", "/api/services/**").permitAll()
                 .requestMatchers("/api/provider/service-areas", "/api/provider/service-areas/**").permitAll()
                 .requestMatchers("/api/service-areas/**").permitAll()
                 .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
