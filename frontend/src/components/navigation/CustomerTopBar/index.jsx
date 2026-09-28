@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 import React from "react";
 import { ChevronDown, Globe2, Phone } from "lucide-react";
-=======
-import React from 'react';
-import { ChevronDown, Phone } from "lucide-react";
->>>>>>> 7e7349105484b574b794e987e35787f491ce9490
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
 

@@ -1,10 +1,8 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   application:
     name: clickcart-backend
   config:
-    import: optional:file:.env
+    import: optional:file:.env[.properties], optional:file:.env
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
