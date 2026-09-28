@@ -1,12 +1,5 @@
 import { API_BASE_URL } from "../config/api";
 
-export const DEMO_PROVIDER_TOKENS = {
-  "provider-a":
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwcm92aWRlci1hIiwicm9sZSI6IlNFUlZJQ0VfUFJPVklERVIiLCJuYW1lIjoiS2F2aW5kYSBTaWx2YSIsImV4cCI6MTg5MzQ1NjAwMH0.GlRPiy13tj_uVOY4ETmvZ9A_co2LGemATcQWqtq_SUY",
-  "provider-b":
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwcm92aWRlci1iIiwicm9sZSI6IlNFUlZJQ0VfUFJPVklERVIiLCJuYW1lIjoiUHJvdmlkZXIgQiIsImV4cCI6MTg5MzQ1NjAwMH0.YxinI48JHrN4j__ijQXhzmesEUFs3QvpyURWLx9H9pw",
-};
-
 const TOKEN_KEY = "clickcart.providerToken";
 const PROVIDER_KEY = "clickcart.providerId";
 
@@ -15,17 +8,12 @@ export function getSelectedProviderId() {
 }
 
 export function getProviderToken() {
-  return (
-    localStorage.getItem(TOKEN_KEY) ||
-    import.meta.env.VITE_PROVIDER_ACCESS_TOKEN ||
-    DEMO_PROVIDER_TOKENS[getSelectedProviderId()] ||
-    DEMO_PROVIDER_TOKENS["provider-a"]
-  );
+  return localStorage.getItem(TOKEN_KEY) || import.meta.env.VITE_PROVIDER_ACCESS_TOKEN || "";
 }
 
 export function setDemoProvider(providerId) {
   localStorage.setItem(PROVIDER_KEY, providerId);
-  localStorage.setItem(TOKEN_KEY, DEMO_PROVIDER_TOKENS[providerId]);
+  localStorage.removeItem(TOKEN_KEY);
 }
 
 function authHeaders(extra = {}) {

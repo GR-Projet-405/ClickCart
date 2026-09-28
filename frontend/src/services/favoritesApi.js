@@ -1,5 +1,6 @@
-// frontend/src/services/favoritesApi.js
-const API_URL = 'http://localhost:8080/api/favorites';
+import { API_BASE_URL } from "../config/api";
+
+const API_URL = `${API_BASE_URL}/favorites`;
 
 // Temporary — replace with real logged-in user later
 const CUSTOMER_ID = 'user123';
