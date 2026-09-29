@@ -174,7 +174,11 @@ export default function AppRoutes() {
 
         {customerNavigation.slice(1).map(({ to }) => {
           // Skip routes that have explicit components registered above
-          if (to === "/checkout" || to === "/customer/payments") return null;
+          if (
+            to === "/checkout" ||
+            to === "/customer/payments" ||
+            to === "/find-services"
+          ) return null;
           return <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />;
         })}
         <Route path="location-permission" element={<LocationPermission />} />
@@ -196,7 +200,8 @@ export default function AppRoutes() {
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
         {/* DEV-14: AI Assisted Search Route */}
-        <Route path="find-services" element={<AiServiceSearchPage />} />
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
 
         {/* Existing dynamic routes */}
         {customerNavigation
