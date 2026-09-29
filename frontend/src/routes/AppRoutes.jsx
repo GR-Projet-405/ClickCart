@@ -17,6 +17,7 @@ import AvailabilityPage from "../pages/provider/AvailabilityPage";
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import RecommendationsPage from "../pages/recommendations/RecommendationsPage";
 
 // Admin Pages
 import AdminCategoryDashboard from "../pages/AdminCategoryDashboard";
@@ -186,6 +187,18 @@ export default function AppRoutes() {
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
 
+        {customerNavigation.slice(1).map(({ to }) => (
+          <Route
+            key={to}
+            path={to.slice(1)}
+            element={<CustomerWorkspace />}
+          />
+        ))}
+
+        {/* Provider Matching & Recommendations */}
+        <Route path="recommendations" element={<RecommendationsPage />} />
+        <Route index element={<CustomerWorkspace />} />
+
         <Route path="messages" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="explore" element={<CustomerExplorePage />} />
@@ -230,5 +243,7 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+
+
   );
 }

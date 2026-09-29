@@ -7,8 +7,8 @@ spring:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
       database: ${MONGODB_DATABASE:clickcart}
-      
-  # Gmail / SMTP Settings
+
+  # Gmail / SMTP Settings 
   mail:
     host: smtp.gmail.com
     port: 587
