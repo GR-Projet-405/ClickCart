@@ -1,0 +1,3 @@
+export default function CommissionHistory({ entries = [] }) {
+  return <div className="commission-table-wrap"><table className="commission-table"><thead><tr><th>Transaction</th><th>Service</th><th>Booking</th><th>Commission</th><th>Status</th></tr></thead><tbody>{entries.map((entry) => <tr key={entry.transactionId}><td><strong>{entry.publicId || entry.transactionId}</strong><small>{entry.date}</small></td><td>{entry.service}</td><td>{entry.bookingAmount}</td><td>{entry.commissionAmount}</td><td><span className={`commission-status commission-status--${entry.status.toLowerCase()}`}>{entry.status}</span></td></tr>)}</tbody></table></div>;
+}

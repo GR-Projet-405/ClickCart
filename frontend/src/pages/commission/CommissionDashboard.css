@@ -1,0 +1,99 @@
+.commission-page { padding: 32px; max-width: 1320px; margin: auto; color: var(--cc-text-primary); }.commission-page__heading,.commission-panel__heading { display:flex; justify-content:space-between; gap:20px; align-items:start; }.commission-page__heading h1 { margin:8px 0 5px; color:#143d2d; font-size:28px; }.commission-page__heading p,.commission-panel__heading p { margin:0; color:var(--cc-text-secondary); }.commission-eyebrow { display:inline-flex; gap:6px; align-items:center; color:#0b8b50; font-size:11px; font-weight:700; letter-spacing:.08em; }.commission-page__actions { display:flex; gap:10px; align-items:center; }.commission-mode { border:1px solid var(--cc-border); border-radius:6px; padding:8px 10px; color:var(--cc-text-secondary); font-size:12px; }.commission-mode select { border:0; color:inherit; font:inherit; margin-left:8px; }.commission-tabs { display:flex; gap:22px; border-bottom:1px solid var(--cc-border); margin:28px 0 20px; }.commission-tabs button { border:0; background:none; color:var(--cc-text-secondary); padding:11px 2px; cursor:pointer; }.commission-tabs button.active { color:#0b8b50; font-weight:700; border-bottom:2px solid #0b8b50; }.commission-error { background:var(--cc-error-soft); color:var(--cc-error-text); padding:10px 12px; border-radius:6px; margin-top:16px; }.commission-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }.commission-stat { border-left:3px solid #18a568; }.commission-stat--blue { border-left-color:#4d8fd4; }.commission-stat--purple { border-left-color:#8b77c9; }.commission-stat--amber { border-left-color:#d59b3a; }.commission-stat__label,.commission-stat small { display:block; color:var(--cc-text-secondary); font-size:12px; }.commission-stat strong { display:block; margin:10px 0 4px; color:#173f2f; font-size:22px; }.commission-dashboard-grid { display:grid; grid-template-columns:1.65fr 1fr; gap:16px; margin-top:16px; }.commission-dashboard-grid--tables { grid-template-columns:1.35fr 1fr; }.commission-panel h2,.commission-simulator h2 { margin:0 0 5px; font-size:16px; color:#173f2f; }.commission-panel__heading select { padding:7px; border:1px solid var(--cc-border); border-radius:5px; }.commission-chart { height:190px; position:relative; margin-top:22px; color:#159765; }.commission-chart__grid { position:absolute; inset:0 0 22px; display:flex; flex-direction:column; justify-content:space-between; }.commission-chart__grid i { border-top:1px dashed #e5ece8; }.commission-chart svg { position:absolute; inset:0 0 22px; width:100%; height:calc(100% - 22px); overflow:visible; }.commission-chart__labels { display:flex; justify-content:space-between; position:absolute; bottom:0; left:0; right:0; color:var(--cc-text-muted); font-size:10px; }.category-list { display:grid; gap:19px; margin-top:28px; }.category-list span { display:flex; align-items:center; gap:8px; }.category-list strong { margin-left:auto; }.category-dot { width:9px; height:9px; border-radius:50%; }.category-dot--green { background:#18a568; }.category-dot--blue { background:#4d8fd4; }.category-dot--amber { background:#d59b3a; }.commission-link { border:0; background:none; color:#0b8b50; cursor:pointer; display:flex; gap:5px; align-items:center; }.commission-table-wrap { overflow:auto; margin:16px -20px -20px; }.commission-table { width:100%; border-collapse:collapse; min-width:490px; font-size:12px; }.commission-table th,.commission-table td { padding:12px 20px; border-top:1px solid var(--cc-border-soft); text-align:left; white-space:nowrap; }.commission-table th { color:var(--cc-text-muted); font-size:10px; text-transform:uppercase; }.commission-table td strong,.commission-table td small { display:block; }.commission-table td small { color:var(--cc-text-muted); margin-top:3px; font-size:10px; }.commission-status { border:0; border-radius:20px; padding:5px 8px; font-size:10px; font-weight:700; cursor:pointer; }.commission-status--active,.commission-status--settled { background:var(--cc-success-soft); color:var(--cc-success-text); }.commission-status--pending { background:var(--cc-warning-soft); color:var(--cc-warning-text); }.commission-status--paused { background:var(--cc-bg-muted); color:var(--cc-text-secondary); }.commission-toolbar { margin-top:16px; }.commission-search { border:1px solid var(--cc-border); border-radius:5px; display:flex; gap:8px; padding:8px 10px; max-width:340px; color:var(--cc-text-muted); }.commission-search input { border:0; outline:0; width:100%; }.commission-simulator { background:#fff; border:1px solid var(--cc-border); border-top:3px solid #159765; border-radius:8px; padding:24px; }.commission-form-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin:22px 0; }.commission-form-grid label,.commission-form label { color:var(--cc-text-secondary); font-size:12px; display:grid; gap:6px; }.commission-form-grid input,.commission-form-grid select,.commission-form input,.commission-form select { border:1px solid var(--cc-border); border-radius:5px; padding:9px; }.commission-simulator__result { display:grid; grid-template-columns:repeat(3,1fr); background:#f0faf4; border:1px solid #d3eddd; border-radius:6px; padding:17px; margin-bottom:18px; }.commission-simulator__result span,.commission-simulator__result strong { display:block; }.commission-simulator__result span { color:var(--cc-text-secondary); font-size:12px; }.commission-simulator__result strong { color:#087448; font-size:20px; margin-top:7px; }.commission-modal { position:fixed; inset:0; background:#11281d80; display:grid; place-items:center; z-index:20; padding:20px; }.commission-form { background:#fff; width:min(500px,100%); border-radius:8px; padding:24px; box-shadow:0 20px 60px #0002; }.commission-form__header { display:flex; justify-content:space-between; align-items:start; margin-bottom:20px; }.commission-form__header h2 { margin:8px 0 0; color:#173f2f; }.commission-form__header button { border:0; background:none; cursor:pointer; }.commission-form__actions { display:flex; justify-content:flex-end; gap:10px; margin-top:20px; }
+.commission-edit-button { border:1px solid var(--cc-border); border-radius:5px; background:#fff; color:#0b8b50; padding:5px 9px; cursor:pointer; font-size:11px; font-weight:700; }.commission-edit-button:hover { background:var(--cc-primary-soft); }
+.commission-row-actions { display:flex; gap:6px; align-items:center; }.commission-stop-button,.commission-activate-button { border:0; border-radius:5px; padding:5px 8px; cursor:pointer; font-size:11px; font-weight:700; }.commission-stop-button { background:var(--cc-error-soft); color:var(--cc-error-text); }.commission-stop-button:hover { background:#fddedb; }.commission-activate-button { background:var(--cc-success-soft); color:var(--cc-success-text); }
+.commission-state { min-height:220px; display:grid; place-items:center; align-content:center; gap:8px; text-align:center; }.commission-state h2 { margin:0; color:#173f2f; }.commission-state p { margin:0 0 8px; color:var(--cc-text-secondary); }.commission-state--error { border-top:3px solid var(--cc-error); }.commission-state__spin { color:#159765; animation:commission-spin 1s linear infinite; }.commission-empty { color:var(--cc-text-muted); font-size:12px; padding:24px 0; }.commission-data-label { color:#159765; background:var(--cc-primary-soft); border-radius:20px; padding:5px 8px; font-size:10px; font-weight:700; }
+.commission-page--form { max-width:900px; }.commission-back-link { display:inline-flex; align-items:center; gap:7px; border:0; background:none; color:#0b8b50; padding:0; cursor:pointer; font:600 12px 'DM Sans'; }.commission-form-page__heading { margin:25px 0 22px; }.commission-form-page__heading h1 { margin:8px 0 6px; color:#143d2d; font-size:28px; }.commission-form-page__heading p { margin:0; color:var(--cc-text-secondary); }.commission-form-shell { background:#fff; border:1px solid var(--cc-border); border-radius:8px; box-shadow:0 3px 12px #20352a08; }.commission-form-shell .commission-form { width:auto; border:0; box-shadow:none; }
+@keyframes commission-spin { to { transform:rotate(360deg); } }
+.commission-modal { background:rgb(12 38 27 / 54%); backdrop-filter:blur(3px); }
+.commission-form { width:min(620px,100%); padding:0; overflow:hidden; border:1px solid #dfe9e3; }
+.commission-form { display:grid; grid-template-columns:1fr 1fr; gap:0 18px; }
+.commission-form__header { grid-column:1 / -1; padding:25px 28px 22px; margin:0; background:#f4faf6; border-bottom:1px solid #dcece2; }
+.commission-form__header h2 { font-size:22px; letter-spacing:-.4px; }
+.commission-form__header button { border:1px solid #d4e1d9; border-radius:5px; padding:7px 10px; color:#53675c; background:#fff; font-size:11px; }
+.commission-form > .cc-field { margin:0; padding:18px 0 0; }
+.commission-form > .cc-field:nth-child(2) { grid-column:1 / -1; padding-left:28px; padding-right:28px; }
+.commission-form > .cc-field:nth-child(3) { margin-left:28px; }
+.commission-form > .cc-field:nth-child(4) { margin-right:28px; }
+.commission-form > .cc-field:nth-child(5) { margin-left:28px; }
+.commission-form__actions { grid-column:1 / -1; margin:22px 0 0; padding:15px 28px; border-top:1px solid #e7eee9; background:#fbfdfc; }
+.commission-form .cc-field-control { min-height:40px; }
+@media (max-width:800px) { .commission-page { padding:20px 14px; }.commission-stats { grid-template-columns:repeat(2,1fr); }.commission-dashboard-grid,.commission-dashboard-grid--tables { grid-template-columns:1fr; }.commission-form-grid { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:520px) { .commission-page__heading { display:block; }.commission-page__actions { margin-top:18px; }.commission-mode { display:inline-block; }.commission-stats { gap:8px; }.commission-stat { padding:12px; }.commission-stat strong { font-size:17px; }.commission-form-grid,.commission-simulator__result { grid-template-columns:1fr; }.commission-form { display:block; }.commission-form__header { padding:20px; }.commission-form > .cc-field,.commission-form > .cc-field:nth-child(2),.commission-form > .cc-field:nth-child(3),.commission-form > .cc-field:nth-child(4),.commission-form > .cc-field:nth-child(5) { margin-left:20px; margin-right:20px; padding-left:0; padding-right:0; }.commission-form__actions { padding:14px 20px; } }
+
+.commission-revenue-chart { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; margin-top: 22px; color: #159765; }
+.commission-revenue-chart__scale { display: flex; flex-direction: column; justify-content: space-between; padding: 10px 0; height: 180px; box-sizing: border-box; text-align: right; font-size: 11px; color: var(--cc-text-secondary); }
+.commission-revenue-chart__plot svg { display: block; width: 100%; height: 180px; }
+.commission-revenue-chart__dates { display: flex; justify-content: space-between; font-size: 11px; color: var(--cc-text-secondary); }
+.commission-revenue-chart > p, .commission-revenue-chart > details { grid-column: 1 / -1; color: var(--cc-text-secondary); font-size: 12px; }
+.commission-revenue-chart summary { cursor: pointer; }
+.commission-revenue-chart .commission-table-wrap { margin: 12px 0 0; max-height: 220px; }
+.commission-revenue-chart .commission-table { min-width: 0; }
+
+.commission-simulator__actions { display: flex; align-self: end; align-items: center; gap: 8px; flex-wrap: wrap; min-height: 36px; }
+
+.split-search-panel { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 24px; padding: 20px; border: 1px solid #e1ebe5; border-radius: 10px; background: #f8fbf9; }
+.split-search-panel__heading h2 { display: flex; align-items: center; gap: 9px; }
+.split-search-panel__heading p { margin: 7px 0 0; font-size: 12px; color: var(--cc-text-secondary); }
+.split-search-panel__badge { display: inline-flex; align-items: center; justify-content: center; min-width: 24px; padding: 3px 7px; border-radius: 20px; background: #e3f3e9; color: #17663e; font-size: 11px; }
+.split-id-search { width: min(100%, 360px); flex-shrink: 0; }
+.split-id-search > label { display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; color: #244536; }
+.split-id-search__control { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 12px; border: 1px solid #cbdcd1; border-radius: 8px; background: #fff; color: #527562; transition: border-color .15s, box-shadow .15s; }
+.split-id-search__control:focus-within { border-color: #159765; box-shadow: 0 0 0 3px #15976520; }
+.split-id-search__control input { width: 100%; min-width: 0; padding: 12px 0; border: 0; outline: none; background: transparent; color: var(--cc-text-primary); font: inherit; font-size: 13px; }
+.split-id-search__control input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.split-id-search__control > svg { flex-shrink: 0; }
+.split-id-search__control button { display: grid; place-items: center; flex-shrink: 0; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 5px; background: #f0f5f2; color: #456452; cursor: pointer; }
+.split-id-search__control button:hover { background: #e0ede5; }
+.split-id-search__meta { display: flex; justify-content: space-between; gap: 12px; margin-top: 7px; color: var(--cc-text-secondary); font-size: 11px; }
+.split-search-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 32px 16px; text-align: center; color: #527562; }
+.split-search-empty strong { color: #244536; font-size: 14px; }
+.split-search-empty p { margin: 0; font-size: 12px; }
+.split-search-empty button { border: 1px solid #cbdcd1; border-radius: 6px; padding: 8px 12px; background: #fff; color: #17663e; cursor: pointer; }
+@media (max-width: 800px) { .split-search-panel { flex-direction: column; align-items: stretch; gap: 18px; padding: 16px; }.split-id-search { width: 100%; } }
+
+.commission-table tr.commission-split--stopped > td { background: #fff1f2; border-top-color: #fecdd3; }
+.commission-category-stopped { display: block; width: fit-content; margin-top: 5px; padding: 3px 7px; border-radius: 4px; background: #ffe4e6; color: #9f1239; font-size: 10px; font-weight: 600; }
+
+.split-paid-toggle { display: inline-flex; align-items: center; gap: 7px; border: 1px solid #cbd5e1; border-radius: 20px; padding: 6px 10px; background: #f1f5f9; color: #475569; font-size: 12px; cursor: pointer; }
+.split-paid-toggle > span { width: 12px; height: 12px; border-radius: 50%; background: #94a3b8; }
+.split-paid-toggle--on { background: #dcfce7; border-color: #86efac; color: #166534; }
+.split-paid-toggle--on > span { background: #16a34a; }
+.split-paid-toggle:disabled { opacity: .6; cursor: wait; }
+
+.commission-stats--five { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+.commission-stats--five .commission-stat { min-width: 0; }
+.commission-stats--five .commission-stat strong { font-size: clamp(16px, 1.5vw, 22px); overflow-wrap: anywhere; }
+.commission-stat--teal { border-left-color: #0d9488; }
+@media (max-width: 1100px) { .commission-stats--five { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 800px) { .commission-stats--five { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .commission-stats--five { grid-template-columns: 1fr; } }
+
+.commission-stats--six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.commission-stats--six .commission-stat { min-width: 0; }
+.commission-stats--six .commission-stat strong { overflow-wrap: anywhere; }
+@media (max-width: 800px) { .commission-stats--six { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 420px) { .commission-stats--six { grid-template-columns: 1fr; } }
+
+.commission-dashboard-grid--history { grid-template-columns: minmax(0, 1fr); }
+
+.commission-revenue-chart__scroll { overflow-x: auto; }
+.commission-revenue-chart__legend { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 16px; color: var(--cc-text-secondary); font-size: 11px; }
+.commission-revenue-chart__legend span { display: inline-flex; align-items: center; gap: 6px; }
+.commission-revenue-chart__legend i { width: 8px; height: 12px; border-radius: 2px; }
+.commission-revenue-chart__caption { margin: 0; line-height: 1.5; }
+.commission-revenue-chart__plot { min-width: 0; }
+.commission-revenue-chart__plot g:focus { outline: 1px solid var(--cc-text-secondary); }
+
+.commission-revenue-chart__quote { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; margin-bottom: 6px; }
+.commission-revenue-chart__quote strong { font-size: 24px; font-variant-numeric: tabular-nums; color: #159765; }
+.commission-revenue-chart__quote small { font-size: 12px; font-weight: 500; }
+.commission-revenue-chart__quote span { color: var(--cc-text-secondary); font-size: 12px; }
+
+.commission-revenue-chart__axis { position: relative; height: 45px; }
+.commission-revenue-chart__tick { position: absolute; top: 10px; transform: translateX(-50%); min-width: 32px; height: 27px; padding: 0 7px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--cc-text-muted); font: inherit; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.commission-revenue-chart__tick::before { content: ""; position: absolute; top: -9px; left: 50%; width: 1px; height: 5px; background: var(--cc-border); }
+.commission-revenue-chart__tick:hover, .commission-revenue-chart__tick.is-active { background: #edf8f2; color: #087448; border-color: #ccebdc; font-weight: 700; }
+.commission-revenue-chart__tick.is-active::before { background: #159765; }
+.commission-revenue-chart__tick:focus-visible { outline: 2px solid #159765; outline-offset: 2px; }
+.commission-revenue-chart__axis-caption { display: flex; justify-content: space-between; gap: 12px; padding: 0 8px 6px; color: var(--cc-text-muted); font-size: 10px; }
+.commission-revenue-chart__axis-caption span:first-child { letter-spacing: .1em; font-weight: 600; }

@@ -33,6 +33,10 @@ server:
   port: ${SERVER_PORT:8080}
 
 clickcart:
+  security:
+    enabled: ${CLICKCART_SECURITY_ENABLED:false}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    audience: ${JWT_AUDIENCE:clickcart}
   jwt:
     secret: ${CLICKCART_JWT_SECRET:clickcart-local-dev-secret-please-change-32}
     ttl-seconds: ${CLICKCART_JWT_TTL:31536000}
