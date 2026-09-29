@@ -3,5 +3,11 @@ package com.clickcart.model;
 public enum BookingStatus {
     PENDING_APPROVAL,
     ACCEPTED,
-    DECLINED
+    DECLINED,
+    UPCOMING,
+    CONFIRMED,
+    ACTIVE,
+    IN_PROGRESS,
+    COMPLETED,
+    CANCELLED
 }
