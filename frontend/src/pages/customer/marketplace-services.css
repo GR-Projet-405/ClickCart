@@ -416,15 +416,6 @@
     padding-inline: 0.9rem;
   }
 
-  .marketplace-services-search {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .marketplace-services-category select {
-    width: 100%;
-  }
-
   .marketplace-services-results > span {
     display: none;
   }

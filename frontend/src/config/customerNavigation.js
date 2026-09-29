@@ -5,5 +5,6 @@ export const customerNavigation = [
   { label: "My Payments", to: "/customer/payments" },
   { label: "How It Works", to: "/how-it-works" },
   { label: "For Providers", to: "/for-providers" },
+  { label: "Messages / Inbox", to: "/messages" },
   { label: "Contact", to: "/contact" },
 ];
