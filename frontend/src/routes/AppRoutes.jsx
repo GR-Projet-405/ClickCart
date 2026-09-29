@@ -3,6 +3,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import BookingCreation from "../pages/customer/BookingCreation/BookingCreation";
 import CustomerRefunds from "../pages/customer/CustomerRefunds";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
@@ -12,6 +13,7 @@ import NotFound from "../pages/placeholders/NotFound";
 
 import VerificationQueue from "../pages/ProviderVerification/VerificationQueue";
 
+import ServiceMedia from "../pages/provider/ServiceMedia";
 import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
 import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
 import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
@@ -25,23 +27,50 @@ import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
+import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
 
+// DEV-07: Service Pricing & Packages
+import PricingSetupPage from "../pages/Provider/PricingSetupPage";
+
+// DEV-01, DEV-28, DEV-30, DEV-32 (Merged from dev branch)
+import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
+import LoginPage from "../pages/auth/LoginPage";
+import RegisterPage from "../pages/auth/RegisterPage";
+import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
+import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
+import MyFavorites from "../pages/MyFavorites";
+
+import MyBookingsPage from "../pages/customer/MyBookings";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+      {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
-      
+
       {/* Service Provider Routes */}
+
+      {/* DEV-01 Authentication (public pages, outside the role layouts) */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+
+      {/* Provider Routes */}
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
 
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+
+        {/* DEV-07: Service Pricing & Packages Route */}
+        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
+
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
@@ -52,6 +81,10 @@ export default function AppRoutes() {
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="reviews" element={<ProviderReviewsPage />} />
+
+        {/* Settlement Tracking */}
+        <Route path="settlements" element={<SettlementTrackingPage />} />
 
         {/* DEV-28 Provider Earnings Routes */}
         <Route path="earnings" element={<EarningsDashboardPage />} />
@@ -65,6 +98,8 @@ export default function AppRoutes() {
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
             path !== "/provider/profile" &&
+            path !== "/provider/settlements" &&
+            path !== "/provider/reviews" &&
             path !== "/provider/earnings"
           )
           .map(({ path }) => (
@@ -93,14 +128,14 @@ export default function AppRoutes() {
             />
           }
         />
-        
-        
+
+
         <Route path="providers" element={<VerificationQueue />} />
 
         {adminNavigation.map(({ path }) => {
           const subPath = path.replace("/admin/", "");
-          
-         
+
+
           if (subPath === "providers") return null;
 
           return (
@@ -122,15 +157,30 @@ export default function AppRoutes() {
       {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="booking/create" element={<BookingCreation />} />
+
+
+        {/* Explicit routes BEFORE the map */}
+        <Route path="my-bookings" element={<MyBookingsPage />} />
+        <Route path="bookings" element={<MyBookingsPage />} />
+        <Route path="favorites" element={<MyFavorites />} />
+        <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
         <Route path="customer/profile" element={<CustomerProfilePage />} />
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
-        <Route path="find-services" element={<MarketplaceServicesPage />} />
 
-        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-        ))}
+        {/* DEV-14: AI Assisted Search Route */}
+        <Route path="find-services" element={<AiServiceSearchPage />} />
+
+        {/* Existing dynamic routes */}
+        {customerNavigation
+          .slice(1)
+          .filter(({ to }) => to !== "/find-services")
+          .map(({ to }) => (
+            <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          ))}
+
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>

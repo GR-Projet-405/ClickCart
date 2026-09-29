@@ -1,81 +1,103 @@
 package com.clickcart.util;
 
 import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 import javax.crypto.SecretKey;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.clickcart.dto.auth.AuthenticatedUser;
+import com.clickcart.model.ProviderType;
+import com.clickcart.model.Role;
+import com.clickcart.model.User;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+
+/**
+ * Issues and verifies short-lived access tokens (SRS IAM-008, SEC-003).
+ *
+ * Claims: sub = user id, email, role, providerType (providers only), ver = user token version.
+ * The signing key comes from JWT_SECRET in backend/.env and is never committed to Git (SEC-014).
+ */
 @Component
 public class JwtUtil {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+
+    private static final String ISSUER = "clickcart";
+    private static final int MIN_SECRET_BYTES = 32;
+
     private final SecretKey secretKey;
-    private final long expirationMs;
+    private final Duration accessTokenTtl;
 
     public JwtUtil(
-            @Value("${clickcart.jwt.secret:ClickCartSecretKeyForJwtTokenGenerationAndValidationAtLeast256BitsLong!}") String secret,
-            @Value("${clickcart.jwt.expiration-ms:86400000}") long expirationMs) {
-        this.secretKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.expirationMs = expirationMs;
+            @Value("${JWT_SECRET:}") String secret,
+            @Value("${JWT_ACCESS_TOKEN_TTL_MINUTES:15}") long accessTokenTtlMinutes) {
+        this.secretKey = Keys.hmacShaKeyFor(resolveKeyBytes(secret));
+        this.accessTokenTtl = Duration.ofMinutes(accessTokenTtlMinutes);
     }
 
-    public String generateToken(String username, String role, String providerId) {
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);
-        claims.put("providerId", providerId);
-        return createToken(claims, username);
+    private static byte[] resolveKeyBytes(String secret) {
+        if (secret != null && secret.getBytes(StandardCharsets.UTF_8).length >= MIN_SECRET_BYTES) {
+            return secret.getBytes(StandardCharsets.UTF_8);
+        }
+        log.warn("JWT_SECRET is missing or shorter than {} bytes. Using a random key for this run; "
+                + "all tokens become invalid after a restart. Set JWT_SECRET in backend/.env.", MIN_SECRET_BYTES);
+        byte[] random = new byte[48];
+        new SecureRandom().nextBytes(random);
+        return random;
     }
 
-    private String createToken(Map<String, Object> claims, String subject) {
-        Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + expirationMs);
-
-        return Jwts.builder()
-                .claims(claims)
-                .subject(subject)
-                .issuedAt(now)
-                .expiration(expiryDate)
-                .signWith(secretKey)
-                .compact();
+    public String generateAccessToken(User user) {
+        Instant now = Instant.now();
+        var builder = Jwts.builder()
+                .issuer(ISSUER)
+                .subject(user.getId())
+                .claim("email", user.getEmail())
+                .claim("role", user.getRole().name())
+                .claim("ver", user.getTokenVersion())
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plus(accessTokenTtl)));
+        if (user.getProviderType() != null) {
+            builder.claim("providerType", user.getProviderType().name());
+        }
+        return builder.signWith(secretKey).compact();
     }
 
-    public Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+    public long getAccessTokenTtlSeconds() {
+        return accessTokenTtl.toSeconds();
     }
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
-    }
-
-    public String extractRole(String token) {
-        Object role = extractAllClaims(token).get("role");
-        return role != null ? role.toString() : null;
-    }
-
-    public String extractProviderId(String token) {
-        Object providerId = extractAllClaims(token).get("providerId");
-        return providerId != null ? providerId.toString() : extractUsername(token);
-    }
-
-    public boolean isTokenExpired(String token) {
-        return extractAllClaims(token).getExpiration().before(new Date());
-    }
-
-    public boolean validateToken(String token) {
+    /**
+     * Verifies signature, issuer and expiry. Returns empty for any invalid, expired or malformed token.
+     */
+    public Optional<AuthenticatedUser> parseAccessToken(String token) {
         try {
-            extractAllClaims(token);
-            return !isTokenExpired(token);
-        } catch (Exception e) {
-            return false;
+            Claims claims = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .requireIssuer(ISSUER)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            String providerType = claims.get("providerType", String.class);
+            return Optional.of(new AuthenticatedUser(
+                    claims.getSubject(),
+                    claims.get("email", String.class),
+                    Role.valueOf(claims.get("role", String.class)),
+                    providerType != null ? ProviderType.valueOf(providerType) : null));
+        } catch (JwtException | IllegalArgumentException | NullPointerException ex) {
+            return Optional.empty();
         }
     }
 }

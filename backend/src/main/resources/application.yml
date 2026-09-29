@@ -1,6 +1,4 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   application:
     name: clickcart-backend
   data:
@@ -30,3 +28,8 @@ server:
 CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
 CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
 CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.clickcart: DEBUG
