@@ -9,6 +9,7 @@ import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProvi
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import ServiceMedia from "../pages/provider/ServiceMedia";
 import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
 import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
 import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
@@ -92,6 +93,21 @@ export default function AppRoutes() {
                 />
               }
             />
+          }
+        />
+        {providerNavigation.map(({ path }) => (
+          <Route
+            key={path}
+            path={path.replace("/provider/", "")}
+            element={
+              <WorkspacePlaceholder
+                title="Service Provider Workspace"
+                description="This area is reserved for service provider feature pages."
+              />
+            }
+          />
+        ))}
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
           ))}
         <Route path="*" element={<NotFound />} />
       </Route>
