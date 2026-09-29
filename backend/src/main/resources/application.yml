@@ -1,11 +1,33 @@
 spring:
-  config:
-    import: optional:file:.env[.properties]
   application:
     name: clickcart-backend
+  config:
+    import: optional:file:.env[.properties], optional:file:.env
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+      database: ${MONGODB_DATABASE:clickcart}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 12MB
+
+  # Gmail / SMTP Settings 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
 
 server:
   port: ${SERVER_PORT:8080}
@@ -15,6 +37,17 @@ clickcart:
     enabled: ${CLICKCART_SECURITY_ENABLED:false}
     issuer-uri: ${JWT_ISSUER_URI:}
     audience: ${JWT_AUDIENCE:clickcart}
+  jwt:
+    secret: ${CLICKCART_JWT_SECRET:clickcart-local-dev-secret-please-change-32}
+    ttl-seconds: ${CLICKCART_JWT_TTL:31536000}
+  upload:
+    proof-dir: ${CLICKCART_PROOF_DIR:./data/job-proofs}
+
+# Cloudinary Settings
+CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
 logging:
   level:
     org.springframework.data.mongodb: DEBUG

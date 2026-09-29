@@ -1,0 +1,264 @@
+.chat-window {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.trust-banner {
+  background: var(--primary-light, #e0f2f1);
+  color: var(--primary-color, #00897b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--primary-color, #00897b);
+}
+
+.chat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  background: #ffffff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-info h3 {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-dot.online {
+  background: #10b981;
+}
+
+.booking-context-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  background: #f8fafc;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.booking-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.booking-icon {
+  background: #e2e8f0;
+  color: #475569;
+  padding: 0.5rem;
+  border-radius: var(--radius-md);
+  display: flex;
+}
+
+.booking-info h4 {
+  margin: 0 0 0.2rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.booking-info p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.view-booking-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.4rem 0.8rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  background: #fdfdfd;
+}
+
+.message-wrapper {
+  display: flex;
+  max-width: 75%;
+}
+
+.message-wrapper.mine {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.message-wrapper.theirs {
+  align-self: flex-start;
+  gap: 0.75rem;
+}
+
+.message-avatar .avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+}
+
+.message-avatar img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.message-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.message-wrapper.mine .message-content {
+  align-items: flex-end;
+}
+
+.message-wrapper.theirs .message-content {
+  align-items: flex-start;
+}
+
+.message-bubble {
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.message-wrapper.theirs .message-bubble {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-top-left-radius: 0.25rem;
+}
+
+.message-wrapper.mine .message-bubble {
+  background: var(--primary-color, #00897b);
+  color: white;
+  border-top-right-radius: 0.25rem;
+}
+
+.message-bubble p {
+  margin: 0;
+  word-wrap: break-word;
+}
+
+.message-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.read-icon {
+  color: #3b82f6;
+}
+
+.sent-icon {
+  color: var(--text-secondary);
+}
+
+.chat-input-area {
+  padding: 1rem 1.5rem;
+  background: #ffffff;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.message-input-container {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #f8fafc;
+  padding: 0.5rem 1rem;
+  border-radius: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+.input-actions-left {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.input-wrapper {
+  flex: 1;
+}
+
+.chat-textarea {
+  width: 100%;
+  border: none !important;
+  background: transparent !important;
+  resize: none;
+  padding: 0.5rem 0 !important;
+  margin: 0;
+  font-size: 0.95rem;
+  box-shadow: none !important;
+}
+
+.chat-textarea:focus {
+  outline: none;
+}
+
+.input-actions-right {
+  display: flex;
+}
+
+.send-btn {
+  border-radius: 20px !important;
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  color: #10b981;
+  font-size: 0.75rem;
+}

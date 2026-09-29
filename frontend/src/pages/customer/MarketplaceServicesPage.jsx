@@ -119,7 +119,6 @@ export default function MarketplaceServicesPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All categories");
   const [location, setLocation] = useState("All locations");
   const [minPrice, setMinPrice] = useState(DEFAULT_MIN_PRICE);
@@ -170,14 +169,13 @@ export default function MarketplaceServicesPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy]);
+  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy]);
 
   useEffect(() => {
     const supportedSortValues = new Set(["relevance", "price_asc", "price_desc", "rating"]);
     const normalizedSortBy = supportedSortValues.has(sortBy) ? sortBy : undefined;
 
     const params = {
-      q: query.trim() || undefined,
       category: category !== "All categories" ? category : undefined,
       location: location !== "All locations" ? location : undefined,
       minPrice: minPrice !== DEFAULT_MIN_PRICE ? minPrice : undefined,
@@ -190,7 +188,7 @@ export default function MarketplaceServicesPage() {
     };
 
     loadServices(params);
-  }, [category, location, maxPrice, minPrice, query, selectedAvailability, selectedRatings, sortBy, currentPage]);
+  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy, currentPage]);
 
   const categories = useMemo(
     () =>
@@ -294,41 +292,9 @@ export default function MarketplaceServicesPage() {
     setCurrentPage(1);
   };
 
-  const hasSearchQuery = query.trim().length > 0;
-
   return (
     <section className="marketplace-services-page">
       <div className="marketplace-services-container">
-        <header className="marketplace-services-heading">
-          <span>LOCAL SERVICES, MADE SIMPLE</span>
-          <h1>Find Services</h1>
-          <p>Discover trusted local services for the jobs that matter to you.</p>
-        </header>
-
-        <section className="marketplace-services-search" aria-label="Search services">
-          <label>
-            <Search size={18} />
-            <input
-              type="search"
-              placeholder="What service do you need?"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              aria-label="Search services"
-            />
-          </label>
-          <label className="marketplace-services-category">
-            <span className="sr-only">Filter by category</span>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option value="All categories">All categories</option>
-              {categories.map((item) => (
-                <option key={item} value={item}>
-                  {item}
-                </option>
-              ))}
-            </select>
-          </label>
-        </section>
-
         <div className="marketplace-search-layout">
           <div className="marketplace-search-results-header">
             <nav className="marketplace-search-breadcrumb" aria-label="Breadcrumb">
@@ -340,7 +306,7 @@ export default function MarketplaceServicesPage() {
             </nav>
 
             <div className="marketplace-results-summary">
-              <h2>{hasSearchQuery ? `Search Results for "${query}"` : "Search Results"}</h2>
+              <h2>Available Services</h2>
               <p>Showing {totalElements} results</p>
             </div>
 
