@@ -2,6 +2,17 @@ spring:
   application:
     name: clickcart-backend
   config:
+    import: optional:file:.env[.properties]
+  data:
+    mongodb:
+      uri: ${MONGODB_URI:mongodb+srv://Admin:ABC123@cluster0.2ndv7.mongodb.net/Clickcart_db?authSource=admin&retryWrites=true&w=majority&appName=Cluster0}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 11MB
+      uri: ${MONGODB_URI}
     import: optional:file:.env[.properties], optional:file:.env
   data:
     mongodb:
@@ -33,6 +44,10 @@ server:
   port: ${SERVER_PORT:8080}
 
 clickcart:
+  attachments:
+    dir: ${ATTACHMENTS_DIR:${java.io.tmpdir}/clickcart-attachments}
+
+clickcart:
   security:
     enabled: ${CLICKCART_SECURITY_ENABLED:false}
     issuer-uri: ${JWT_ISSUER_URI:}
@@ -52,3 +67,6 @@ logging:
   level:
     org.springframework.data.mongodb: DEBUG
     com.clickcart: DEBUG
+
+    com.clickcart: DEBUG
+

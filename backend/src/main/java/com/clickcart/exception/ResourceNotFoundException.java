@@ -1,5 +1,7 @@
 package com.clickcart.exception;
 
+public class ResourceNotFoundException extends RuntimeException {
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 

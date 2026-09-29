@@ -41,6 +41,15 @@ import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOv
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
+import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
+import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
+import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import MessagesPage from "../pages/Messages/MessagesPage";
+
+// DEV-07: Service Pricing & Packages
+import PricingSetupPage from "../pages/Provider/PricingSetupPage";
+
+// DEV-01, DEV-28, DEV-30, DEV-32 (Merged from dev branch)
 import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
@@ -124,10 +133,19 @@ export default function AppRoutes() {
         <Route path="reviews" element={<ProviderReviewsPage />} />
         <Route path="availability" element={<AvailabilityPage />} />
 
+
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+
+        {/* Update: Only one mapping loop for the remaining provider navigation */}
+
+        {/* Settlement Tracking */}
         {/* Settlement & Earnings Tracking */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        {/* Only one mapping loop for the remaining unassigned provider navigation */}
 
         <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
@@ -140,6 +158,9 @@ export default function AppRoutes() {
             path !== "/provider/bookings" &&
             path !== "/provider/messages" &&
             path !== "/provider/service-areas" &&
+            path !== "/provider/profile" &&
+            path !== "/provider/messages" &&
+            path !== "/provider/settlements" &&
             path !== "/provider/availability" &&
             path !== "/provider/reviews" &&
             path !== "/provider/profile" &&
@@ -243,6 +264,16 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage />} />
+
+        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services" && to !== "/messages").map(({ to }) => (
+          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+        ))}
+
+
         {/* DEV-14: AI Assisted Search Route */}
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
@@ -266,6 +297,7 @@ export default function AppRoutes() {
           .map(({ to }) => (
             <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
           ))}
+
 
         <Route path="*" element={<NotFound />} />
       </Route>
