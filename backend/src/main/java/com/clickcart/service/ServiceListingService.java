@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.springframework.data.domain.PageRequest;
@@ -37,21 +38,20 @@ public class ServiceListingService {
 
     public List<ServiceListingResponse> findForProvider(String providerId) {
         return repository.findAllByProviderIdOrderByUpdatedAtDesc(providerId)
-            .stream().map(this::toResponse).toList();
+                .stream().map(this::toResponse).toList();
     }
 
     public PagedResponse<ServiceListingResponse> searchMarketplace(
-        String category,
-        String location,
-        BigDecimal minPrice,
-        BigDecimal maxPrice,
-        BigDecimal minRating,
-        String availability,
-        String sortBy,
-        String q,
-        Integer page,
-        Integer size
-    ) {
+            String category,
+            String location,
+            BigDecimal minPrice,
+            BigDecimal maxPrice,
+            BigDecimal minRating,
+            String availability,
+            String sortBy,
+            String q,
+            Integer page,
+            Integer size) {
         int pageNum = page == null ? 0 : Math.max(page, 0);
         int pageSize = size == null ? 10 : Math.max(Math.min(size, 100), 1);
 
@@ -66,11 +66,11 @@ public class ServiceListingService {
         }
         if (minPrice != null) {
             query.addCriteria(Criteria.where("priceFrom").gte(minPrice)
-                .orOperator(Criteria.where("priceTo").gte(minPrice), Criteria.where("priceFrom").exists(true)));
+                    .orOperator(Criteria.where("priceTo").gte(minPrice), Criteria.where("priceFrom").exists(true)));
         }
         if (maxPrice != null) {
             query.addCriteria(Criteria.where("priceTo").lte(maxPrice)
-                .orOperator(Criteria.where("priceFrom").lte(maxPrice), Criteria.where("priceTo").exists(true)));
+                    .orOperator(Criteria.where("priceFrom").lte(maxPrice), Criteria.where("priceTo").exists(true)));
         }
         if (minRating != null) {
             query.addCriteria(Criteria.where("rating").gte(minRating.doubleValue()));
@@ -78,16 +78,15 @@ public class ServiceListingService {
         if (StringUtils.hasText(q)) {
             String regex = Pattern.quote(q.trim());
             query.addCriteria(new Criteria().orOperator(
-                Criteria.where("title").regex(regex, "i"),
-                Criteria.where("description").regex(regex, "i"),
-                Criteria.where("category").regex(regex, "i")
-            ));
+                    Criteria.where("title").regex(regex, "i"),
+                    Criteria.where("description").regex(regex, "i"),
+                    Criteria.where("category").regex(regex, "i")));
         }
         if (StringUtils.hasText(availability)) {
             List<String> normalizedValues = Arrays.stream(availability.split(","))
-                .map(String::trim)
-                .filter(value -> !value.isEmpty())
-                .toList();
+                    .map(String::trim)
+                    .filter(value -> !value.isEmpty())
+                    .toList();
             if (!normalizedValues.isEmpty()) {
                 validateAvailability(normalizedValues);
                 query.addCriteria(Criteria.where("availability").in(normalizedValues));
@@ -110,12 +109,13 @@ public class ServiceListingService {
 
     public List<ServiceListingResponse> findActiveForMarketplace() {
         return repository.findAllByStatusOrderByUpdatedAtDesc(ServiceListingStatus.ACTIVE)
-            .stream().map(this::toResponse).toList();
+                .stream().map(this::toResponse).toList();
     }
 
     public ServiceListingResponse create(String providerId, ServiceListingRequest request) {
         ServiceListingStatus status = request.status() == null
-            ? ServiceListingStatus.DRAFT : request.status();
+                ? ServiceListingStatus.DRAFT
+                : request.status();
         Instant now = Instant.now();
         ServiceListing listing = new ServiceListing();
         listing.setProviderId(providerId);
@@ -134,8 +134,7 @@ public class ServiceListingService {
     }
 
     public ServiceListingResponse updateStatus(
-        String providerId, String id, ServiceListingStatus status
-    ) {
+            String providerId, String id, ServiceListingStatus status) {
         ServiceListing listing = findOwned(providerId, id);
         listing.setStatus(status);
         listing.setUpdatedAt(Instant.now());
@@ -144,7 +143,7 @@ public class ServiceListingService {
 
     private ServiceListing findOwned(String providerId, String id) {
         return repository.findByIdAndProviderId(id, providerId)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found"));
     }
 
     private void apply(ServiceListing listing, ServiceListingRequest request) {
@@ -154,9 +153,11 @@ public class ServiceListingService {
         listing.setPriceFrom(request.priceFrom());
         listing.setPriceTo(request.priceTo());
         listing.setPriceUnit(request.priceUnit() == null || request.priceUnit().isBlank()
-            ? null : request.priceUnit().trim());
+                ? null
+                : request.priceUnit().trim());
         listing.setImageUrl(request.imageUrl() == null || request.imageUrl().isBlank()
-            ? null : request.imageUrl().trim());
+                ? null
+                : request.imageUrl().trim());
     }
 
     private Sort resolveSort(String sortBy) {
@@ -167,8 +168,7 @@ public class ServiceListingService {
             case "rating" -> Sort.by(Sort.Direction.DESC, "rating");
             case "relevance", "" -> Sort.by(Sort.Direction.DESC, "updatedAt");
             default -> throw new IllegalArgumentException(
-                "sortBy must be one of: relevance, price_asc, price_desc, rating"
-            );
+                    "sortBy must be one of: relevance, price_asc, price_desc, rating");
         };
     }
 
@@ -177,17 +177,33 @@ public class ServiceListingService {
         for (String value : values) {
             if (!allowed.contains(value)) {
                 throw new IllegalArgumentException(
-                    "availability must be one of: today_tomorrow, within_3_days"
-                );
+                        "availability must be one of: today_tomorrow, within_3_days");
             }
         }
     }
 
     private ServiceListingResponse toResponse(ServiceListing listing) {
         return new ServiceListingResponse(
-            listing.getId(), listing.getTitle(), listing.getCategory(), listing.getDescription(),
-            listing.getPriceFrom(), listing.getPriceTo(), listing.getPriceUnit(), listing.getImageUrl(),
-            listing.getStatus(), listing.getCreatedAt(), listing.getUpdatedAt()
-        );
+                listing.getId(), listing.getTitle(), listing.getCategory(), listing.getDescription(),
+                listing.getPriceFrom(), listing.getPriceTo(), listing.getPriceUnit(), listing.getImageUrl(),
+                listing.getStatus(), listing.getCreatedAt(), listing.getUpdatedAt());
+    }
+
+    // Methods for Map & Location Discovery
+    public List<ServiceListing> getAllServiceListings() {
+        return repository.findAll();
+    }
+
+    public List<ServiceListing> getActiveServiceListings() {
+        // Find using enum instead of string
+        return repository.findAllByStatusOrderByUpdatedAtDesc(ServiceListingStatus.ACTIVE);
+    }
+
+    public List<ServiceListing> getServiceListingsByCategory(String category) {
+        return repository.findByCategory(category);
+    }
+
+    public Optional<ServiceListing> getServiceListingById(String id) {
+        return repository.findById(id);
     }
 }

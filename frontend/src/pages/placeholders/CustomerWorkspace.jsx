@@ -9,6 +9,8 @@ const providerPages = [
   { label: "Messages", to: "/provider/messages" },
   { label: "Earnings", to: "/provider/earnings" },
 ];
+import PageContainer from "../../components/common/PageContainer";
+import "./CustomerWorkspace.css";
 
 export default function CustomerWorkspace() {
   return (

@@ -1,6 +1,6 @@
 import React from 'react';
-import { ChevronDown, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
+import { ChevronDown, Globe2, Phone } from "lucide-react";
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
 
