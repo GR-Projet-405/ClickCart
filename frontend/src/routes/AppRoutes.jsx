@@ -25,6 +25,7 @@ import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfi
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
@@ -68,6 +69,9 @@ export default function AppRoutes() {
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
         <Route path="reviews" element={<ProviderReviewsPage />} />
 
+        {/* Settlement Tracking */}
+        <Route path="settlements" element={<SettlementTrackingPage />} />
+
         {/* DEV-28 Provider Earnings Routes */}
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
@@ -79,8 +83,9 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/reviews" &&
             path !== "/provider/profile" &&
+            path !== "/provider/settlements" &&
+            path !== "/provider/reviews" &&
             path !== "/provider/earnings"
           )
           .map(({ path }) => (
