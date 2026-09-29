@@ -6,5 +6,33 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+      
+  # Gmail / SMTP Settings
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
 server:
   port: ${SERVER_PORT:8080}
+
+# Cloudinary Settings
+CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
+CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
+CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.clickcart: DEBUG
