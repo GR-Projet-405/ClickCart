@@ -2,16 +2,28 @@ package com.clickcart.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.util.List;
 
 @Document(collection = "providers")
 public class Provider {
-    
+
     @Id
     private String id;
-    
+
+    // Fields from feature/DEV-05 (Admin Verification)
+    private String businessName;
+    private String ownerName;
+    private String email;
+    private String phone;
+    private String providerType;
+    private String status;
+    private String createdAt;
+    private String avatar;
+    private List<DocumentItem> documents;
+
+    // Fields from dev branch (UI & Map Features)
     private String name;
     private boolean verified;
-    private String category;
     private double rating;
     private int reviewsCount;
     private String locationName;
@@ -22,9 +34,16 @@ public class Provider {
     private double lat;
     private double lng;
 
-    public Provider() {}
+    // Shared Fields
+    private String category;
 
-    public Provider(String name, boolean verified, String category, double rating, int reviewsCount, String locationName, double startingPrice, String imageUrl, String initials, String color, double lat, double lng) {
+    public Provider() {
+    }
+
+    // Constructor from dev branch (Kept to avoid breaking existing dev code)
+    public Provider(String name, boolean verified, String category, double rating, int reviewsCount,
+            String locationName, double startingPrice, String imageUrl, String initials, String color, double lat,
+            double lng) {
         this.name = name;
         this.verified = verified;
         this.category = category;
@@ -39,7 +58,7 @@ public class Provider {
         this.lng = lng;
     }
 
-    // Getters and Setters
+    // Getters and Setters for all fields
 
     public String getId() {
         return id;
@@ -47,6 +66,78 @@ public class Provider {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getBusinessName() {
+        return businessName;
+    }
+
+    public void setBusinessName(String businessName) {
+        this.businessName = businessName;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getProviderType() {
+        return providerType;
+    }
+
+    public void setProviderType(String providerType) {
+        this.providerType = providerType;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(String createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public List<DocumentItem> getDocuments() {
+        return documents;
+    }
+
+    public void setDocuments(List<DocumentItem> documents) {
+        this.documents = documents;
     }
 
     public String getName() {
@@ -143,5 +234,35 @@ public class Provider {
 
     public void setLng(double lng) {
         this.lng = lng;
+    }
+
+    // Inner Class from feature/DEV-05
+    public static class DocumentItem {
+        private String type;
+        private String url;
+
+        public DocumentItem() {
+        }
+
+        public DocumentItem(String type, String url) {
+            this.type = type;
+            this.url = url;
+        }
+
+        public String getType() {
+            return type;
+        }
+
+        public void setType(String type) {
+            this.type = type;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
+        }
     }
 }

@@ -11,9 +11,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "service_areas")
 @CompoundIndexes({
-    @CompoundIndex(name = "provider_archived_idx", def = "{'providerId': 1, 'archived': 1}"),
-    @CompoundIndex(name = "provider_city_district_idx", def = "{'providerId': 1, 'district': 1, 'cityName': 1, 'archived': 1}"),
-    @CompoundIndex(name = "discovery_idx", def = "{'district': 1, 'cityName': 1, 'status': 1, 'archived': 1}")
+        @CompoundIndex(name = "provider_archived_idx", def = "{'providerId': 1, 'archived': 1}"),
+        @CompoundIndex(name = "provider_city_district_idx", def = "{'providerId': 1, 'district': 1, 'cityName': 1, 'archived': 1}"),
+        @CompoundIndex(name = "discovery_idx", def = "{'district': 1, 'cityName': 1, 'status': 1, 'archived': 1}")
 })
 public class ServiceArea {
 
