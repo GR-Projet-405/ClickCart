@@ -1,0 +1,237 @@
+/* DEV-07: Pricing Setup Page Styles */
+
+.pricing-setup-page {
+  min-height: 100%;
+  padding: 1.75rem clamp(1rem, 2.4vw, 2.25rem) 3rem;
+  color: #344054;
+}
+
+.pricing-setup-container {
+  width: min(100%, 92rem);
+  margin-inline: auto;
+}
+
+/* Breadcrumb adjustments */
+.breadcrumb-back-btn, .breadcrumb-link {
+  background: none;
+  border: none;
+  color: #98a2b3;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+}
+.breadcrumb-back-btn:hover, .breadcrumb-link:hover {
+  color: #10b926;
+}
+
+/* Section Cards */
+.pricing-section-card {
+  background: #fff;
+  border: 1px solid #eaecf0;
+  border-radius: 0.85rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 1px 3px rgb(16 24 40 / 6%);
+}
+
+.pricing-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pricing-section-title {
+  margin: 0.25rem 0 0.25rem;
+  color: #101828;
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.pricing-section-subtitle {
+  margin: 0;
+  color: #667085;
+  font-size: 0.8125rem;
+}
+
+/* Pricing Models Grid */
+.pricing-models-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.pricing-model-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 1.25rem;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+  transition: all 150ms ease;
+}
+
+.pricing-model-card:hover {
+  border-color: #d0d5dd;
+  box-shadow: 0 4px 8px rgb(16 24 40 / 6%);
+  transform: translateY(-1px);
+}
+
+.pricing-model-card--selected {
+  border-color: #10b926;
+  background: #f2fbf2;
+  box-shadow: 0 0 0 1px #10b926;
+}
+
+.pricing-model-card__icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  background: #eaf9ee;
+  color: #078b1c;
+  border-radius: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.pricing-model-card--selected .pricing-model-card__icon {
+  background: #10b926;
+  color: #fff;
+}
+
+.pricing-model-card__title {
+  margin: 0 0 0.25rem;
+  color: #101828;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.pricing-model-card__desc {
+  margin: 0;
+  color: #667085;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.pricing-model-card__check {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  color: #10b926;
+  background: #fff;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+/* Input Wrapper */
+.pricing-input-wrapper {
+  margin-bottom: 1rem;
+}
+
+/* Packages List */
+.packages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.package-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: #f9fafb;
+  border: 1px solid #eaecf0;
+  border-radius: 0.7rem;
+  transition: background-color 150ms ease;
+}
+
+.package-card:hover {
+  background: #f2f4f7;
+}
+
+.package-card__icon {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  place-items: center;
+  background: #eaf9ee;
+  color: #078b1c;
+  border-radius: 0.5rem;
+  flex-shrink: 0;
+}
+
+.package-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.package-card__title {
+  margin: 0 0 0.15rem;
+  color: #101828;
+  font-size: 0.95rem;
+  font-weight: 650;
+}
+
+.package-card__desc {
+  margin: 0 0 0.5rem;
+  color: #667085;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.package-card__meta {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.package-card__price {
+  color: #078b1c;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.package-card__duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #98a2b3;
+  font-size: 0.75rem;
+}
+
+.package-card__actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+  .pricing-section-header {
+    flex-direction: column;
+  }
+  .pricing-models-grid {
+    grid-template-columns: 1fr;
+  }
+  .package-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .package-card__actions {
+    align-self: flex-end;
+  }
+}
