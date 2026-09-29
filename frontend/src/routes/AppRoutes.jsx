@@ -48,6 +48,12 @@ import MyFavorites from "../pages/MyFavorites";
 
 import MyBookingsPage from "../pages/customer/MyBookings";
 
+// Customer Payment & Checkout Feature (DEV-26 Shermi Weerasinghe)
+import CheckoutPage from "../pages/checkout/CheckoutPage";
+import PaymentResultPage from "../pages/checkout/PaymentResultPage";
+import ReceiptPage from "../pages/checkout/ReceiptPage";
+import PaymentHistoryPage from "../pages/customer/PaymentHistoryPage";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -159,6 +165,18 @@ export default function AppRoutes() {
       {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
+        {/* DEV-26 Feature Routes */}
+        <Route path="checkout" element={<CheckoutPage />} />
+        <Route path="checkout/result" element={<PaymentResultPage />} />
+        <Route path="receipt/:id" element={<ReceiptPage />} />
+        <Route path="customer/payments" element={<PaymentHistoryPage />} />
+
+        {customerNavigation.slice(1).map(({ to }) => {
+          // Skip routes that have explicit components registered above
+          if (to === "/checkout" || to === "/customer/payments") return null;
+          return <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />;
+        })}
         <Route path="location-permission" element={<LocationPermission />} />
 
         {/* DEV-13 Meranga's Map View */}
