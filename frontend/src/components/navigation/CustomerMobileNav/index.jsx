@@ -1,3 +1,4 @@
+import React from 'react';
 import NavItem from "../NavItem";
 import { customerNavigation } from "../../../config/customerNavigation";
 import "./styles.css";

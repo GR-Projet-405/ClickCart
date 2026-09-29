@@ -1,21 +1,17 @@
 package com.clickcart.repository;
 
-import java.util.List;
-
+import com.clickcart.model.Provider;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import com.clickcart.model.ProviderProfile;
+import java.util.List;
 
 @Repository
-public interface ProviderRepository extends MongoRepository<ProviderProfile, String> {
-    
-    // Find providers by service category and distance threshold
-    List<ProviderProfile> findByServiceCategoryIgnoreCaseAndDistanceKmLessThanEqual(
-        String serviceCategory, 
-        double maxDistanceKm
-    );
+public interface ProviderRepository extends MongoRepository<Provider, String> {
 
-    // Fallback query: fetch verified providers when primary matching fails
-    List<ProviderProfile> findByIsVerifiedTrue();
+    // From feature/DEV-05-admin-provider-verification
+    List<Provider> findByStatus(String status);
+
+    // From dev branch
+    List<Provider> findByCategory(String category);
 }

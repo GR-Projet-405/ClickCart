@@ -1,7 +1,7 @@
 package com.clickcart.service;
 
 import com.clickcart.model.ProviderProfile;
-import com.clickcart.repository.ProviderRepository;
+import com.clickcart.repository.ProviderProfileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +12,16 @@ import java.util.List;
 public class RecommendationEngineService {
 
     @Autowired
-    private ProviderRepository providerRepository;
+    private ProviderProfileRepository providerProfileRepository;
 
     /**
-     * Calculates multi-factor match scores using MongoDB queries with safe error handling.
+     * Calculates multi-factor match scores using MongoDB queries with safe error
+     * handling.
      */
     public List<ProviderProfile> calculateMatches(String serviceCategory, String location, double maxDistanceKm) {
         try {
-            List<ProviderProfile> providers = providerRepository
-                .findByServiceCategoryIgnoreCaseAndDistanceKmLessThanEqual(serviceCategory, maxDistanceKm);
+            List<ProviderProfile> providers = providerProfileRepository
+                    .findByServiceCategoryIgnoreCaseAndDistanceKmLessThanEqual(serviceCategory, maxDistanceKm);
 
             if (providers == null || providers.isEmpty()) {
                 return getFallbackProviders(serviceCategory);
@@ -36,11 +37,12 @@ public class RecommendationEngineService {
     }
 
     /**
-     * Fallback mechanism (AIF-007) returning standard verified listings or hardcoded safety fallback.
+     * Fallback mechanism (AIF-007) returning standard verified listings or
+     * hardcoded safety fallback.
      */
     public List<ProviderProfile> getFallbackProviders(String serviceCategory) {
         try {
-            List<ProviderProfile> verifiedList = providerRepository.findByIsVerifiedTrue();
+            List<ProviderProfile> verifiedList = providerProfileRepository.findByIsVerifiedTrue();
             if (verifiedList != null && !verifiedList.isEmpty()) {
                 return verifiedList.stream().limit(3).toList();
             }
@@ -68,7 +70,7 @@ public class RecommendationEngineService {
 
     public ProviderProfile findById(String providerId) {
         try {
-            return providerRepository.findById(providerId).orElse(null);
+            return providerProfileRepository.findById(providerId).orElse(null);
         } catch (Exception e) {
             return null;
         }
