@@ -295,6 +295,44 @@ export default function MarketplaceServicesPage() {
   return (
     <section className="marketplace-services-page">
       <div className="marketplace-services-container">
+        <header className="marketplace-services-heading">
+          <span>LOCAL SERVICES, MADE SIMPLE</span>
+          <h1>Find Services</h1>
+          <p>Discover trusted local services for the jobs that matter to you.</p>
+        </header>
+
+        <div className="marketplace-services-search-row">
+          <section className="marketplace-services-search" aria-label="Search services">
+            <label>
+              <Search size={18} />
+              <input
+                type="search"
+                placeholder="What service do you need?"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                aria-label="Search services"
+              />
+            </label>
+            <label className="marketplace-services-category">
+              <span className="sr-only">Filter by category</span>
+              <select value={category} onChange={(event) => setCategory(event.target.value)}>
+                <option value="All categories">All categories</option>
+                {categories.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </section>
+          <Link
+            to="/find-services/ai-search"
+            className="cc-button cc-button--primary cc-button--md marketplace-ai-search-link"
+          >
+            Try AI-Powered Search
+          </Link>
+        </div>
+
         <div className="marketplace-search-layout">
           <div className="marketplace-search-results-header">
             <nav className="marketplace-search-breadcrumb" aria-label="Breadcrumb">

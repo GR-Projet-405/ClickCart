@@ -220,6 +220,15 @@ export default function AppRoutes() {
         <Route path="receipt/:id" element={<ReceiptPage />} />
         <Route path="customer/payments" element={<PaymentHistoryPage />} />
 
+        {customerNavigation.slice(1).map(({ to }) => {
+          // Skip routes that have explicit components registered above
+          if (
+            to === "/checkout" ||
+            to === "/customer/payments" ||
+            to === "/find-services"
+          ) return null;
+          return <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />;
+        })}
         <Route path="location-permission" element={<LocationPermission />} />
         <Route path="find-services/map" element={<FindServices />} />
         <Route path="booking/create" element={<BookingCreation />} />
@@ -234,6 +243,9 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
+        {/* DEV-14: AI Assisted Search Route */}
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
         {/* Browse active provider listings directly from the customer nav */}
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         {/* Natural-language search available as a separate customer page */}

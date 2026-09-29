@@ -9,6 +9,116 @@
   margin-inline: auto;
 }
 
+.marketplace-services-heading {
+  text-align: center;
+}
+
+.marketplace-services-heading > span {
+  color: #078b1c;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+}
+
+.marketplace-services-heading h1 {
+  margin: 0.45rem 0 0.4rem;
+  color: #101828;
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 750;
+  letter-spacing: -0.045em;
+}
+
+.marketplace-services-heading p {
+  margin: 0;
+  color: #667085;
+  font-size: 0.9375rem;
+}
+
+.marketplace-services-search-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  width: min(100%, 75rem);
+  flex-wrap: wrap;
+  margin: 1.75rem auto 2.15rem;
+}
+
+.marketplace-services-search {
+  display: flex;
+  width: 100%;
+  max-width: 54rem;
+  min-width: 0;
+  flex: 1 1 36rem;
+  align-items: center;
+  gap: 0.7rem;
+  margin: 0;
+  padding: 0.65rem;
+  background: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 0.85rem;
+  box-shadow: 0 8px 24px rgb(16 24 40 / 6%);
+}
+
+.marketplace-ai-search-link {
+  flex: none;
+  white-space: nowrap;
+}
+
+.marketplace-ai-search-link,
+.marketplace-ai-search-link:hover,
+.marketplace-ai-search-link:focus,
+.marketplace-ai-search-link:focus-visible,
+.marketplace-ai-search-link:active {
+  text-decoration: none;
+}
+
+.marketplace-services-search > label:first-child {
+  display: flex;
+  min-width: 0;
+  height: 2.7rem;
+  flex: 1;
+  align-items: center;
+  gap: 0.55rem;
+  padding-inline: 0.7rem;
+  color: #98a2b3;
+}
+
+.marketplace-services-search input {
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  color: #101828;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  font: inherit;
+  font-size: 0.875rem;
+}
+
+.marketplace-services-search input::placeholder {
+  color: #98a2b3;
+}
+
+.marketplace-services-category select {
+  width: 12rem;
+  height: 2.7rem;
+  padding: 0 2rem 0 0.8rem;
+  color: #344054;
+  background-color: #fff;
+  border: 1px solid #e4e7ec;
+  border-radius: 0.6rem;
+  font: inherit;
+  font-size: 0.8125rem;
+}
+
+.marketplace-services-category select:focus,
+.marketplace-services-search:focus-within {
+  border-color: #10b926;
+  outline: 0;
+  box-shadow: 0 0 0 3px rgb(16 185 38 / 12%);
+}
+
 .marketplace-services-results {
   display: flex;
   align-items: baseline;
