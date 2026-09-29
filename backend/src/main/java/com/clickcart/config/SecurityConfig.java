@@ -3,12 +3,15 @@ package com.clickcart.config;
 import java.util.List;
 
 import com.clickcart.exception.ErrorResponse;
+import com.clickcart.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,6 +20,15 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -32,14 +44,17 @@ public class SecurityConfig {
     private final AuthRateLimitFilter authRateLimitFilter;
     private final ObjectMapper objectMapper;
     private final List<String> allowedOrigins;
+    private final ObjectProvider<JwtUtil> jwtUtil;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
                           AuthRateLimitFilter authRateLimitFilter,
                           ObjectMapper objectMapper,
+                          ObjectProvider<JwtUtil> jwtUtil,
                           @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}") List<String> allowedOrigins) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authRateLimitFilter = authRateLimitFilter;
         this.objectMapper = objectMapper;
+        this.jwtUtil = jwtUtil;
         this.allowedOrigins = allowedOrigins;
     }
 
@@ -55,6 +70,12 @@ public class SecurityConfig {
     @Bean
     @ConditionalOnProperty(name = "clickcart.security.enabled", havingValue = "true")
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
+        authorities.setAuthoritiesClaimName("roles");
+        authorities.setAuthorityPrefix("ROLE_");
+        converter.setJwtGrantedAuthoritiesConverter(authorities);
+
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -89,8 +110,39 @@ public class SecurityConfig {
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
                         .anyRequest().authenticated())
                 .addFilterAfter(authRateLimitFilter, CorsFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2ResourceServer(oauth -> oauth
+                        .bearerTokenResolver(bearerTokenResolver())
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(converter)));
         return http.build();
+    }
+
+    /** Routes app-issued HMAC JWTs to the existing app filter, and external issuer JWTs to OAuth2. */
+    private BearerTokenResolver bearerTokenResolver() {
+        return request -> {
+            String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+            if (authorization == null || !authorization.startsWith("Bearer ")) {
+                return null;
+            }
+            String token = authorization.substring("Bearer ".length()).trim();
+            JwtUtil appJwtUtil = jwtUtil.getIfAvailable();
+            return appJwtUtil != null && appJwtUtil.parseAccessToken(token).isPresent() ? null : token;
+        };
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = "clickcart.security.enabled", havingValue = "true")
+    JwtDecoder jwtDecoder(@Value("${clickcart.security.issuer-uri}") String issuer,
+                          @Value("${clickcart.security.audience}") String audience) {
+        JwtDecoder decoder = JwtDecoders.fromIssuerLocation(issuer);
+        OAuth2TokenValidator<Jwt> issuerValidator = JwtValidators.createDefaultWithIssuer(issuer);
+        OAuth2TokenValidator<Jwt> audienceValidator = jwt -> jwt.getAudience().contains(audience)
+                ? org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success()
+                : org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
+                        new org.springframework.security.oauth2.core.OAuth2Error("invalid_token", "Invalid audience", null));
+        ((org.springframework.security.oauth2.jwt.NimbusJwtDecoder) decoder)
+                .setJwtValidator(new DelegatingOAuth2TokenValidator<>(issuerValidator, audienceValidator));
+        return decoder;
     }
 
     @Bean

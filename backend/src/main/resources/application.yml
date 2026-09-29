@@ -13,6 +13,8 @@ server:
 clickcart:
   security:
     enabled: ${CLICKCART_SECURITY_ENABLED:false}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    audience: ${JWT_AUDIENCE:clickcart}
 logging:
   level:
     org.springframework.data.mongodb: DEBUG
