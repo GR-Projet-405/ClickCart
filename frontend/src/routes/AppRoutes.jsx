@@ -219,8 +219,10 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
-        {/* DEV-14: AI Assisted Search Route */}
-        <Route path="find-services" element={<AiServiceSearchPage />} />
+        {/* Browse active provider listings directly from the customer nav. */}
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        {/* Keep natural-language search available as a separate customer page. */}
+        <Route path="ai-service-search" element={<AiServiceSearchPage />} />
 
         {/* Dynamic routing for remaining customer navigation */}
         {customerNavigation
