@@ -1,4 +1,6 @@
-const API_BASE_URL = "http://localhost:8080/api/provider/profile";
+import { API_BASE_URL } from "../config/api";
+
+const PROFILE_API_BASE_URL = `${API_BASE_URL}/provider/profile`;
 
 export const EMPTY_PROFILE = {
   id: null,
@@ -17,7 +19,7 @@ export const EMPTY_PROFILE = {
 
 export async function getProviderProfile() {
   try {
-    const response = await fetch(API_BASE_URL);
+    const response = await fetch(PROFILE_API_BASE_URL);
     if (!response.ok) {
       throw new Error(`Failed to fetch provider profile: ${response.status}`);
     }
@@ -32,7 +34,7 @@ export async function getProviderProfile() {
 export async function saveProviderProfile(profileData, id) {
   try {
     const profileId = id || profileData.id;
-    const url = profileId ? `${API_BASE_URL}?id=${encodeURIComponent(profileId)}` : API_BASE_URL;
+    const url = profileId ? `${PROFILE_API_BASE_URL}?id=${encodeURIComponent(profileId)}` : PROFILE_API_BASE_URL;
 
     // Map fields for ProviderProfileRequest DTO
     const requestBody = {
@@ -72,7 +74,7 @@ export async function saveProviderProfile(profileData, id) {
 export async function getPublicProviderProfile(id) {
   try {
     if (!id) return getProviderProfile();
-    const response = await fetch(`${API_BASE_URL}/${encodeURIComponent(id)}`);
+    const response = await fetch(`${PROFILE_API_BASE_URL}/${encodeURIComponent(id)}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch public provider profile: ${response.status}`);
     }
