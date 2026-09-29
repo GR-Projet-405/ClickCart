@@ -38,6 +38,8 @@ import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistor
 // 1. Import your new MyFavorites page here
 import MyFavorites from '../pages/MyFavorites';
 
+import MyBookingsPage from "../pages/customer/MyBookings";
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -130,13 +132,15 @@ export default function AppRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
 
-      {/* Customer Routes (This is where your Favorites page lives) */}
+      {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
         <Route path="booking/create" element={<BookingCreation />} />
 
 
         {/* Explicit routes BEFORE the map */}
+        <Route path="my-bookings" element={<MyBookingsPage />} />
+        <Route path="bookings" element={<MyBookingsPage />} />
         <Route path="favorites" element={<MyFavorites />} />
         <Route path="reviews" element={<CustomerReviewsPage />} />
         <Route path="customer/refunds" element={<CustomerRefunds />} />
@@ -148,9 +152,12 @@ export default function AppRoutes() {
         <Route path="find-services" element={<AiServiceSearchPage />} />
 
         {/* Existing dynamic routes */}
-        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services").map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-        ))}
+        {customerNavigation
+          .slice(1)
+          .filter(({ to }) => to !== "/find-services")
+          .map(({ to }) => (
+            <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
+          ))}
 
         <Route path="*" element={<NotFound />} />
       </Route>
