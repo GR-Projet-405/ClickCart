@@ -2,6 +2,8 @@ package com.clickcart.model;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -13,46 +15,68 @@ public class Booking {
 
     @Id
     private String id;
+
+    // Customer & Contact Fields (Merged from HEAD and dev)
     private String customerId;
     private String customerName;
     private String customerEmail;
     private String customerPhone;
+    private String contactFullName;
+    private String contactPhone;
+    private String contactEmail;
+    private String preferredContactMethod;
+
+    // Service Fields
     private String serviceId;
+    private String serviceAddressId;
     private String serviceTitle;
     private String serviceName;
     private String serviceCategory;
     private String imageUrl;
+
+    // Provider Fields
     private String providerId;
     private String providerName;
     private String providerAvatar;
     private Double providerRating;
     private Integer providerReviewCount;
-    private String bookingDate;
+
+    // Date, Time & Location Fields
+    private String bookingDate; // From HEAD (String format)
+    private LocalDate bookingLocalDate; // From dev (LocalDate format)
+    private LocalTime startTime;
+    private String timeSlot;
+    private Instant scheduledAt;
     private String city;
     private String country;
-    private Instant scheduledAt;
-    private String timeSlot;
     private String location;
     private String address;
+
+    // Pricing Fields
     private Double totalCost;
     private BigDecimal estimatedPay;
     private String currency;
+    private PriceSnapshot priceSnapshot;
+
+    // Status & Meta Fields
+    private String additionalDetails;
+    private String notes;
     private BookingStatus status;
     private String statusLabel;
     private boolean unread;
-    private String notes;
     private Instant createdAt;
     private Instant updatedAt;
 
     public Booking() {
     }
 
+    // HEAD Branch Constructors
     public Booking(String id, String customerId, String customerName, String customerEmail, String customerPhone,
-                   String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
-                   String providerId, String providerName, String providerAvatar, Double providerRating,
-                   Integer providerReviewCount, String bookingDate, String timeSlot, String location,
-                   String address, Double totalCost, String currency, BookingStatus status, String statusLabel,
-                   String notes, Instant createdAt, Instant updatedAt) {
+            String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
+            String providerId, String providerName, String providerAvatar, Double providerRating,
+            Integer providerReviewCount, String bookingDate, String timeSlot, String location,
+            String address, Double totalCost, String currency, BookingStatus status, String statusLabel,
+            String notes, Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.customerId = customerId;
         this.customerName = customerName;
@@ -85,17 +109,19 @@ public class Booking {
     }
 
     public Booking(String id, String customerId, String customerName, String customerEmail, String customerPhone,
-                   String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
-                   String providerId, String providerName, String providerAvatar, Double providerRating,
-                   Integer providerReviewCount, String bookingDate, String timeSlot, String location,
-                   String address, Double totalCost, String currency, String status, String statusLabel,
-                   String notes, Instant createdAt, Instant updatedAt) {
+            String serviceId, String serviceTitle, String serviceCategory, String imageUrl,
+            String providerId, String providerName, String providerAvatar, Double providerRating,
+            Integer providerReviewCount, String bookingDate, String timeSlot, String location,
+            String address, Double totalCost, String currency, String status, String statusLabel,
+            String notes, Instant createdAt, Instant updatedAt) {
         this(id, customerId, customerName, customerEmail, customerPhone, serviceId, serviceTitle, serviceCategory,
                 imageUrl, providerId, providerName, providerAvatar, providerRating, providerReviewCount,
                 bookingDate, timeSlot, location, address, totalCost, currency,
                 status != null ? BookingStatus.valueOf(status.toUpperCase().replace(" ", "_")) : null,
                 statusLabel, notes, createdAt, updatedAt);
     }
+
+    // Getters and Setters
 
     public String getId() {
         return id;
@@ -137,12 +163,52 @@ public class Booking {
         this.customerPhone = customerPhone;
     }
 
+    public String getContactFullName() {
+        return contactFullName;
+    }
+
+    public void setContactFullName(String contactFullName) {
+        this.contactFullName = contactFullName;
+    }
+
+    public String getContactPhone() {
+        return contactPhone;
+    }
+
+    public void setContactPhone(String contactPhone) {
+        this.contactPhone = contactPhone;
+    }
+
+    public String getContactEmail() {
+        return contactEmail;
+    }
+
+    public void setContactEmail(String contactEmail) {
+        this.contactEmail = contactEmail;
+    }
+
+    public String getPreferredContactMethod() {
+        return preferredContactMethod;
+    }
+
+    public void setPreferredContactMethod(String preferredContactMethod) {
+        this.preferredContactMethod = preferredContactMethod;
+    }
+
     public String getServiceId() {
         return serviceId;
     }
 
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
+    }
+
+    public String getServiceAddressId() {
+        return serviceAddressId;
+    }
+
+    public void setServiceAddressId(String serviceAddressId) {
+        this.serviceAddressId = serviceAddressId;
     }
 
     public String getServiceTitle() {
@@ -231,6 +297,22 @@ public class Booking {
         this.bookingDate = bookingDate;
     }
 
+    public LocalDate getBookingLocalDate() {
+        return bookingLocalDate;
+    }
+
+    public void setBookingLocalDate(LocalDate bookingLocalDate) {
+        this.bookingLocalDate = bookingLocalDate;
+    }
+
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+
     public String getCity() {
         return city;
     }
@@ -306,6 +388,14 @@ public class Booking {
         this.currency = currency;
     }
 
+    public PriceSnapshot getPriceSnapshot() {
+        return priceSnapshot;
+    }
+
+    public void setPriceSnapshot(PriceSnapshot priceSnapshot) {
+        this.priceSnapshot = priceSnapshot;
+    }
+
     public BookingStatus getStatus() {
         return status;
     }
@@ -332,6 +422,14 @@ public class Booking {
 
     public void setStatusLabel(String statusLabel) {
         this.statusLabel = statusLabel;
+    }
+
+    public String getAdditionalDetails() {
+        return additionalDetails;
+    }
+
+    public void setAdditionalDetails(String additionalDetails) {
+        this.additionalDetails = additionalDetails;
     }
 
     public boolean isUnread() {
@@ -364,5 +462,79 @@ public class Booking {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    // PriceSnapshot Inner Class (Merged from dev branch)
+    public static class PriceSnapshot {
+
+        private BigDecimal serviceFee;
+        private BigDecimal materialsCost;
+        private BigDecimal travelCost;
+        private BigDecimal platformFee;
+        private BigDecimal totalPrice;
+
+        public PriceSnapshot() {
+            recalculateTotalPrice();
+        }
+
+        public PriceSnapshot(BigDecimal serviceFee, BigDecimal materialsCost, BigDecimal travelCost,
+                BigDecimal platformFee) {
+            this.serviceFee = serviceFee;
+            this.materialsCost = materialsCost;
+            this.travelCost = travelCost;
+            this.platformFee = platformFee;
+            recalculateTotalPrice();
+        }
+
+        public BigDecimal getServiceFee() {
+            return serviceFee;
+        }
+
+        public void setServiceFee(BigDecimal serviceFee) {
+            this.serviceFee = serviceFee;
+            recalculateTotalPrice();
+        }
+
+        public BigDecimal getMaterialsCost() {
+            return materialsCost;
+        }
+
+        public void setMaterialsCost(BigDecimal materialsCost) {
+            this.materialsCost = materialsCost;
+            recalculateTotalPrice();
+        }
+
+        public BigDecimal getTravelCost() {
+            return travelCost;
+        }
+
+        public void setTravelCost(BigDecimal travelCost) {
+            this.travelCost = travelCost;
+            recalculateTotalPrice();
+        }
+
+        public BigDecimal getPlatformFee() {
+            return platformFee;
+        }
+
+        public void setPlatformFee(BigDecimal platformFee) {
+            this.platformFee = platformFee;
+            recalculateTotalPrice();
+        }
+
+        public BigDecimal getTotalPrice() {
+            return totalPrice;
+        }
+
+        private void recalculateTotalPrice() {
+            totalPrice = valueOrZero(serviceFee)
+                    .add(valueOrZero(materialsCost))
+                    .add(valueOrZero(travelCost))
+                    .add(valueOrZero(platformFee));
+        }
+
+        private BigDecimal valueOrZero(BigDecimal value) {
+            return value == null ? BigDecimal.ZERO : value;
+        }
     }
 }

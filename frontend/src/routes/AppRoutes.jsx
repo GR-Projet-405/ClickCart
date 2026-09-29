@@ -3,12 +3,14 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import BookingCreation from "../pages/customer/BookingCreation/BookingCreation";
 import CustomerRefunds from "../pages/customer/CustomerRefunds";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import ServiceMedia from "../pages/provider/ServiceMedia";
 import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage";
 import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
 import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
@@ -24,6 +26,7 @@ import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfi
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
 import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
@@ -56,6 +59,7 @@ export default function AppRoutes() {
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
@@ -68,6 +72,9 @@ export default function AppRoutes() {
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
         <Route path="reviews" element={<ProviderReviewsPage />} />
 
+        {/* Settlement Tracking */}
+        <Route path="settlements" element={<SettlementTrackingPage />} />
+
         {/* DEV-28 Provider Earnings Routes */}
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
@@ -79,8 +86,9 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/reviews" &&
             path !== "/provider/profile" &&
+            path !== "/provider/settlements" &&
+            path !== "/provider/reviews" &&
             path !== "/provider/earnings"
           )
           .map(({ path }) => (
@@ -127,6 +135,8 @@ export default function AppRoutes() {
       {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="booking/create" element={<BookingCreation />} />
+
 
         {/* Explicit routes BEFORE the map */}
         <Route path="my-bookings" element={<MyBookingsPage />} />

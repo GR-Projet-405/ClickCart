@@ -1,8 +1,11 @@
 package com.clickcart.service;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +16,7 @@ import com.clickcart.dto.BookingCreateDTO;
 import com.clickcart.dto.BookingDTO;
 import com.clickcart.dto.BookingResponse;
 import com.clickcart.dto.BookingSummaryDTO;
+import com.clickcart.dto.CreateBookingRequest;
 import com.clickcart.exception.BookingException;
 import com.clickcart.exception.ResourceNotFoundException;
 import com.clickcart.model.Booking;
@@ -23,6 +27,14 @@ import jakarta.annotation.PostConstruct;
 
 @Service
 public class BookingServiceImpl implements BookingService {
+
+    private static final String TEMPORARY_CUSTOMER_ID = "DEV-18_PENDING_CUSTOMER";
+
+    private static final Set<LocalTime> SUPPORTED_TIME_SLOTS = Set.of(
+            LocalTime.of(9, 0),
+            LocalTime.of(11, 0),
+            LocalTime.of(14, 0),
+            LocalTime.of(16, 0));
 
     private final BookingRepository bookingRepository;
 
@@ -84,7 +96,8 @@ public class BookingServiceImpl implements BookingService {
                         "prv-5", "Sunil Shantha", "", 4.8, 62,
                         "02 Jul 2026", "3:00 PM - 5:00 PM", "Galle",
                         "No. 8, Beach Road, Galle", 3500.0, "LKR",
-                        BookingStatus.COMPLETED, "Completed", "Repaired main distribution box and replaced burnt sockets", now, now),
+                        BookingStatus.COMPLETED, "Completed",
+                        "Repaired main distribution box and replaced burnt sockets", now, now),
 
                 new Booking("bk-106", "cust_101", "Tharindu", "tharindu@example.com", "+94771234567",
                         "srv-6", "Lawn Mowing & Garden Care", "Gardening",
@@ -92,8 +105,7 @@ public class BookingServiceImpl implements BookingService {
                         "prv-6", "Kasun Wickramasinghe", "", 4.6, 41,
                         "15 May 2026", "8:00 AM - 10:00 AM", "Negombo",
                         "No. 3, Main Street, Negombo", 2800.0, "LKR",
-                        BookingStatus.CANCELLED, "Cancelled", "Cancelled by customer due to heavy rain", now, now)
-        );
+                        BookingStatus.CANCELLED, "Cancelled", "Cancelled by customer due to heavy rain", now, now));
 
         bookingRepository.saveAll(mockBookings);
     }
@@ -103,11 +115,14 @@ public class BookingServiceImpl implements BookingService {
         List<Booking> bookings;
 
         if (tab == null || tab.trim().isEmpty() || "upcoming".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
+                    Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
         } else if ("active".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
+                    Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
         } else if ("history".equalsIgnoreCase(tab)) {
-            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
+            bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
+                    Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
         } else {
             bookings = bookingRepository.findByCustomerId(customerId);
         }
@@ -119,9 +134,12 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingSummaryDTO getCustomerBookingSummary(String customerId) {
-        long upcoming = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
-        long active = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
-        long history = bookingRepository.countByCustomerIdAndStatusIn(customerId, Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
+        long upcoming = bookingRepository.countByCustomerIdAndStatusIn(customerId,
+                Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
+        long active = bookingRepository.countByCustomerIdAndStatusIn(customerId,
+                Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
+        long history = bookingRepository.countByCustomerIdAndStatusIn(customerId,
+                Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
         long total = upcoming + active + history;
 
         return new BookingSummaryDTO(upcoming, active, history, total);
@@ -134,6 +152,7 @@ public class BookingServiceImpl implements BookingService {
         return new BookingDTO(booking);
     }
 
+    // ORIGINAL CREATE BOOKING (From HEAD)
     @Override
     public BookingDTO createBooking(BookingCreateDTO createDTO) {
         Instant now = Instant.now();
@@ -150,7 +169,8 @@ public class BookingServiceImpl implements BookingService {
         booking.setProviderName(createDTO.getProviderName());
         booking.setProviderAvatar(createDTO.getProviderAvatar());
         booking.setProviderRating(createDTO.getProviderRating() != null ? createDTO.getProviderRating() : 5.0);
-        booking.setProviderReviewCount(createDTO.getProviderReviewCount() != null ? createDTO.getProviderReviewCount() : 1);
+        booking.setProviderReviewCount(
+                createDTO.getProviderReviewCount() != null ? createDTO.getProviderReviewCount() : 1);
         booking.setBookingDate(createDTO.getBookingDate());
         booking.setTimeSlot(createDTO.getTimeSlot());
         booking.setLocation(createDTO.getLocation());
@@ -167,6 +187,55 @@ public class BookingServiceImpl implements BookingService {
         return new BookingDTO(saved);
     }
 
+    // DEV-16: BOOKING CREATION (From dev)
+    @Override
+    public BookingResponse createBooking(CreateBookingRequest request) {
+        validateRequest(request);
+
+        Booking.PriceSnapshot priceSnapshot = new Booking.PriceSnapshot(
+                request.getServiceFee(),
+                request.getMaterialsCost(),
+                request.getTravelCost(),
+                request.getPlatformFee());
+
+        Booking booking = new Booking();
+        booking.setCustomerId(TEMPORARY_CUSTOMER_ID);
+        booking.setServiceId(request.getServiceId());
+        booking.setProviderId(request.getProviderId());
+        booking.setServiceAddressId(request.getServiceAddressId());
+        booking.setServiceTitle(request.getServiceTitle());
+        booking.setBookingLocalDate(request.getBookingDate()); // using the LocalDate setter
+        booking.setStartTime(request.getStartTime());
+        booking.setAdditionalDetails(request.getAdditionalDetails());
+        booking.setContactFullName(request.getContactFullName());
+        booking.setContactPhone(request.getContactPhone());
+        booking.setContactEmail(request.getContactEmail());
+        booking.setPreferredContactMethod(request.getPreferredContactMethod());
+        booking.setPriceSnapshot(priceSnapshot);
+        booking.setStatus(BookingStatus.PENDING_APPROVAL);
+        booking.setCreatedAt(Instant.now());
+
+        Booking savedBooking = bookingRepository.save(booking);
+
+        return BookingResponse.from(savedBooking);
+    }
+
+    private void validateRequest(CreateBookingRequest request) {
+        if (request == null) {
+            throw new IllegalArgumentException("Booking request must not be null");
+        }
+
+        LocalDate bookingDate = request.getBookingDate();
+        if (bookingDate == null || bookingDate.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("Booking date cannot be in the past");
+        }
+
+        LocalTime startTime = request.getStartTime();
+        if (startTime == null || !SUPPORTED_TIME_SLOTS.contains(startTime)) {
+            throw new IllegalArgumentException("Start time must be a supported booking time slot");
+        }
+    }
+
     @Override
     public BookingDTO cancelBooking(String id, String reason) {
         Booking booking = bookingRepository.findById(id)
@@ -175,7 +244,8 @@ public class BookingServiceImpl implements BookingService {
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setStatusLabel("Cancelled");
         if (reason != null && !reason.trim().isEmpty()) {
-            booking.setNotes((booking.getNotes() != null ? booking.getNotes() + " | " : "") + "Cancellation reason: " + reason);
+            booking.setNotes(
+                    (booking.getNotes() != null ? booking.getNotes() + " | " : "") + "Cancellation reason: " + reason);
         }
         booking.setUpdatedAt(Instant.now());
 
@@ -234,7 +304,8 @@ public class BookingServiceImpl implements BookingService {
     private BookingResponse toResponse(Booking booking) {
         BookingResponse response = new BookingResponse();
         response.setId(booking.getId());
-        response.setServiceName(booking.getServiceName() != null ? booking.getServiceName() : booking.getServiceTitle());
+        response.setServiceName(
+                booking.getServiceName() != null ? booking.getServiceName() : booking.getServiceTitle());
         response.setCustomerName(booking.getCustomerName());
         response.setCity(booking.getCity() != null ? booking.getCity() : booking.getLocation());
         response.setCountry(booking.getCountry());

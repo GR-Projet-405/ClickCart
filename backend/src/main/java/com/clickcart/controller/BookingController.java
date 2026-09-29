@@ -6,12 +6,12 @@ import com.clickcart.dto.BookingSummaryDTO;
 import com.clickcart.dto.CancelBookingRequestDTO;
 import com.clickcart.service.BookingService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -20,7 +20,7 @@ public class BookingController {
 
     private final BookingService bookingService;
 
-    @Autowired
+    // Standard Constructor Injection (Best Practice)
     public BookingController(BookingService bookingService) {
         this.bookingService = bookingService;
     }
@@ -58,5 +58,11 @@ public class BookingController {
         String reason = request != null ? request.getReason() : null;
         BookingDTO cancelled = bookingService.cancelBooking(id, reason);
         return ResponseEntity.ok(cancelled);
+    }
+
+    // Integrated from dev branch
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleBusinessValidationError(IllegalArgumentException exception) {
+        return ResponseEntity.badRequest().body(Map.of("error", exception.getMessage()));
     }
 }
