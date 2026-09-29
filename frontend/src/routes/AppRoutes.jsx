@@ -31,11 +31,11 @@ import BookingApprovalPage from "../pages/provider/bookings/BookingApprovalPage"
 import ServiceAreasPage from "../pages/provider/serviceAreas/ServiceAreasPage";
 import AddServiceAreaPage from "../pages/provider/serviceAreas/AddServiceAreaPage";
 import EditServiceAreaPage from "../pages/provider/serviceAreas/EditServiceAreaPage";
-import { adminNavigation } from "../config/adminNavigation";
-import { customerNavigation } from "../config/customerNavigation";
-import { providerNavigation } from "../config/providerNavigation";
+
+// Shared / Cross-role
 import ConversationsPage from "../pages/messaging/ConversationsPage";
-import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
+
+// Provider Profile & Earnings
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
@@ -105,15 +105,17 @@ export default function AppRoutes() {
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
-        {/* Provider Reviews */}
+        {/* Provider Reviews & Availability */}
         <Route path="reviews" element={<ProviderReviewsPage />} />
-
         <Route path="availability" element={<AvailabilityPage />} />
-        {/* Settlement Tracking */}
+
         {/* Settlement & Earnings Tracking */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
         {/* Dynamic routing for remaining provider navigation */}
         {providerNavigation
@@ -121,13 +123,12 @@ export default function AppRoutes() {
             path !== "/provider/dashboard" &&
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
+            path !== "/provider/messages" &&
             path !== "/provider/service-areas" &&
-            path !== "/provider/availability" &&
             path !== "/provider/availability" &&
             path !== "/provider/reviews" &&
             path !== "/provider/profile" &&
             path !== "/provider/settlements" &&
-            path !== "/provider/reviews" &&
             path !== "/provider/earnings"
           )
           .map(({ path }) => (
@@ -142,8 +143,6 @@ export default function AppRoutes() {
               }
             />
           ))}
-        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
-        <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="*" element={<NotFound />} />
       </Route>
 
@@ -186,6 +185,7 @@ export default function AppRoutes() {
       {/* ========================================== */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+
         <Route path="messages" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="explore" element={<CustomerExplorePage />} />
@@ -213,10 +213,6 @@ export default function AppRoutes() {
         {/* DEV-14: AI Assisted Search Route */}
         <Route path="find-services" element={<AiServiceSearchPage />} />
 
-        {/* Existing dynamic routes */}
-        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services" && to !== "/messages").map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-        ))}
         {/* Dynamic routing for remaining customer navigation */}
         {customerNavigation
           .slice(1)
@@ -224,7 +220,8 @@ export default function AppRoutes() {
             to !== "/find-services" &&
             to !== "/explore" &&
             to !== "/checkout" &&
-            to !== "/customer/payments"
+            to !== "/customer/payments" &&
+            to !== "/messages"
           )
           .map(({ to }) => (
             <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />

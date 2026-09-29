@@ -2,7 +2,6 @@ package com.clickcart.dto;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Objects;
 
@@ -19,7 +18,7 @@ public class BookingResponse {
     private String providerId;
     private String serviceAddressId;
     private String serviceTitle;
-    private LocalDate bookingDate;
+    private String bookingDate; // Changed to String to match Booking model and mock data
     private LocalTime startTime;
     private String additionalDetails;
     private String contactFullName;
@@ -53,7 +52,10 @@ public class BookingResponse {
         this.providerId = booking.getProviderId();
         this.serviceAddressId = booking.getServiceAddressId();
         this.serviceTitle = booking.getServiceTitle();
-        this.bookingDate = booking.getBookingDate();
+
+        // Safely convert bookingDate to String
+        this.bookingDate = booking.getBookingDate() != null ? booking.getBookingDate().toString() : null;
+
         this.startTime = booking.getStartTime();
         this.additionalDetails = booking.getAdditionalDetails();
         this.contactFullName = booking.getContactFullName();
@@ -78,8 +80,7 @@ public class BookingResponse {
 
     public static BookingResponse from(Booking booking) {
         return new BookingResponse(
-            Objects.requireNonNull(booking, "booking must not be null")
-        );
+                Objects.requireNonNull(booking, "booking must not be null"));
     }
 
     public String getId() {
@@ -130,11 +131,11 @@ public class BookingResponse {
         this.serviceTitle = serviceTitle;
     }
 
-    public LocalDate getBookingDate() {
+    public String getBookingDate() {
         return bookingDate;
     }
 
-    public void setBookingDate(LocalDate bookingDate) {
+    public void setBookingDate(String bookingDate) {
         this.bookingDate = bookingDate;
     }
 
