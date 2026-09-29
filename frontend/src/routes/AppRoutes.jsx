@@ -21,6 +21,8 @@ import EditServiceAreaPage from "../pages/provider/serviceAreas/EditServiceAreaP
 import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
+import LocationPermission from "../pages/customer/LocationPermission/LocationPermission";
+import FindServices from "../pages/customer/FindServices/FindServices";
 import CustomerProfilePage from "../pages/customer/CustomerProfilePage";
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
@@ -157,6 +159,11 @@ export default function AppRoutes() {
       {/* Customer Routes */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="location-permission" element={<LocationPermission />} />
+
+        {/* DEV-13 Meranga's Map View */}
+        <Route path="find-services/map" element={<FindServices />} />
+
         <Route path="booking/create" element={<BookingCreation />} />
 
 
