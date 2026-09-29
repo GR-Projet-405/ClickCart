@@ -17,10 +17,13 @@ public class ServiceListing {
     private String title;
     private String category;
     private String description;
+    private String location;
     private BigDecimal priceFrom;
     private BigDecimal priceTo;
     private String priceUnit;
     private String imageUrl;
+    private Double rating;
+    private String availability;
     private ServiceListingStatus status;
     private Instant createdAt;
     private Instant updatedAt;
@@ -35,6 +38,8 @@ public class ServiceListing {
     public void setCategory(String category) { this.category = category; }
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+    public String getLocation() { return location; }
+    public void setLocation(String location) { this.location = location; }
     public BigDecimal getPriceFrom() { return priceFrom; }
     public void setPriceFrom(BigDecimal priceFrom) { this.priceFrom = priceFrom; }
     public BigDecimal getPriceTo() { return priceTo; }
@@ -43,6 +48,10 @@ public class ServiceListing {
     public void setPriceUnit(String priceUnit) { this.priceUnit = priceUnit; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public Double getRating() { return rating; }
+    public void setRating(Double rating) { this.rating = rating; }
+    public String getAvailability() { return availability; }
+    public void setAvailability(String availability) { this.availability = availability; }
     public ServiceListingStatus getStatus() { return status; }
     public void setStatus(ServiceListingStatus status) { this.status = status; }
     public Instant getCreatedAt() { return createdAt; }

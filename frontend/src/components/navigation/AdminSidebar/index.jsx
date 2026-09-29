@@ -18,7 +18,7 @@ export default function AdminSidebar({ onNavigate }) {
             to={path}
             active={
               pathname === path ||
-              (path === "/Commission_management" && pathname.startsWith("/Commission_management/")) ||
+              (path === "/commission_management" && pathname.startsWith("/commission_management/")) ||
               (path.endsWith("dashboard") && pathname === "/admin")
             }
             onClick={onNavigate}

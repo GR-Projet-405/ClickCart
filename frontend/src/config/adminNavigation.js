@@ -25,7 +25,7 @@ export const adminNavigation = [
   },
   {
     label: "Commission Management",
-    path: "/Commission_management",
+    path: "/commission_management",
     icon: Percent,
   },
   { label: "Disputes & Support", path: "/admin/disputes", icon: ShieldAlert },
