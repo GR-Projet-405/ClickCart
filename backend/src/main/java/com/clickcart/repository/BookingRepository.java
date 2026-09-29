@@ -11,10 +11,17 @@ import com.clickcart.model.BookingStatus;
 public interface BookingRepository extends MongoRepository<Booking, String> {
 
     List<Booking> findByProviderIdAndStatusOrderByCreatedAtDesc(
-            String providerId, BookingStatus status);
+        String providerId,
+        BookingStatus status
+    );
 
     List<Booking> findByProviderIdAndStatusOrderByCreatedAtAsc(
-            String providerId, BookingStatus status);
+        String providerId,
+        BookingStatus status
+    );
 
-    Optional<Booking> findByIdAndProviderId(String id, String providerId);
+    Optional<Booking> findByIdAndProviderId(
+        String id,
+        String providerId
+    );
 }

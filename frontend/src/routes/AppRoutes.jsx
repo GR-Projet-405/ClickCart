@@ -3,6 +3,7 @@ import { Route, Routes, Navigate } from "react-router-dom";
 import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
+import BookingCreation from "../pages/customer/BookingCreation/BookingCreation";
 import CustomerRefunds from "../pages/customer/CustomerRefunds";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
@@ -132,6 +133,8 @@ export default function AppRoutes() {
       {/* Customer Routes (This is where your Favorites page lives) */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
+        <Route path="booking/create" element={<BookingCreation />} />
+
 
         {/* Explicit routes BEFORE the map */}
         <Route path="favorites" element={<MyFavorites />} />
