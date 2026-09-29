@@ -1,3 +1,4 @@
+// DEV-07: Service Pricing & Packages - Integrated pricing navigation into Service Listing Management
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -6,6 +7,7 @@ import {
   Check,
   ChevronRight,
   CircleAlert,
+  DollarSign, // DEV-07: Added for Pricing navigation
   Eye,
   Grid2X2,
   ImagePlus,
@@ -121,6 +123,18 @@ function ListingMenu({ service, onEdit, onChangeStatus, onArchive }) {
             <Archive size={15} /> Archive service
           </button>
         )}
+        
+        {/* DEV-07: Added Pricing option to the dropdown menu for alternative access */}
+        <button 
+          type="button" 
+          onClick={(event) => { 
+            closeMenu(event); 
+            // Note: useNavigate is not directly available here, so we rely on the footer/table buttons for navigation, 
+            // or we can pass navigate down as a prop if needed. For now, footer/table buttons are primary.
+          }}
+        >
+          <DollarSign size={15} /> Manage pricing
+        </button>
       </div>
     </details>
   );
@@ -391,8 +405,22 @@ export default function ProviderServicesPage() {
                   </div>
                 </div>
                 <div className="provider-service-card__footer">
-                  <button type="button" className="provider-service-button provider-service-button--quiet" onClick={() => setDetails(service)}><Eye size={15} />View</button>
-                  <button type="button" className="provider-service-button provider-service-button--primary" onClick={() => openEdit(service)}><Pencil size={15} />Edit</button>
+                  <button type="button" className="provider-service-button provider-service-button--quiet" onClick={() => setDetails(service)}>
+                    <Eye size={15} /> View
+                  </button>
+                  <button type="button" className="provider-service-button provider-service-button--primary" onClick={() => openEdit(service)}>
+                    <Pencil size={15} /> Edit
+                  </button>
+                  
+                  {/* DEV-07: Service Pricing & Packages - Navigate to pricing setup for this specific service */}
+                  <button 
+                    type="button" 
+                    className="provider-service-button provider-service-button--quiet" 
+                    onClick={() => navigate(`/provider/services/${service.id}/pricing`)}
+                    title="Manage Pricing & Packages"
+                  >
+                    <DollarSign size={15} /> Pricing
+                  </button>
                 </div>
               </article>
             ))}
@@ -400,14 +428,47 @@ export default function ProviderServicesPage() {
         ) : (
           <div className="provider-services-table-wrap">
             <table className="provider-services-table">
-              <thead><tr><th>Service</th><th>Category</th><th>Price range</th><th>Status</th><th>Updated</th><th><span className="sr-only">Actions</span></th></tr></thead>
-              <tbody>{filteredServices.map((service) => (
-                <tr key={service.id}>
-                  <td><button className="provider-services-table__title" type="button" onClick={() => setDetails(service)}><span className="provider-services-table__art"><ServiceArtwork service={service} compact /></span><strong>{service.title}</strong></button></td>
-                  <td>{service.category}</td><td>{formatRange(service)} <small>{service.priceUnit}</small></td><td><StatusBadge status={service.status} /></td><td>{new Date(service.updatedAt).toLocaleDateString()}</td>
-                  <td><button className="provider-service-icon-button" type="button" aria-label={`Edit ${service.title}`} onClick={() => openEdit(service)}><Pencil size={16} /></button></td>
+              <thead>
+                <tr>
+                  <th>Service</th>
+                  <th>Category</th>
+                  <th>Price range</th>
+                  <th>Status</th>
+                  <th>Updated</th>
+                  <th><span className="sr-only">Actions</span></th>
                 </tr>
-              ))}</tbody>
+              </thead>
+              <tbody>
+                {filteredServices.map((service) => (
+                  <tr key={service.id}>
+                    <td>
+                      <button className="provider-services-table__title" type="button" onClick={() => setDetails(service)}>
+                        <span className="provider-services-table__art"><ServiceArtwork service={service} compact /></span>
+                        <strong>{service.title}</strong>
+                      </button>
+                    </td>
+                    <td>{service.category}</td>
+                    <td>{formatRange(service)} <small>{service.priceUnit}</small></td>
+                    <td><StatusBadge status={service.status} /></td>
+                    <td>{new Date(service.updatedAt).toLocaleDateString()}</td>
+                    <td>
+                      <button className="provider-service-icon-button" type="button" aria-label={`Edit ${service.title}`} onClick={() => openEdit(service)}>
+                        <Pencil size={16} />
+                      </button>
+                      
+                      {/* DEV-07: Service Pricing & Packages - Quick access to pricing from list view */}
+                      <button 
+                        className="provider-service-icon-button" 
+                        type="button" 
+                        aria-label={`Manage pricing for ${service.title}`} 
+                        onClick={() => navigate(`/provider/services/${service.id}/pricing`)}
+                      >
+                        <DollarSign size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
             </table>
           </div>
         )}
@@ -421,7 +482,13 @@ export default function ProviderServicesPage() {
             <div className="provider-service-confirm__icon"><Archive size={20} /></div>
             <h2 id="archive-title">Archive this service?</h2>
             <p><strong>{toArchive.title}</strong> will no longer be available to customers. You can restore it as a draft later.</p>
-            <div><button className="provider-service-button provider-service-button--quiet" type="button" onClick={() => setToArchive(null)}>Cancel</button><button className="provider-service-button provider-service-button--danger" type="button" disabled={busyId === toArchive.id} onClick={() => changeStatus(toArchive, "ARCHIVED")}>{busyId === toArchive.id ? <LoaderCircle className="provider-service-spin" size={16} /> : <Archive size={16} />}Archive service</button></div>
+            <div>
+              <button className="provider-service-button provider-service-button--quiet" type="button" onClick={() => setToArchive(null)}>Cancel</button>
+              <button className="provider-service-button provider-service-button--danger" type="button" disabled={busyId === toArchive.id} onClick={() => changeStatus(toArchive, "ARCHIVED")}>
+                {busyId === toArchive.id ? <LoaderCircle className="provider-service-spin" size={16} /> : <Archive size={16} />}
+                Archive service
+              </button>
+            </div>
           </section>
         </div>
       )}

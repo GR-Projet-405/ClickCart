@@ -26,6 +26,11 @@ import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfi
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
 import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
+
+// DEV-07: Service Pricing & Packages
+import PricingSetupPage from "../pages/Provider/PricingSetupPage";
+
+// DEV-01, DEV-28, DEV-30, DEV-32 (Merged from dev branch)
 import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import LoginPage from "../pages/auth/LoginPage";
 import RegisterPage from "../pages/auth/RegisterPage";
@@ -34,16 +39,13 @@ import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
-
-// 1. Import your new MyFavorites page here
-import MyFavorites from '../pages/MyFavorites';
+import MyFavorites from "../pages/MyFavorites";
 
 import MyBookingsPage from "../pages/customer/MyBookings";
 
 export default function AppRoutes() {
   return (
     <Routes>
-
       {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
@@ -59,6 +61,10 @@ export default function AppRoutes() {
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+
+        {/* DEV-07: Service Pricing & Packages Route */}
+        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
+
         <Route path="services/:serviceId/media" element={<ServiceMedia />} />
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
