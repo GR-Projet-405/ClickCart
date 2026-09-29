@@ -55,6 +55,7 @@ export default function AppRoutes() {
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
         <Route path="bookings" element={<BookingApprovalPage />} />
         <Route path="service-areas" element={<ServiceAreasPage />} />
         <Route path="service-areas/new" element={<AddServiceAreaPage />} />
@@ -93,21 +94,6 @@ export default function AppRoutes() {
                 />
               }
             />
-          }
-        />
-        {providerNavigation.map(({ path }) => (
-          <Route
-            key={path}
-            path={path.replace("/provider/", "")}
-            element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
-              />
-            }
-          />
-        ))}
-        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
           ))}
         <Route path="*" element={<NotFound />} />
       </Route>
