@@ -11,6 +11,7 @@ import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProvi
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
+import AvailabilityPage from "../pages/provider/AvailabilityPage";
 
 // Configs
 import { adminNavigation } from "../config/adminNavigation";
@@ -102,6 +103,8 @@ export default function AppRoutes() {
         {/* Provider Reviews */}
         <Route path="reviews" element={<ProviderReviewsPage />} />
 
+        <Route path="availability" element={<AvailabilityPage />} />
+        {/* Settlement Tracking */}
         {/* Settlement & Earnings Tracking */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
@@ -114,6 +117,9 @@ export default function AppRoutes() {
             path !== "/provider/services" &&
             path !== "/provider/bookings" &&
             path !== "/provider/service-areas" &&
+            path !== "/provider/availability" &&
+            path !== "/provider/availability" &&
+            path !== "/provider/reviews" &&
             path !== "/provider/profile" &&
             path !== "/provider/settlements" &&
             path !== "/provider/reviews" &&

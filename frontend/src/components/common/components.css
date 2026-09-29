@@ -353,3 +353,111 @@ textarea.cc-field-control {
     padding-inline: var(--cc-space-8);
   }
 }
+/* ── Modal ── */
+.cc-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 900;
+  display: grid;
+  place-items: center;
+  background: var(--cc-overlay);
+  padding: var(--cc-space-4);
+}
+.cc-modal {
+  width: 100%;
+  max-height: calc(100vh - var(--cc-space-8));
+  display: flex;
+  flex-direction: column;
+  background: var(--cc-bg-surface);
+  border-radius: var(--cc-radius-xl);
+  box-shadow: var(--cc-shadow-md);
+  overflow: hidden;
+}
+.cc-modal--sm { max-width: 24rem; }
+.cc-modal--md { max-width: 32rem; }
+.cc-modal--lg { max-width: 48rem; }
+.cc-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-5) var(--cc-space-5) var(--cc-space-3);
+}
+.cc-modal__title {
+  margin: 0;
+  font-size: var(--cc-text-h4-size);
+  font-weight: 600;
+}
+.cc-modal__body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 var(--cc-space-5);
+}
+.cc-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-3) var(--cc-space-5) var(--cc-space-5);
+}
+/* ── ConfirmDialog ── */
+.cc-confirm-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--cc-space-3);
+  width: 100%;
+}
+.cc-confirm-dialog__message {
+  margin: 0;
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-size);
+  line-height: 1.5;
+}
+/* ── Tabs ── */
+.cc-tabs {
+  display: grid;
+  gap: var(--cc-space-4);
+}
+.cc-tabs__list {
+  display: flex;
+  gap: var(--cc-space-1);
+  border-bottom: 1px solid var(--cc-border-soft);
+}
+.cc-tabs__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  padding: var(--cc-space-3) var(--cc-space-4);
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 150ms,
+    border-color 150ms;
+}
+.cc-tabs__trigger:hover {
+  color: var(--cc-text-primary);
+}
+.cc-tabs__trigger--active {
+  color: var(--cc-primary-dark);
+  border-bottom-color: var(--cc-primary);
+}
+.cc-tabs__trigger:focus-visible {
+  outline: 0;
+  box-shadow: var(--cc-focus-ring);
+}
+.cc-tabs__trigger-icon {
+  display: inline-flex;
+}
+.cc-tabs__trigger-icon svg {
+  width: 1em;
+  height: 1em;
+}
+.cc-tabs__panel:focus-visible {
+  outline: 0;
+  box-shadow: var(--cc-focus-ring);
+  border-radius: var(--cc-radius-sm);
+}
