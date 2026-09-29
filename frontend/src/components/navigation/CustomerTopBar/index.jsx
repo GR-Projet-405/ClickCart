@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import { ChevronDown, Globe2, Phone } from "lucide-react";
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
