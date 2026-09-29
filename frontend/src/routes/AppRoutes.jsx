@@ -41,21 +41,13 @@ import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOv
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
-import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
-import AiServiceSearchPage from "../pages/customer/AiServiceSearchPage";
-import MarketplaceServicesPage from "../pages/customer/MarketplaceServicesPage";
-import MessagesPage from "../pages/Messages/MessagesPage";
-
-// DEV-07: Service Pricing & Packages
-import PricingSetupPage from "../pages/Provider/PricingSetupPage";
-
-// DEV-01, DEV-28, DEV-30, DEV-32 (Merged from dev branch)
 import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
 // Shared / Cross-role
 import ConversationsPage from "../pages/messaging/ConversationsPage";
+import MessagesPage from "../pages/Messages/MessagesPage";
 
 // Customer Pages
 import CustomerExplorePage from "../pages/CustomerExplorePage";
@@ -133,40 +125,31 @@ export default function AppRoutes() {
         <Route path="reviews" element={<ProviderReviewsPage />} />
         <Route path="availability" element={<AvailabilityPage />} />
 
-
-        {/* DEV-25 Messages */}
-        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
-
-        {/* Update: Only one mapping loop for the remaining provider navigation */}
-
-        {/* Settlement Tracking */}
-        {/* Settlement & Earnings Tracking */}
+        {/* Settlement Tracking & Earnings */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
 
-        {/* Only one mapping loop for the remaining unassigned provider navigation */}
-
-        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+        <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
         {/* Dynamic routing for remaining provider navigation */}
         {providerNavigation
-          .filter(({ path }) =>
-            path !== "/provider/dashboard" &&
-            path !== "/provider/services" &&
-            path !== "/provider/bookings" &&
-            path !== "/provider/messages" &&
-            path !== "/provider/service-areas" &&
-            path !== "/provider/profile" &&
-            path !== "/provider/messages" &&
-            path !== "/provider/settlements" &&
-            path !== "/provider/availability" &&
-            path !== "/provider/reviews" &&
-            path !== "/provider/profile" &&
-            path !== "/provider/earnings" &&
-            path !== "/provider/jobs" &&
-            path !== "/provider/settlements"
+          .filter(
+            ({ path }) =>
+              path !== "/provider/dashboard" &&
+              path !== "/provider/services" &&
+              path !== "/provider/bookings" &&
+              path !== "/provider/messages" &&
+              path !== "/provider/service-areas" &&
+              path !== "/provider/availability" &&
+              path !== "/provider/reviews" &&
+              path !== "/provider/profile" &&
+              path !== "/provider/earnings" &&
+              path !== "/provider/jobs" &&
+              path !== "/provider/settlements"
           )
           .map(({ path }) => (
             <Route
@@ -230,26 +213,19 @@ export default function AppRoutes() {
 
         {/* Provider Matching & Recommendations */}
         <Route path="recommendations" element={<RecommendationsPage />} />
-
-        <Route path="messages" element={<ConversationsPage role="CUSTOMER" />} />
-        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="explore" element={<CustomerExplorePage />} />
 
-        {/* DEV-26 Feature Routes */}
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="CUSTOMER" />} />
+        <Route path="messages/conversations" element={<ConversationsPage role="CUSTOMER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
+
+        {/* DEV-26 Checkout Feature Routes */}
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/result" element={<PaymentResultPage />} />
         <Route path="receipt/:id" element={<ReceiptPage />} />
         <Route path="customer/payments" element={<PaymentHistoryPage />} />
 
-        {customerNavigation.slice(1).map(({ to }) => {
-          // Skip routes that have explicit components registered above
-          if (
-            to === "/checkout" ||
-            to === "/customer/payments" ||
-            to === "/find-services"
-          ) return null;
-          return <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />;
-        })}
         <Route path="location-permission" element={<LocationPermission />} />
         <Route path="find-services/map" element={<FindServices />} />
         <Route path="booking/create" element={<BookingCreation />} />
@@ -264,22 +240,9 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
-        <Route path="find-services" element={<MarketplaceServicesPage />} />
-        
-        {/* DEV-25 Messages */}
-        <Route path="messages" element={<MessagesPage />} />
-
-        {customerNavigation.slice(1).filter(({ to }) => to !== "/find-services" && to !== "/messages").map(({ to }) => (
-          <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-        ))}
-
-
-        {/* DEV-14: AI Assisted Search Route */}
+        {/* Search Routes */}
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
-        {/* Browse active provider listings directly from the customer nav */}
-        <Route path="find-services" element={<MarketplaceServicesPage />} />
-        {/* Natural-language search available as a separate customer page */}
         <Route path="ai-service-search" element={<AiServiceSearchPage />} />
 
         {/* Dynamic routing for remaining customer navigation */}
@@ -297,7 +260,6 @@ export default function AppRoutes() {
           .map(({ to }) => (
             <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
           ))}
-
 
         <Route path="*" element={<NotFound />} />
       </Route>

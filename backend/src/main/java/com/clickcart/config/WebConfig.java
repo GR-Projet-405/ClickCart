@@ -10,24 +10,11 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-<<<<<<< HEAD
-<<<<<<< Updated upstream
-                .allowedOrigins("http://localhost:5173")
-                .allowedMethods("GET", "PATCH", "OPTIONS")
-                .allowedHeaders("*");
-=======
-                .allowedOrigins("http://localhost:5173", "http://localhost:5174")
+                .allowedOrigins("http://localhost:5173", "http://localhost:5174") // React Frontend URLs
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .exposedHeaders("Content-Disposition")
-                .allowCredentials(false)
+                .allowCredentials(true)
                 .maxAge(3600);
->>>>>>> Stashed changes
-=======
-                .allowedOrigins("http://localhost:5173") // Your React Frontend URL
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .allowCredentials(true);
->>>>>>> dev
     }
 }
