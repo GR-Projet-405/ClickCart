@@ -24,16 +24,6 @@ public class Provider {
     // Fields from dev branch (UI & Map Features)
     private String name;
     private boolean verified;
-
-@Document(collection = "providers")
-public class Provider {
-    
-    @Id
-    private String id;
-    
-    private String name;
-    private boolean verified;
-    private String category;
     private double rating;
     private int reviewsCount;
     private String locationName;
@@ -54,9 +44,6 @@ public class Provider {
     public Provider(String name, boolean verified, String category, double rating, int reviewsCount,
             String locationName, double startingPrice, String imageUrl, String initials, String color, double lat,
             double lng) {
-    public Provider() {}
-
-    public Provider(String name, boolean verified, String category, double rating, int reviewsCount, String locationName, double startingPrice, String imageUrl, String initials, String color, double lat, double lng) {
         this.name = name;
         this.verified = verified;
         this.category = category;
@@ -72,7 +59,6 @@ public class Provider {
     }
 
     // Getters and Setters for all fields
-    // Getters and Setters
 
     public String getId() {
         return id;
@@ -279,5 +265,4 @@ public class Provider {
             this.url = url;
         }
     }
-}
 }

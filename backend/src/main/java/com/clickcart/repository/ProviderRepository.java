@@ -15,5 +15,3 @@ public interface ProviderRepository extends MongoRepository<Provider, String> {
     // From dev branch
     List<Provider> findByCategory(String category);
 }
-    List<Provider> findByCategory(String category);
-}
