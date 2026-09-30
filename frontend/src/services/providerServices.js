@@ -43,4 +43,5 @@ export const providerServicesApi = {
       method: "PATCH",
       body: JSON.stringify({ status }),
     }),
+  delete: (id) => request(`/${encodeURIComponent(id)}${providerQuery()}`, { method: "DELETE" }),
 };

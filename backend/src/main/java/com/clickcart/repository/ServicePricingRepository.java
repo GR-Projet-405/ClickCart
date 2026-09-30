@@ -12,4 +12,5 @@ public interface ServicePricingRepository extends MongoRepository<ServicePricing
     Optional<ServicePricing> findByServiceId(String serviceId);
     // Check if pricing already exists for a service (useful for update vs create logic)
     boolean existsByServiceId(String serviceId);
+    void deleteByServiceId(String serviceId);
 }
