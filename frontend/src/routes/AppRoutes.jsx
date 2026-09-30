@@ -183,6 +183,7 @@ export default function AppRoutes() {
         />
         <Route path="categories" element={<AdminCategoryDashboard />} />
         <Route path="providers" element={<VerificationQueue />} />
+        <Route path="notifications" element={<NotificationsPage />} />
 
         {/* Dynamic routing for remaining admin navigation */}
         {adminNavigation
@@ -214,6 +215,7 @@ export default function AppRoutes() {
         <Route index element={<CustomerWorkspace />} />
 
         {/* Provider Matching & Recommendations */}
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="explore" element={<CustomerExplorePage />} />
 
