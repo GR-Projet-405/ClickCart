@@ -6,11 +6,11 @@ import com.clickcart.exception.InvalidAttachmentException;
 import com.clickcart.exception.ResourceNotFoundException;
 import com.clickcart.model.Conversation;
 import com.clickcart.model.Message;
+import com.clickcart.model.NotificationType;
+import com.clickcart.model.Role;
 import com.clickcart.model.SenderRole;
 import com.clickcart.repository.ConversationRepository;
 import com.clickcart.repository.MessageRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
@@ -29,8 +29,6 @@ import java.util.UUID;
 @Service
 public class MessageService {
 
-    private static final Logger log = LoggerFactory.getLogger(MessageService.class);
-
     @Value("${clickcart.attachments.dir:${java.io.tmpdir}/clickcart-attachments}")
     private String attachmentsDir;
 
@@ -48,13 +46,16 @@ public class MessageService {
     private final MessageRepository messageRepository;
     private final ConversationRepository conversationRepository;
     private final ConversationService conversationService;
+    private final NotificationService notificationService;
 
     public MessageService(MessageRepository messageRepository,
             ConversationRepository conversationRepository,
-            @Lazy ConversationService conversationService) {
+            @Lazy ConversationService conversationService,
+            NotificationService notificationService) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.conversationService = conversationService;
+        this.notificationService = notificationService;
     }
 
     public List<Message> getMessages(String conversationId, String userId, String role) {
@@ -299,9 +300,16 @@ public class MessageService {
                 ? conv.getProviderId()
                 : conv.getCustomerId();
 
+        Role recipientRole = senderRole == SenderRole.CUSTOMER ? Role.SERVICE_PROVIDER : Role.CUSTOMER;
         String preview = content != null && content.length() > 60 ? content.substring(0, 57) + "..." : content;
-        log.debug("Notification stub: MESSAGE_RECEIVED to recipientId={}, conversationId={}, preview={}",
-                recipientId, conv.getId(), preview);
+        notificationService.publish(
+                recipientId,
+                recipientRole,
+                NotificationType.NEW_MESSAGE,
+                "New Message",
+                preview != null && !preview.isBlank() ? preview : "You have a new message.",
+                "CONVERSATION",
+                conv.getId());
     }
 
     MessageRepository getMessageRepository() {
