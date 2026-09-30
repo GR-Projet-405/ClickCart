@@ -25,6 +25,7 @@ import CommissionTransactionPage from "../pages/commission/CommissionTransaction
 
 // Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
+import NotificationsPage from "../pages/provider/NotificationsPage";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import PricingSetupPage from "../pages/Provider/PricingSetupPage";
 import ServiceMedia from "../pages/provider/ServiceMedia";
@@ -102,6 +103,7 @@ export default function AppRoutes() {
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="services" element={<ProviderServicesPage />} />
 
         {/* DEV-07: Service Pricing & Packages Route */}
