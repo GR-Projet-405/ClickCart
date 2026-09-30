@@ -3,8 +3,10 @@ spring:
     name: clickcart-backend
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://Admin:ABC123@cluster0.2ndv7.mongodb.net/Clickcart_db?authSource=admin&retryWrites=true&w=majority&appName=Cluster0}
+      uri: ${MONGODB_URI:mongodb+srv://itpmmongo_db_user:8ucixnbW7Hwu8MWo@cluster0.cws09ir.mongodb.net/Clickcart_db?authSource=admin&retryWrites=true&w=majority&appName=Cluster0}
+      database: ${MONGODB_DATABASE:Clickcart_db}
 
 server:
   port: ${SERVER_PORT:8080}
+
 
