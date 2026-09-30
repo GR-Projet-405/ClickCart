@@ -117,7 +117,6 @@ function mapSelectedAvailability(selectedAvailability) {
 
 export default function MarketplaceServicesPage() {
   const [services, setServices] = useState([]);
-  const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [category, setCategory] = useState("All categories");
