@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from "react";
 import { Bell, Heart, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
 import Button from "../../common/Button";
@@ -16,6 +16,7 @@ import "./styles.css";
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const { profile, displayName, avatarFallback } = useCustomer();
 
   useEffect(() => setMenuOpen(false), [pathname]);
@@ -52,6 +53,7 @@ export default function CustomerHeader() {
             icon={<Bell size={18} />}
             label="Notifications"
             variant="ghost"
+            onClick={() => navigate("/notifications")}
           />
           <Link
             className="customer-header__account"
