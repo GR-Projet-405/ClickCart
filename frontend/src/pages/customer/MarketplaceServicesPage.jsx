@@ -119,6 +119,7 @@ export default function MarketplaceServicesPage() {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All categories");
   const [location, setLocation] = useState("All locations");
   const [minPrice, setMinPrice] = useState(DEFAULT_MIN_PRICE);
