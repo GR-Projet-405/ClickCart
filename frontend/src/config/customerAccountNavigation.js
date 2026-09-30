@@ -1,4 +1,4 @@
-import { MapPin, UserRound } from "lucide-react";
+import { Heart, MapPin, UserRound } from "lucide-react";
 
 export const customerAccountNavigation = [
   {
@@ -12,5 +12,11 @@ export const customerAccountNavigation = [
     label: "Saved Addresses",
     icon: MapPin,
     description: "Manage delivery & service locations",
+  },
+  {
+    id: "favorites",
+    label: "Favorites & Saved",
+    icon: Heart,
+    description: "Saved services & favorite providers",
   },
 ];
