@@ -24,16 +24,23 @@ import com.clickcart.dto.ServiceListingResponse;
 import com.clickcart.model.ServiceListing;
 import com.clickcart.model.ServiceListingStatus;
 import com.clickcart.repository.ServiceListingRepository;
+import com.clickcart.repository.ServicePackageRepository;
+import com.clickcart.repository.ServicePricingRepository;
 
 @Service
 public class ServiceListingService {
 
     private final ServiceListingRepository repository;
     private final MongoTemplate mongoTemplate;
+    private final ServicePackageRepository packageRepository;
+    private final ServicePricingRepository pricingRepository;
 
-    public ServiceListingService(ServiceListingRepository repository, MongoTemplate mongoTemplate) {
+    public ServiceListingService(ServiceListingRepository repository, MongoTemplate mongoTemplate,
+            ServicePackageRepository packageRepository, ServicePricingRepository pricingRepository) {
         this.repository = repository;
         this.mongoTemplate = mongoTemplate;
+        this.packageRepository = packageRepository;
+        this.pricingRepository = pricingRepository;
     }
 
     public List<ServiceListingResponse> findForProvider(String providerId) {
@@ -139,6 +146,13 @@ public class ServiceListingService {
         listing.setStatus(status);
         listing.setUpdatedAt(Instant.now());
         return toResponse(repository.save(listing));
+    }
+
+    public void delete(String providerId, String id) {
+        findOwned(providerId, id);
+        packageRepository.deleteByServiceId(id);
+        pricingRepository.deleteByServiceId(id);
+        repository.deleteById(id);
     }
 
     private ServiceListing findOwned(String providerId, String id) {
