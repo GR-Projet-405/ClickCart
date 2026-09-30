@@ -1,0 +1,165 @@
+/* DEV-01 AuthLayout. Brand-panel colours are scoped here so shared design tokens stay untouched. */
+.auth-layout {
+  --auth-topbar-bg: #101828;
+  --auth-panel-bg: #0c3a21;
+  --auth-panel-bg-light: #0f5a2e;
+  --auth-panel-accent: #7be38a;
+  --auth-panel-text-muted: rgb(255 255 255 / 72%);
+  --auth-panel-circle: rgb(16 185 38 / 16%);
+
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background: var(--cc-bg-app);
+}
+
+/* Utility bar */
+.auth-topbar {
+  color: #d0d5dd;
+  background: var(--auth-topbar-bg);
+  font-size: var(--cc-text-body-sm-size);
+}
+.auth-topbar__inner {
+  display: flex;
+  min-height: 2.75rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+  padding-inline: clamp(1rem, 3vw, 2.5rem);
+}
+.auth-topbar__support,
+.auth-topbar__links,
+.auth-topbar__language {
+  display: flex;
+  align-items: center;
+}
+.auth-topbar__support {
+  gap: var(--cc-space-2);
+}
+.auth-topbar__support a {
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}
+.auth-topbar__links {
+  gap: var(--cc-space-5);
+}
+.auth-topbar__links a {
+  color: inherit;
+  text-decoration: none;
+}
+.auth-topbar__links a:hover,
+.auth-topbar__links a:focus-visible {
+  color: #fff;
+}
+.auth-topbar__language {
+  gap: var(--cc-space-1);
+  padding: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+
+/* Split screen */
+.auth-layout__body {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+}
+.auth-layout__body--panel-right {
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+}
+.auth-layout__body--panel-right .auth-panel {
+  order: 2;
+}
+
+/* Brand panel */
+.auth-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-10);
+  overflow: hidden;
+  padding: clamp(2rem, 4vw, 3.5rem);
+  color: #fff;
+  background: linear-gradient(160deg, var(--auth-panel-bg-light), var(--auth-panel-bg) 60%);
+  isolation: isolate;
+}
+.auth-panel::before,
+.auth-panel::after {
+  position: absolute;
+  z-index: -1;
+  background: var(--auth-panel-circle);
+  border-radius: 50%;
+  content: "";
+}
+.auth-panel::before {
+  top: 12%;
+  right: -18%;
+  width: 26rem;
+  height: 26rem;
+}
+.auth-panel::after {
+  bottom: -8rem;
+  left: -6rem;
+  width: 16rem;
+  height: 16rem;
+}
+.auth-panel__brand {
+  align-self: flex-start;
+  color: inherit;
+  text-decoration: none;
+}
+.auth-panel .cc-brand-logo__name {
+  color: #fff;
+}
+.auth-panel .cc-brand-logo__name span {
+  color: var(--auth-panel-accent);
+}
+.auth-panel .cc-brand-logo__tagline {
+  color: var(--auth-panel-text-muted);
+}
+.auth-panel__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--cc-space-6);
+}
+
+/* Form column */
+.auth-layout__main {
+  display: flex;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 4.5rem) clamp(1rem, 4vw, 4rem);
+}
+.auth-layout__content {
+  width: 100%;
+  max-width: 34rem;
+}
+.auth-layout__mobile-brand {
+  display: none;
+  margin-bottom: var(--cc-space-6);
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (max-width: 899px) {
+  .auth-layout__body,
+  .auth-layout__body--panel-right {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auth-panel {
+    display: none;
+  }
+  .auth-layout__mobile-brand {
+    display: inline-flex;
+  }
+}
+
+@media (max-width: 639px) {
+  .auth-topbar__support span,
+  .auth-topbar__links a:not(.auth-topbar__keep) {
+    display: none;
+  }
+}
