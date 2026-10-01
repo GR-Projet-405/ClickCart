@@ -7,8 +7,8 @@ spring:
     import: optional:file:.env[.properties], optional:file:.env
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://Admin:ABC123@cluster0.2ndv7.mongodb.net/Clickcart_db?authSource=admin&retryWrites=true&w=majority&appName=Cluster0}
-      database: ${MONGODB_DATABASE:clickcart}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
+      database: ${MONGODB_DATABASE:Clickcart_db}
   servlet:
     multipart:
       enabled: true
@@ -19,8 +19,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -48,12 +48,8 @@ clickcart:
   upload:
     proof-dir: ${CLICKCART_PROOF_DIR:./data/job-proofs}
 
-# Cloudinary Settings
-CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME}
-CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY}
-CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET}
-
 logging:
   level:
     org.springframework.data.mongodb: DEBUG
     com.clickcart: DEBUG
+

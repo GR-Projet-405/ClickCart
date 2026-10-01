@@ -1,9 +1,10 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
   CheckCircle2,
   ChevronRight,
+  Heart,
   Home,
   Loader2,
   RefreshCw,
@@ -18,6 +19,8 @@ import CustomerAccountSidebar from "../../components/customer/CustomerAccountSid
 import ProfileHeaderCard from "../../components/customer/ProfileHeaderCard";
 import PersonalInfoSection from "../../components/customer/PersonalInfoSection";
 import SavedAddressesSection from "../../components/customer/SavedAddressesSection";
+import CustomerFavoritesSection from "../../components/customer/CustomerFavoritesSection";
+import AccountSummarySection from "../../components/customer/AccountSummarySection";
 import EditProfileModal from "../../components/customer/EditProfileModal";
 import AddressModal from "../../components/customer/AddressModal";
 import { useCustomer } from "../../context/CustomerContext";
@@ -25,6 +28,10 @@ import "./CustomerProfilePage.css";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialTab = tabParam || "profile";
+
   const {
     profile,
     setProfile,
@@ -34,12 +41,26 @@ export default function CustomerProfilePage() {
     saveProfile,
   } = useCustomer();
 
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const [favoritesCount, setFavoritesCount] = useState(
+    profile?.stats?.favoriteProviders || 6
+  );
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressToEdit, setAddressToEdit] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const [toastType, setToastType] = useState("success");
+
+  useEffect(() => {
+    if (tabParam && ["profile", "addresses", "favorites"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId }, { replace: true });
+  };
 
   const showToast = (message, type = "success") => {
     setToastMessage(message);
@@ -200,6 +221,22 @@ export default function CustomerProfilePage() {
           <span className="customer-profile-page__crumb-current">
             Customer Profile
           </span>
+          {activeTab === "favorites" && (
+            <>
+              <ChevronRight size={14} className="customer-profile-page__crumb-sep" />
+              <span className="customer-profile-page__crumb-current">
+                Favorites & Saved
+              </span>
+            </>
+          )}
+          {activeTab === "addresses" && (
+            <>
+              <ChevronRight size={14} className="customer-profile-page__crumb-sep" />
+              <span className="customer-profile-page__crumb-current">
+                Saved Addresses
+              </span>
+            </>
+          )}
         </nav>
 
         {/* Server Connection Error Banner (non-blocking) */}
@@ -232,7 +269,8 @@ export default function CustomerProfilePage() {
               <CustomerAccountSidebar
                 profile={profile}
                 activeTab={activeTab}
-                onSelectTab={(tabId) => setActiveTab(tabId)}
+                favoritesCount={favoritesCount}
+                onSelectTab={handleTabChange}
               />
             </aside>
 
@@ -242,24 +280,36 @@ export default function CustomerProfilePage() {
                 profile={profile}
                 onEditProfile={() => setIsEditModalOpen(true)}
                 onAvatarChange={handleAvatarChange}
-                onManageAddresses={() => setActiveTab("addresses")}
+                onManageAddresses={() => handleTabChange("addresses")}
+                onManageFavorites={() => handleTabChange("favorites")}
               />
 
               {/* Mobile Tab Navigation Bar */}
               <div className="customer-profile-page__mobile-tabs">
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "profile" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("profile")}
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("profile")}
                 >
                   Profile & Details
                 </button>
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "addresses" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("addresses")}
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "favorites" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("favorites")}
+                >
+                  Favorites & Saved ({favoritesCount})
+                </button>
+                <button
+                  type="button"
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "addresses" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("addresses")}
                 >
                   Saved Addresses ({profile.savedAddresses?.length || 0})
                 </button>
@@ -273,12 +323,33 @@ export default function CustomerProfilePage() {
                     onEdit={() => setIsEditModalOpen(true)}
                   />
 
+                  {profile.stats && (
+                    <AccountSummarySection
+                      stats={{
+                        ...profile.stats,
+                        favoriteProviders: favoritesCount,
+                      }}
+                      activities={profile.recentActivities || []}
+                      onExploreServices={() => handleTabChange("favorites")}
+                    />
+                  )}
+
                   <SavedAddressesSection
                     addresses={profile.savedAddresses || []}
                     onAddAddress={handleAddAddress}
                     onEditAddress={handleEditAddress}
                     onDeleteAddress={handleDeleteAddress}
                     onSetDefault={handleSetDefaultAddress}
+                  />
+                </div>
+              )}
+
+              {activeTab === "favorites" && (
+                <div className="customer-profile-page__tab-content">
+                  <CustomerFavoritesSection
+                    profile={profile}
+                    onShowToast={showToast}
+                    onUpdateFavoritesCount={(cnt) => setFavoritesCount(cnt)}
                   />
                 </div>
               )}

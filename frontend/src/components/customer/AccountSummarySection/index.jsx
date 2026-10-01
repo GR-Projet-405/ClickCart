@@ -42,12 +42,13 @@ export default function AccountSummarySection({ stats, activities, onExploreServ
       bg: "#f3e8ff",
     },
     {
-      label: "Favorite Pros",
+      label: "Saved Favorites",
       val: stats.favoriteProviders,
-      sub: "Trusted Service Providers",
+      sub: "Services & Providers",
       icon: Heart,
       color: "#e11d48",
       bg: "#ffe4e6",
+      action: onExploreServices,
     },
   ];
 
@@ -57,7 +58,14 @@ export default function AccountSummarySection({ stats, activities, onExploreServ
         {statCards.map((st, i) => {
           const Icon = st.icon;
           return (
-            <Card key={i} className="account-summary-section__stat-card">
+            <Card
+              key={i}
+              className={`account-summary-section__stat-card ${
+                st.action ? "account-summary-section__stat-card--clickable" : ""
+              }`}
+              onClick={st.action ? st.action : undefined}
+              style={{ cursor: st.action ? "pointer" : "default" }}
+            >
               <div
                 className="account-summary-section__stat-icon"
                 style={{ color: st.color, backgroundColor: st.bg }}
@@ -91,7 +99,7 @@ export default function AccountSummarySection({ stats, activities, onExploreServ
             </p>
           </div>
           <Button variant="ghost" size="sm" onClick={onExploreServices}>
-            Find More Services
+            View Favorites & Saved
           </Button>
         </div>
 

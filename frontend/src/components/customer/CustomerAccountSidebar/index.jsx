@@ -10,8 +10,14 @@ export default function CustomerAccountSidebar({
   profile,
   activeTab,
   onSelectTab,
+  favoritesCount,
   className = "",
 }) {
+  const displayFavoritesCount =
+    typeof favoritesCount === "number"
+      ? favoritesCount
+      : profile?.stats?.favoriteProviders || 0;
+
   return (
     <aside className={`customer-account-sidebar ${className}`.trim()}>
       <div className="customer-account-sidebar__user-summary">
@@ -91,7 +97,12 @@ export default function CustomerAccountSidebar({
                   {profile.savedAddresses.length}
                 </span>
               )}
-              {item.badge && item.id !== "addresses" && (
+              {item.id === "favorites" && displayFavoritesCount > 0 && (
+                <span className="customer-account-sidebar__badge">
+                  {displayFavoritesCount}
+                </span>
+              )}
+              {item.badge && item.id !== "addresses" && item.id !== "favorites" && (
                 <span className="customer-account-sidebar__badge">
                   {item.badge}
                 </span>

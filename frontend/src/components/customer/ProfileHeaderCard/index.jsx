@@ -4,6 +4,7 @@ import {
   Camera,
   CheckCircle2,
   Edit3,
+  Heart,
   Mail,
   MapPin,
   Phone,
@@ -20,6 +21,7 @@ export default function ProfileHeaderCard({
   onEditProfile,
   onAvatarChange,
   onManageAddresses,
+  onManageFavorites,
 }) {
   const fileInputRef = useRef(null);
 
@@ -99,6 +101,15 @@ export default function ProfileHeaderCard({
             >
               Saved Addresses
             </Button>
+            {onManageFavorites && (
+              <Button
+                variant="outline"
+                leftIcon={<Heart size={16} />}
+                onClick={onManageFavorites}
+              >
+                Favorites & Saved
+              </Button>
+            )}
           </div>
         </div>
 
