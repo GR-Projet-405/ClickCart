@@ -707,38 +707,6 @@
   border-bottom-right-radius: var(--cc-radius-2xl, 1rem);
 }
 
-/* Callout Banner */
-.customer-favorites-section__discovery-banner {
-  margin-top: var(--cc-space-6, 1.5rem);
-  padding: 1.25rem 1.5rem;
-  border-radius: var(--cc-radius-xl, 0.75rem);
-  background: linear-gradient(135deg, var(--cc-primary-softer, #f3fcf5) 0%, #ffffff 100%);
-  border: 1px solid var(--cc-primary-border-soft, #d7f3de);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 1rem;
-}
-
-.customer-favorites-section__discovery-content {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.customer-favorites-section__discovery-sparkle {
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: var(--cc-radius-lg, 0.625rem);
-  background: var(--cc-primary-soft, #eaf9ee);
-  color: var(--cc-primary, #10b926);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .customer-favorites-section__header {

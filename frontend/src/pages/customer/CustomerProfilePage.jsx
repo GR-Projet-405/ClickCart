@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -28,8 +28,9 @@ import "./CustomerProfilePage.css";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialTab = searchParams.get("tab") || "profile";
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
+  const initialTab = tabParam || "profile";
 
   const {
     profile,
@@ -49,6 +50,17 @@ export default function CustomerProfilePage() {
   const [addressToEdit, setAddressToEdit] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
   const [toastType, setToastType] = useState("success");
+
+  useEffect(() => {
+    if (tabParam && ["profile", "addresses", "favorites"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId }, { replace: true });
+  };
 
   const showToast = (message, type = "success") => {
     setToastMessage(message);
@@ -258,7 +270,7 @@ export default function CustomerProfilePage() {
                 profile={profile}
                 activeTab={activeTab}
                 favoritesCount={favoritesCount}
-                onSelectTab={(tabId) => setActiveTab(tabId)}
+                onSelectTab={handleTabChange}
               />
             </aside>
 
@@ -268,33 +280,36 @@ export default function CustomerProfilePage() {
                 profile={profile}
                 onEditProfile={() => setIsEditModalOpen(true)}
                 onAvatarChange={handleAvatarChange}
-                onManageAddresses={() => setActiveTab("addresses")}
-                onManageFavorites={() => setActiveTab("favorites")}
+                onManageAddresses={() => handleTabChange("addresses")}
+                onManageFavorites={() => handleTabChange("favorites")}
               />
 
               {/* Mobile Tab Navigation Bar */}
               <div className="customer-profile-page__mobile-tabs">
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "profile" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("profile")}
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "profile" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("profile")}
                 >
                   Profile & Details
                 </button>
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "favorites" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("favorites")}
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "favorites" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("favorites")}
                 >
                   Favorites & Saved ({favoritesCount})
                 </button>
                 <button
                   type="button"
-                  className={`customer-profile-page__mob-tab ${activeTab === "addresses" ? "active" : ""
-                    }`}
-                  onClick={() => setActiveTab("addresses")}
+                  className={`customer-profile-page__mob-tab ${
+                    activeTab === "addresses" ? "active" : ""
+                  }`}
+                  onClick={() => handleTabChange("addresses")}
                 >
                   Saved Addresses ({profile.savedAddresses?.length || 0})
                 </button>
@@ -315,7 +330,7 @@ export default function CustomerProfilePage() {
                         favoriteProviders: favoritesCount,
                       }}
                       activities={profile.recentActivities || []}
-                      onExploreServices={() => setActiveTab("favorites")}
+                      onExploreServices={() => handleTabChange("favorites")}
                     />
                   )}
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEffect, useState } from "react";
 import { Bell, Heart, Menu, X } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
 import Button from "../../common/Button";
@@ -15,8 +15,14 @@ import "./styles.css";
 
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { pathname } = useLocation();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { pathname, search } = location;
   const { profile, displayName, avatarFallback } = useCustomer();
+
+  const isFavoritesActive =
+    pathname === "/customer/profile" &&
+    new URLSearchParams(search).get("tab") === "favorites";
 
   useEffect(() => setMenuOpen(false), [pathname]);
   useEffect(() => {
@@ -43,10 +49,19 @@ export default function CustomerHeader() {
         </nav>
         <div className="customer-header__actions">
           <IconButton
-            className="customer-header__desktop-action"
-            icon={<Heart size={18} />}
-            label="Favorites"
+            className={`customer-header__desktop-action ${
+              isFavoritesActive ? "customer-header__action--active" : ""
+            }`}
+            icon={
+              <Heart
+                size={18}
+                fill={isFavoritesActive ? "#ef4444" : "none"}
+                color={isFavoritesActive ? "#ef4444" : "currentColor"}
+              />
+            }
+            label="Favorites & Saved"
             variant="ghost"
+            onClick={() => navigate("/customer/profile?tab=favorites")}
           />
           <IconButton
             icon={<Bell size={18} />}

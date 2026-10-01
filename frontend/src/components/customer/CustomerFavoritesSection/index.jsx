@@ -645,30 +645,6 @@ export default function CustomerFavoritesSection({
           </div>
         )}
 
-        {/* Discovery Callout Banner */}
-        <div className="customer-favorites-section__discovery-banner">
-          <div className="customer-favorites-section__discovery-content">
-            <div className="customer-favorites-section__discovery-sparkle">
-              <Sparkles size={22} />
-            </div>
-            <div>
-              <strong style={{ display: "block", color: "var(--cc-text-primary)", fontSize: "0.9375rem" }}>
-                Looking for something else?
-              </strong>
-              <span style={{ color: "var(--cc-text-secondary)", fontSize: "0.8125rem" }}>
-                Use ClickCart's AI Service Search to match with verified experts tailored to your needs.
-              </span>
-            </div>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            rightIcon={<ChevronRight size={14} />}
-            onClick={() => navigate("/ai-service-search")}
-          >
-            Try AI Search
-          </Button>
-        </div>
       </Card>
 
       {/* Details Preview Modal */}
