@@ -3,7 +3,7 @@ import { BarChart3 } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import Button from "../../common/Button";
 import SidebarItem from "../SidebarItem";
-
+import { adminNavigation } from "../../../config/adminNavigation";
 
 export default function AdminSidebar({ onNavigate }) {
   const { pathname } = useLocation();
