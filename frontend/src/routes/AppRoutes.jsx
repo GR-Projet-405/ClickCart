@@ -119,7 +119,6 @@ export default function AppRoutes() {
         <Route path="profile" element={<ProviderProfileOverview />} />
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
-        <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
         {/* Provider Reviews & Availability */}
         <Route path="reviews" element={<ProviderReviewsPage />} />

@@ -72,9 +72,9 @@ export default function ProviderProfileOverview() {
 
   const handleViewPublicProfile = () => {
     if (profile.id) {
-      navigate(`/provider/profile/${profile.id}`);
+      navigate(`/providers/${profile.id}`);
     } else {
-      navigate("/provider/profile/public");
+      navigate("/provider/profile");
     }
   };
 
