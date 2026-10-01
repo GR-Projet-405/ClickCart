@@ -11,5 +11,8 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     open: "/provider/dashboard",
+    proxy: {
+      "/api": "http://localhost:8080",
+    },
   },
 });

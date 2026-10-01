@@ -1,0 +1,20 @@
+import printCommissionHistory from "../../utils/printCommissionHistory";
+import { Download, RefreshCw } from "lucide-react";
+import Button from "../../components/common/Button";
+import Card from "../../components/common/Card";
+import CommissionChart from "../../components/commission/CommissionChart";
+import CommissionHistory from "../../components/commission/CommissionHistory";
+import CommissionStatsCard from "../../components/commission/CommissionStatsCard";
+const money = (value) => `${Number(value || 0).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} LKR`;
+const date = (value) => value ? new Date(value).toLocaleString() : "-";
+export default function CommissionOverviewV3({ dashboard, history, audit, loading, error, onRetry }) {
+  if (loading) return <Card className="commission-state"><RefreshCw size={20} className="commission-state__spin" /><h2>Loading commission data</h2><p>Reading current policy and earnings from the commission service.</p></Card>;
+  if (error) return <Card className="commission-state commission-state--error"><h2>Commission data unavailable</h2><p>{error}</p><Button variant="outline" onClick={onRetry}>Retry</Button></Card>;
+  const metrics = dashboard || {};
+  const commissionTrend = (history || []).filter((item) => item.status === "SETTLED")
+    .sort((a, b) => (new Date(a.date || 0) - new Date(b.date || 0)) || String(a.transactionId).localeCompare(String(b.transactionId)))
+    .map((item) => ({ date: item.date, value: item.commissionAmount, id: item.publicId || item.transactionId }));
+  const categories = Object.entries(metrics.categoryDistribution || {});
+  const entries = (history || metrics.recentHistory || []).map((item) => ({ ...item, bookingAmount: money(item.bookingAmount), commissionAmount: money(item.commissionAmount), date: date(item.date) }));
+  return <><div className="commission-stats commission-stats--five"><CommissionStatsCard label="Total commission revenue" value={money(metrics.totalRevenue)} detail="Commission from splits marked Paid" /><CommissionStatsCard label="Pending commission revenue" value={money(metrics.pendingCommissionRevenue)} detail="Commission from splits with Paid off" tone="amber" /><CommissionStatsCard label="Active commission rules" value={metrics.activeRules || 0} detail="Policy rules in effect" tone="blue" /><CommissionStatsCard label="Average commission rate" value={`${Number(metrics.averageRate || 0).toFixed(2)}%`} detail="Paid commission / paid service amounts" tone="purple" /><CommissionStatsCard label="Total Settlements" value={money(metrics.totalSettlements)} detail="Total provider payouts across all splits" tone="amber" /></div><div className="commission-dashboard-grid"><Card className="commission-panel commission-panel--chart"><div className="commission-panel__heading"><div><h2>Commission revenue trend</h2><p>Each paid commission transaction · LKR · Sri Lanka time</p></div></div><CommissionChart data={commissionTrend} /></Card><Card className="commission-panel"><div className="commission-panel__heading"><div><h2>Category distribution</h2><p>Paid commission share · Active categories included</p></div></div>{categories.length ? <div className="category-list">{categories.map(([category, value]) => <span key={category}><i className="category-dot category-dot--green" />{category}<strong>{value}%</strong></span>)}</div> : <p className="commission-empty">No active categories or paid splits yet.</p>}</Card></div><div className="commission-dashboard-grid commission-dashboard-grid--history"><Card className="commission-panel"><div className="commission-panel__heading"><div><h2>Recent commission history</h2><p>Immutable transaction snapshots</p></div><button className="commission-link" onClick={() => printCommissionHistory(entries)} title="Export Recent commission history — choose Save as PDF"><Download size={14} /> Export</button></div>{entries.length ? <CommissionHistory entries={entries} /> : <p className="commission-empty">No commission transactions recorded yet.</p>}</Card></div></>;
+}

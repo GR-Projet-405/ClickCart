@@ -19,50 +19,61 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.clickcart.dto.CreateConversationRequest;
 import com.clickcart.dto.messaging.ConversationDetailResponse;
 import com.clickcart.dto.messaging.ConversationSummaryResponse;
 import com.clickcart.dto.messaging.CreateOrFindConversationRequest;
 import com.clickcart.dto.messaging.MessageResponse;
 import com.clickcart.dto.messaging.PagedMessagesResponse;
 import com.clickcart.dto.messaging.SendMessageRequest;
+import com.clickcart.model.BookingEvent;
+import com.clickcart.model.Conversation;
 import com.clickcart.model.SenderRole;
+import com.clickcart.service.BookingEventService;
 import com.clickcart.service.ConversationService;
 import com.clickcart.service.MessageService;
 import com.clickcart.exception.AccessForbiddenException;
 
+/**
+ * REST endpoints for messaging and booking-linked conversations.
+ */
 @RestController
 @RequestMapping("/api/conversations")
 public class ConversationController {
 
     private final ConversationService conversationService;
+    private final BookingEventService bookingEventService;
     private final MessageService messageService;
 
-    public ConversationController(ConversationService conversationService, MessageService messageService) {
+    public ConversationController(ConversationService conversationService,
+            BookingEventService bookingEventService,
+            MessageService messageService) {
         this.conversationService = conversationService;
+        this.bookingEventService = bookingEventService;
         this.messageService = messageService;
     }
 
     private String getUserId(Principal principal) {
         if (principal == null) {
-            // In a fully secured app, this is prevented by the auth filter.
             throw new AccessForbiddenException("Not authenticated");
         }
         return principal.getName();
     }
 
-    @PostMapping
+    // ==========================================
+    // Messaging API (DEV-25)
+    // ==========================================
+
+    @PostMapping("/new")
     public ResponseEntity<ConversationSummaryResponse> createOrFindConversation(
             Principal principal,
             @Valid @RequestBody CreateOrFindConversationRequest request) {
         String currentUserId = getUserId(principal);
-        
-        // TODO(DEV-auth): Enforce CUSTOMER role check via Spring Security @PreAuthorize
-        
         ConversationSummaryResponse response = conversationService.getOrCreateConversation(currentUserId, request);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping
+    @GetMapping("/list")
     public ResponseEntity<List<ConversationSummaryResponse>> listConversations(
             Principal principal,
             @RequestParam(name = "role", defaultValue = "CUSTOMER") SenderRole role,
@@ -70,18 +81,20 @@ public class ConversationController {
             @RequestParam(name = "size", defaultValue = "20") int size) {
         String currentUserId = getUserId(principal);
         Pageable pageable = PageRequest.of(page, size);
-        List<ConversationSummaryResponse> response = conversationService.listConversations(currentUserId, role, pageable);
+        List<ConversationSummaryResponse> response = conversationService.listConversations(currentUserId, role,
+                pageable);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{conversationId}")
+    @GetMapping("/detail/{conversationId}")
     public ResponseEntity<ConversationDetailResponse> getConversationDetail(
             Principal principal,
             @PathVariable("conversationId") String conversationId,
             @RequestParam(name = "page", defaultValue = "0") int messagePage,
             @RequestParam(name = "size", defaultValue = "20") int messageSize) {
         String currentUserId = getUserId(principal);
-        ConversationDetailResponse response = conversationService.getConversation(conversationId, currentUserId, messagePage, messageSize);
+        ConversationDetailResponse response = conversationService.getConversationDetail(conversationId, currentUserId,
+                messagePage, messageSize);
         return ResponseEntity.ok(response);
     }
 
@@ -114,5 +127,66 @@ public class ConversationController {
             @PathVariable("conversationId") String conversationId) {
         String currentUserId = getUserId(principal);
         messageService.markAsRead(conversationId, currentUserId);
+    }
+
+    // ==========================================
+    // Booking Event APIs
+    // ==========================================
+
+    @PostMapping
+    public ResponseEntity<Conversation> createConversationForBooking(
+            @Valid @RequestBody CreateConversationRequest req) {
+        Conversation conv = conversationService.createOrGetConversationForBooking(req);
+        // Seed initial booking events on first creation only
+        List<BookingEvent> existingEvents = bookingEventService.getEventsForConversation(conv.getId());
+        if (existingEvents.isEmpty()) {
+            bookingEventService.seedInitialEvents(
+                    conv.getBookingId(), conv.getId(), conv.getBookingStatus());
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(conv);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Conversation>> getConversations(
+            @RequestParam String userId,
+            @RequestParam String role) {
+        List<Conversation> result = "PROVIDER".equalsIgnoreCase(role)
+                ? conversationService.getConversationsForProvider(userId)
+                : conversationService.getConversationsForCustomer(userId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Conversation> getConversation(
+            @PathVariable String id,
+            @RequestParam String userId,
+            @RequestParam String role) {
+        Conversation conv = conversationService.getConversation(id, userId, role);
+        return ResponseEntity.ok(conv);
+    }
+
+    @GetMapping("/{id}/events")
+    public ResponseEntity<List<BookingEvent>> getEvents(
+            @PathVariable String id,
+            @RequestParam String userId,
+            @RequestParam String role) {
+        // Verify access
+        conversationService.getConversation(id, userId, role);
+        List<BookingEvent> events = bookingEventService.getEventsForConversation(id);
+        return ResponseEntity.ok(events);
+    }
+
+    @PostMapping("/{id}/events")
+    public ResponseEntity<BookingEvent> publishEvent(
+            @PathVariable String id,
+            @RequestParam String userId,
+            @RequestParam String role,
+            @RequestBody BookingEvent event) {
+        Conversation conv = conversationService.getConversation(id, userId, role);
+        BookingEvent saved = bookingEventService.publishEvent(
+                conv.getBookingId(), id,
+                event.getEventType(), event.getLabel(),
+                event.getDescription(), event.getState());
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 }

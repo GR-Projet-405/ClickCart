@@ -17,9 +17,11 @@ import { adminNavigation } from "../config/adminNavigation";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
-// Admin Pages
+// Admin & Commission Pages
 import AdminCategoryDashboard from "../pages/AdminCategoryDashboard";
 import VerificationQueue from "../pages/ProviderVerification/VerificationQueue";
+import CommissionDashboard from "../pages/commission/CommissionDashboard";
+import CommissionTransactionPage from "../pages/commission/CommissionTransactionPage";
 
 // Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
@@ -45,6 +47,7 @@ import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistor
 
 // Shared / Cross-role
 import ConversationsPage from "../pages/messaging/ConversationsPage";
+import MessagesPage from "../pages/Messages/MessagesPage";
 
 // Customer Pages
 import CustomerExplorePage from "../pages/CustomerExplorePage";
@@ -78,16 +81,24 @@ export default function AppRoutes() {
       {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
-      {/* DEV-01 Authentication (public pages, outside the role layouts) */}
+      {/* Public authentication pages */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
+      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
+
+      {/* ========================================== */}
+      {/* COMMISSION MANAGEMENT ROUTES               */}
+      {/* ========================================== */}
+      <Route path="/commission_management" element={<AdminLayout />}>
+        <Route index element={<CommissionDashboard />} />
+        <Route path="transactions/new" element={<CommissionTransactionPage />} />
+      </Route>
+
       {/* ========================================== */}
       {/* PROVIDER ROUTES                            */}
       {/* ========================================== */}
-      <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
-
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
@@ -114,28 +125,31 @@ export default function AppRoutes() {
         <Route path="reviews" element={<ProviderReviewsPage />} />
         <Route path="availability" element={<AvailabilityPage />} />
 
-        {/* Settlement & Earnings Tracking */}
+        {/* Settlement Tracking & Earnings */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
 
-        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+        <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
         {/* Dynamic routing for remaining provider navigation */}
         {providerNavigation
-          .filter(({ path }) =>
-            path !== "/provider/dashboard" &&
-            path !== "/provider/services" &&
-            path !== "/provider/bookings" &&
-            path !== "/provider/messages" &&
-            path !== "/provider/service-areas" &&
-            path !== "/provider/availability" &&
-            path !== "/provider/reviews" &&
-            path !== "/provider/profile" &&
-            path !== "/provider/earnings" &&
-            path !== "/provider/jobs" &&
-            path !== "/provider/settlements"
+          .filter(
+            ({ path }) =>
+              path !== "/provider/dashboard" &&
+              path !== "/provider/services" &&
+              path !== "/provider/bookings" &&
+              path !== "/provider/messages" &&
+              path !== "/provider/service-areas" &&
+              path !== "/provider/availability" &&
+              path !== "/provider/reviews" &&
+              path !== "/provider/profile" &&
+              path !== "/provider/earnings" &&
+              path !== "/provider/jobs" &&
+              path !== "/provider/settlements"
           )
           .map(({ path }) => (
             <Route
@@ -170,7 +184,12 @@ export default function AppRoutes() {
 
         {/* Dynamic routing for remaining admin navigation */}
         {adminNavigation
-          .filter(({ path }) => path !== "/admin/categories" && path !== "/admin/providers")
+          .filter(
+            ({ path }) =>
+              path !== "/admin/categories" &&
+              path !== "/admin/providers" &&
+              path !== "/commission_management"
+          )
           .map(({ path }) => (
             <Route
               key={path}
@@ -194,12 +213,14 @@ export default function AppRoutes() {
 
         {/* Provider Matching & Recommendations */}
         <Route path="recommendations" element={<RecommendationsPage />} />
-
-        <Route path="messages" element={<ConversationsPage role="CUSTOMER" />} />
-        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="explore" element={<CustomerExplorePage />} />
 
-        {/* DEV-26 Feature Routes */}
+        {/* DEV-25 Messages */}
+        <Route path="messages" element={<MessagesPage role="CUSTOMER" />} />
+        <Route path="messages/conversations" element={<ConversationsPage role="CUSTOMER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
+
+        {/* DEV-26 Checkout Feature Routes */}
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/result" element={<PaymentResultPage />} />
         <Route path="receipt/:id" element={<ReceiptPage />} />
@@ -219,18 +240,22 @@ export default function AppRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
-        {/* DEV-14: AI Assisted Search Route */}
-        <Route path="find-services" element={<AiServiceSearchPage />} />
+        {/* Search Routes */}
+        <Route path="find-services" element={<MarketplaceServicesPage />} />
+        <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
+        <Route path="ai-service-search" element={<AiServiceSearchPage />} />
 
         {/* Dynamic routing for remaining customer navigation */}
         {customerNavigation
           .slice(1)
-          .filter(({ to }) =>
-            to !== "/find-services" &&
-            to !== "/explore" &&
-            to !== "/checkout" &&
-            to !== "/customer/payments" &&
-            to !== "/messages"
+          .filter(
+            ({ to }) =>
+              to !== "/find-services" &&
+              to !== "/ai-service-search" &&
+              to !== "/explore" &&
+              to !== "/checkout" &&
+              to !== "/customer/payments" &&
+              to !== "/messages"
           )
           .map(({ to }) => (
             <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
