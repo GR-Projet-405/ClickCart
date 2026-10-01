@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 export const adminNavigation = [
-  { label: "Dashboard", path: "/admin/dashboard", icon: Home },
+  { label: "Dashboard", path: "/admin", icon: Home },
   { label: "Users", path: "/admin/users", icon: Users },
   { label: "Providers", path: "/admin/providers", icon: UserRoundCheck },
   { label: "Bookings", path: "/admin/bookings", icon: CalendarCheck },
