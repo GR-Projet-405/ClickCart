@@ -19,8 +19,12 @@ import {
   ThumbsUp,
   PhoneCall,
   Share2,
+  AlertCircle,
 } from "lucide-react";
 import { getPublicProviderProfile, EMPTY_PROFILE } from "../../../services/providerProfileService";
+import { providerServicesApi } from "../../../services/providerServices";
+import { fetchProviderReviews, fetchProviderRatingSummary } from "../../../services/reviewService";
+import { fetchServiceAreas } from "../../../services/serviceAreaApi";
 import Spinner from "../../../components/common/Spinner";
 import "./PublicProviderProfile.css";
 
@@ -29,33 +33,123 @@ export default function PublicProviderProfile() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("overview");
 
+  // Core Provider Profile State
   const [profileData, setProfileData] = useState(EMPTY_PROFILE);
-  const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
+
+  // Services State
+  const [servicesList, setServicesList] = useState([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
+  const [servicesError, setServicesError] = useState(null);
+
+  // Reviews & Rating Summary State
+  const [reviewsList, setReviewsList] = useState([]);
+  const [ratingSummary, setRatingSummary] = useState(null);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+  const [reviewsError, setReviewsError] = useState(null);
+
+  // Service Areas State
+  const [serviceAreasList, setServiceAreasList] = useState([]);
+  const [serviceAreasLoading, setServiceAreasLoading] = useState(true);
+  const [serviceAreasError, setServiceAreasError] = useState(null);
 
   useEffect(() => {
-    async function loadPublicProfile() {
+    if (!providerId) return;
+
+    // 1. Fetch Provider Profile
+    async function loadProfile() {
       try {
-        setLoading(true);
+        setProfileLoading(true);
         const data = await getPublicProviderProfile(providerId);
         setProfileData(data);
       } catch (err) {
         console.error("Error loading public profile:", err);
       } finally {
-        setLoading(false);
+        setProfileLoading(false);
       }
     }
-    loadPublicProfile();
+
+    // 2. Fetch Provider Services
+    async function loadServices() {
+      try {
+        setServicesLoading(true);
+        setServicesError(null);
+        const response = await providerServicesApi.list(providerId);
+        const list = Array.isArray(response) ? response : response?.content || [];
+        setServicesList(list);
+      } catch (err) {
+        console.error("Error loading provider services:", err);
+        setServicesError("Failed to load services for this provider.");
+        setServicesList([]);
+      } finally {
+        setServicesLoading(false);
+      }
+    }
+
+    // 3. Fetch Provider Reviews & Rating Summary
+    async function loadReviews() {
+      try {
+        setReviewsLoading(true);
+        setReviewsError(null);
+        const [reviewsRes, summaryRes] = await Promise.allSettled([
+          fetchProviderReviews(providerId),
+          fetchProviderRatingSummary(providerId),
+        ]);
+
+        if (reviewsRes.status === "fulfilled" && Array.isArray(reviewsRes.value)) {
+          setReviewsList(reviewsRes.value);
+        } else {
+          setReviewsList([]);
+        }
+
+        if (summaryRes.status === "fulfilled" && summaryRes.value) {
+          setRatingSummary(summaryRes.value);
+        } else {
+          setRatingSummary(null);
+        }
+      } catch (err) {
+        console.error("Error loading provider reviews:", err);
+        setReviewsError("Failed to load reviews for this provider.");
+        setReviewsList([]);
+      } finally {
+        setReviewsLoading(false);
+      }
+    }
+
+    // 4. Fetch Provider Service Areas
+    async function loadServiceAreas() {
+      try {
+        setServiceAreasLoading(true);
+        setServiceAreasError(null);
+        const data = await fetchServiceAreas({ size: 50 });
+        const list = Array.isArray(data) ? data : data?.content || [];
+        // Filter by providerId if attribute present in service area response
+        const filtered = list.filter((item) => !item.providerId || item.providerId === providerId);
+        setServiceAreasList(filtered.length > 0 ? filtered : list);
+      } catch (err) {
+        console.error("Error loading service areas:", err);
+        setServiceAreasError("Unable to load detailed coverage areas.");
+        setServiceAreasList([]);
+      } finally {
+        setServiceAreasLoading(false);
+      }
+    }
+
+    loadProfile();
+    loadServices();
+    loadReviews();
+    loadServiceAreas();
   }, [providerId]);
 
   const isIndividual = profileData.providerType === "individual";
   const name = isIndividual
-    ? profileData.fullName || "Kasun Perera"
-    : profileData.businessName || "Kasun Solutions";
+    ? profileData.fullName || "Provider Profile"
+    : profileData.businessName || "Business Profile";
 
-  const location = profileData.location || "Colombo, Sri Lanka";
+  const location = profileData.location || "Location not specified";
   const bio =
     profileData.bio ||
-    "Professional service provider offering top-tier, reliable electrical and home maintenance services with guaranteed quality, transparent pricing, and punctual execution.";
+    "No bio description provided yet for this service provider.";
 
   const handleBookService = (serviceName) => {
     alert(`Initiating booking for ${serviceName || "service"} with ${name}`);
@@ -65,60 +159,20 @@ export default function PublicProviderProfile() {
     alert(`Opening chat with ${name}`);
   };
 
-  const services = [
-    {
-      id: 1,
-      title: "Electrical Maintenance & Repairs",
-      category: "Electrical",
-      price: "LKR 3,500",
-      rating: 4.9,
-      reviewsCount: 34,
-      icon: Zap,
-      description: "Comprehensive diagnostics, wiring repairs, circuit breaker replacement, and electrical safety inspections.",
-    },
-    {
-      id: 2,
-      title: "Full House Wiring & Appliance Setup",
-      category: "Installation",
-      price: "LKR 6,000",
-      rating: 4.8,
-      reviewsCount: 18,
-      icon: Wrench,
-      description: "Complete residential wiring setup, socket installations, lighting fixtures, and high-power appliance configuration.",
-    },
-  ];
+  // Derived rating numbers from real summary API
+  const avgRating = ratingSummary?.averageRating
+    ? Number(ratingSummary.averageRating).toFixed(1)
+    : "0.0";
+  const totalRevCount = ratingSummary?.totalReviews ?? reviewsList.length;
+  const ratingDist = ratingSummary?.distribution || {};
 
-  const customerReviews = [
-    {
-      id: 1,
-      name: "Nimna Silva",
-      date: "2 days ago",
-      rating: 5,
-      comment: "Extremely professional and punctual! Solved our electrical issue in under an hour. Clean work and highly recommended.",
-      verified: true,
-      serviceUsed: "Electrical Maintenance & Repairs",
-    },
-    {
-      id: 2,
-      name: "Dinesh Rajapaksha",
-      date: "1 week ago",
-      rating: 5,
-      comment: "Great experience! Came prepared with all tools and replacement parts. Fair pricing with clear explanation of the work done.",
-      verified: true,
-      serviceUsed: "Full House Wiring & Appliance Setup",
-    },
-    {
-      id: 3,
-      name: "Anusha Fernando",
-      date: "3 weeks ago",
-      rating: 4,
-      comment: "Very knowledgeable and friendly service. Arrived right on schedule and fixed our master switch.",
-      verified: true,
-      serviceUsed: "Electrical Maintenance & Repairs",
-    },
-  ];
+  // Maximum radius from real service area API
+  const maxRadiusKm = serviceAreasList.reduce(
+    (max, item) => (item.radiusKm && item.radiusKm > max ? item.radiusKm : max),
+    0
+  );
 
-  if (loading) {
+  if (profileLoading) {
     return (
       <div className="public-profile-root" style={{ textAlign: "center", padding: "80px 20px" }}>
         <Spinner size="lg" />
@@ -168,8 +222,8 @@ export default function PublicProviderProfile() {
             <div className="hero-meta-bar">
               <div className="meta-pill">
                 <Star size={16} className="star-icon" fill="#f5a623" />
-                <span className="rating-num">4.9</span>
-                <span className="rating-count">(48 reviews)</span>
+                <span className="rating-num">{avgRating}</span>
+                <span className="rating-count">({totalRevCount} reviews)</span>
               </div>
               <span className="meta-dot">•</span>
               <div className="meta-pill">
@@ -179,7 +233,7 @@ export default function PublicProviderProfile() {
               <span className="meta-dot">•</span>
               <div className="meta-pill">
                 <Calendar size={16} className="meta-icon" />
-                <span>Member since Jan 2024</span>
+                <span>Profile Active</span>
               </div>
             </div>
 
@@ -192,8 +246,8 @@ export default function PublicProviderProfile() {
                   <Award size={18} />
                 </div>
                 <div className="metric-text">
-                  <span className="metric-val">99%</span>
-                  <span className="metric-lbl">Job Completion</span>
+                  <span className="metric-val">{servicesList.length}</span>
+                  <span className="metric-lbl">Services Listed</span>
                 </div>
               </div>
 
@@ -202,8 +256,8 @@ export default function PublicProviderProfile() {
                   <Clock size={18} />
                 </div>
                 <div className="metric-text">
-                  <span className="metric-val">&lt; 15 mins</span>
-                  <span className="metric-lbl">Avg. Response Time</span>
+                  <span className="metric-val">{totalRevCount}</span>
+                  <span className="metric-lbl">Total Reviews</span>
                 </div>
               </div>
 
@@ -212,8 +266,8 @@ export default function PublicProviderProfile() {
                   <ThumbsUp size={18} />
                 </div>
                 <div className="metric-text">
-                  <span className="metric-val">50+</span>
-                  <span className="metric-lbl">Completed Orders</span>
+                  <span className="metric-val">{avgRating} ★</span>
+                  <span className="metric-lbl">Overall Rating</span>
                 </div>
               </div>
             </div>
@@ -246,13 +300,13 @@ export default function PublicProviderProfile() {
             className={`tab-item ${activeTab === "overview" ? "tab-item--active" : ""}`}
             onClick={() => setActiveTab("overview")}
           >
-            Overview &amp; Services
+            Overview &amp; Services ({servicesList.length})
           </button>
           <button
             className={`tab-item ${activeTab === "reviews" ? "tab-item--active" : ""}`}
             onClick={() => setActiveTab("reviews")}
           >
-            Reviews (48)
+            Reviews ({totalRevCount})
           </button>
           <button
             className={`tab-item ${activeTab === "coverage" ? "tab-item--active" : ""}`}
@@ -311,43 +365,60 @@ export default function PublicProviderProfile() {
                 </div>
               </div>
 
-              <div className="services-grid">
-                {services.map((srv) => {
-                  const IconComp = srv.icon;
-                  return (
-                    <div className="service-card-modern" key={srv.id}>
-                      <div className="service-header-row">
-                        <div className="service-icon-box">
-                          <IconComp size={24} />
+              {servicesLoading ? (
+                <div style={{ textAlign: "center", padding: "30px 0" }}>
+                  <Spinner size="md" />
+                  <p style={{ marginTop: 8, color: "var(--cc-text-secondary)" }}>Loading services...</p>
+                </div>
+              ) : servicesError ? (
+                <div style={{ padding: 16, backgroundColor: "var(--cc-error-soft)", color: "var(--cc-error-text)", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                  <AlertCircle size={18} />
+                  <span>{servicesError}</span>
+                </div>
+              ) : servicesList.length === 0 ? (
+                <div style={{ padding: "30px 20px", textAlign: "center", color: "var(--cc-text-secondary)" }}>
+                  <p>No services listed yet by this provider.</p>
+                </div>
+              ) : (
+                <div className="services-grid">
+                  {servicesList.map((srv) => {
+                    const priceDisplay = srv.priceFrom != null
+                      ? (srv.priceTo ? `LKR ${srv.priceFrom} - ${srv.priceTo}` : `LKR ${srv.priceFrom}`)
+                      : "Price on request";
+                    return (
+                      <div className="service-card-modern" key={srv.id || srv.title}>
+                        <div className="service-header-row">
+                          <div className="service-icon-box">
+                            {srv.category === "Electrical" ? <Zap size={24} /> : <Wrench size={24} />}
+                          </div>
+                          <div className="service-rating-badge">
+                            <Star size={14} fill="#f5a623" color="#f5a623" />
+                            <span>{avgRating}</span>
+                          </div>
                         </div>
-                        <div className="service-rating-badge">
-                          <Star size={14} fill="#f5a623" color="#f5a623" />
-                          <span>{srv.rating}</span>
-                          <span className="rev-count">({srv.reviewsCount})</span>
+
+                        <h3 className="service-title">{srv.title}</h3>
+                        <p className="service-desc">{srv.description || "No description provided."}</p>
+
+                        <div className="service-footer-row">
+                          <div className="service-price-block">
+                            <span className="price-label">Starting from</span>
+                            <span className="price-amount">{priceDisplay}</span>
+                          </div>
+
+                          <button
+                            className="service-book-btn"
+                            onClick={() => handleBookService(srv.title)}
+                          >
+                            <span>Book Now</span>
+                            <ChevronRight size={16} />
+                          </button>
                         </div>
                       </div>
-
-                      <h3 className="service-title">{srv.title}</h3>
-                      <p className="service-desc">{srv.description}</p>
-
-                      <div className="service-footer-row">
-                        <div className="service-price-block">
-                          <span className="price-label">Starting from</span>
-                          <span className="price-amount">{srv.price}</span>
-                        </div>
-
-                        <button
-                          className="service-book-btn"
-                          onClick={() => handleBookService(srv.title)}
-                        >
-                          <span>Book Now</span>
-                          <ChevronRight size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -360,89 +431,105 @@ export default function PublicProviderProfile() {
                 <h2 className="card-title">Customer Reviews &amp; Ratings</h2>
               </div>
 
-              <div className="reviews-summary-grid">
-                {/* Big Score Box */}
-                <div className="score-summary-box">
-                  <span className="score-number">4.9</span>
-                  <div className="stars-row">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} size={18} fill="#f5a623" color="#f5a623" />
-                    ))}
-                  </div>
-                  <span className="score-subtext">Based on 48 customer reviews</span>
+              {reviewsLoading ? (
+                <div style={{ textAlign: "center", padding: "30px 0" }}>
+                  <Spinner size="md" />
+                  <p style={{ marginTop: 8, color: "var(--cc-text-secondary)" }}>Loading reviews...</p>
                 </div>
-
-                {/* Rating Bar Chart */}
-                <div className="bars-summary-box">
-                  <div className="bar-row">
-                    <span>5 ★</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: "90%" }} />
-                    </div>
-                    <span>90%</span>
-                  </div>
-                  <div className="bar-row">
-                    <span>4 ★</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: "8%" }} />
-                    </div>
-                    <span>8%</span>
-                  </div>
-                  <div className="bar-row">
-                    <span>3 ★</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: "2%" }} />
-                    </div>
-                    <span>2%</span>
-                  </div>
-                  <div className="bar-row">
-                    <span>2 ★</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: "0%" }} />
-                    </div>
-                    <span>0%</span>
-                  </div>
-                  <div className="bar-row">
-                    <span>1 ★</span>
-                    <div className="bar-track">
-                      <div className="bar-fill" style={{ width: "0%" }} />
-                    </div>
-                    <span>0%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Reviews List */}
-              <div className="reviews-list">
-                {customerReviews.map((rev) => (
-                  <div className="review-card-item" key={rev.id}>
-                    <div className="review-item-header">
-                      <div className="reviewer-avatar">
-                        {rev.name.substring(0, 2).toUpperCase()}
-                      </div>
-                      <div className="reviewer-info">
-                        <div className="reviewer-name-row">
-                          <span className="reviewer-name">{rev.name}</span>
-                          {rev.verified && (
-                            <span className="verified-buyer-tag">
-                              <CheckCircle2 size={12} /> Verified Customer
-                            </span>
-                          )}
-                        </div>
-                        <span className="review-date">{rev.date} • {rev.serviceUsed}</span>
-                      </div>
-
-                      <div className="review-stars-right">
-                        {[...Array(rev.rating)].map((_, i) => (
-                          <Star key={i} size={14} fill="#f5a623" color="#f5a623" />
+              ) : (
+                <>
+                  <div className="reviews-summary-grid">
+                    {/* Big Score Box */}
+                    <div className="score-summary-box">
+                      <span className="score-number">{avgRating}</span>
+                      <div className="stars-row">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            size={18}
+                            fill={i < Math.round(Number(avgRating)) ? "#f5a623" : "none"}
+                            color="#f5a623"
+                          />
                         ))}
                       </div>
+                      <span className="score-subtext">Based on {totalRevCount} customer reviews</span>
                     </div>
 
-                    <p className="review-comment">{rev.comment}</p>
+                    {/* Rating Bar Chart */}
+                    <div className="bars-summary-box">
+                      {[5, 4, 3, 2, 1].map((star) => {
+                        const count = ratingDist[star] || ratingDist[String(star)] || 0;
+                        const pct = totalRevCount > 0 ? Math.round((count / totalRevCount) * 100) : 0;
+                        return (
+                          <div className="bar-row" key={star}>
+                            <span>{star} ★</span>
+                            <div className="bar-track">
+                              <div className="bar-fill" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span>{pct}%</span>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                ))}
-              </div>
+
+                  {reviewsError ? (
+                    <div style={{ padding: 16, backgroundColor: "var(--cc-error-soft)", color: "var(--cc-error-text)", borderRadius: 6, display: "flex", alignItems: "center", gap: 8 }}>
+                      <AlertCircle size={18} />
+                      <span>{reviewsError}</span>
+                    </div>
+                  ) : reviewsList.length === 0 ? (
+                    <div style={{ padding: "30px 20px", textAlign: "center", color: "var(--cc-text-secondary)" }}>
+                      <p>No customer reviews yet for this provider.</p>
+                    </div>
+                  ) : (
+                    /* Reviews List */
+                    <div className="reviews-list">
+                      {reviewsList.map((rev, index) => {
+                        const displayName = rev.customerId
+                          ? `Customer (${rev.customerId.substring(0, 6)})`
+                          : "Customer";
+                        const formattedDate = rev.createdAt
+                          ? new Date(rev.createdAt).toLocaleDateString()
+                          : "Recent";
+                        return (
+                          <div className="review-card-item" key={rev.id || index}>
+                            <div className="review-item-header">
+                              <div className="reviewer-avatar">
+                                {displayName.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="reviewer-info">
+                                <div className="reviewer-name-row">
+                                  <span className="reviewer-name">{displayName}</span>
+                                  {rev.verifiedBooking && (
+                                    <span className="verified-buyer-tag">
+                                      <CheckCircle2 size={12} /> Verified Customer
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="review-date">{formattedDate}</span>
+                              </div>
+
+                              <div className="review-stars-right">
+                                {[...Array(rev.rating || 5)].map((_, i) => (
+                                  <Star key={i} size={14} fill="#f5a623" color="#f5a623" />
+                                ))}
+                              </div>
+                            </div>
+
+                            <p className="review-comment">{rev.content || "No review comment."}</p>
+                            {rev.providerResponse && (
+                              <div style={{ marginTop: 12, padding: 10, backgroundColor: "#f8fafc", borderRadius: 6, fontSize: "0.85rem", borderLeft: "3px solid var(--cc-primary)" }}>
+                                <strong>Provider Response:</strong> {rev.providerResponse}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         )}
@@ -478,24 +565,39 @@ export default function PublicProviderProfile() {
                   </svg>
                   <div className="map-pin-box">
                     <MapPin size={34} className="pin-pulse-icon" />
-                    <span className="pin-title-badge">{location} &amp; Suburbs</span>
+                    <span className="pin-title-badge">{location} &amp; Surrounds</span>
                   </div>
                 </div>
 
                 <div className="coverage-details-column">
                   <h3 className="coverage-subhead">Supported Locations</h3>
-                  <div className="location-tags-grid">
-                    <div className="loc-tag"><MapPin size={14} /> Colombo 1-15</div>
-                    <div className="loc-tag"><MapPin size={14} /> Sri Jayawardenepura Kotte</div>
-                    <div className="loc-tag"><MapPin size={14} /> Dehiwala - Mount Lavinia</div>
-                    <div className="loc-tag"><MapPin size={14} /> Rajagiriya &amp; Battaramulla</div>
-                    <div className="loc-tag"><MapPin size={14} /> Nugegoda &amp; Maharagama</div>
-                    <div className="loc-tag"><MapPin size={14} /> Nawala &amp; Kirulapone</div>
-                  </div>
+                  {serviceAreasLoading ? (
+                    <p style={{ color: "var(--cc-text-secondary)", fontSize: "0.9rem" }}>Loading service areas...</p>
+                  ) : serviceAreasList.length > 0 ? (
+                    <div className="location-tags-grid">
+                      {serviceAreasList.map((sa, idx) => (
+                        <div className="loc-tag" key={sa.id || idx}>
+                          <MapPin size={14} />
+                          <span>{sa.cityName || sa.locationName || sa.district || location}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="location-tags-grid">
+                      <div className="loc-tag">
+                        <MapPin size={14} />
+                        <span>{location}</span>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="travel-note">
                     <ShieldCheck size={18} className="note-icon" />
-                    <span>Free travel within 15 km radius of primary location.</span>
+                    <span>
+                      {maxRadiusKm > 0
+                        ? `Service coverage up to ${maxRadiusKm} km radius from primary location.`
+                        : `Service available in ${location} and surrounding areas.`}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -506,3 +608,4 @@ export default function PublicProviderProfile() {
     </div>
   );
 }
+

@@ -17,13 +17,17 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import com.clickcart.dto.ProviderProfileRequest;
 import com.clickcart.dto.ProviderProfileResponse;
 import com.clickcart.model.ProviderProfile;
+import com.clickcart.security.JwtTokenService;
 import com.clickcart.service.ProviderProfileService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = {HealthController.class, ProviderProfileController.class})
+@AutoConfigureMockMvc(addFilters = false)
 class ProviderProfileControllerTest {
 
     @Autowired
@@ -34,6 +38,12 @@ class ProviderProfileControllerTest {
 
     @MockitoBean
     private ProviderProfileService providerProfileService;
+
+    @MockitoBean
+    private JwtTokenService jwtTokenService;
+
+    @MockitoBean(name = "mongoMappingContext")
+    private MongoMappingContext mongoMappingContext;
 
     private ProviderProfileResponse defaultResponse;
     private ProviderProfileResponse completedResponse;
