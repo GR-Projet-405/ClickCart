@@ -1,12 +1,12 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:9001/api/v1/recommendations';
+// Use the environment variable, fallback to 8080 (your working backend port)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1/recommendations';
 
 const normalizeRecommendationResponse = (payload) => {
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload?.data)) return payload.data;
   if (Array.isArray(payload?.providers)) return payload.providers;
-
   return [];
 };
 
@@ -16,23 +16,16 @@ export const recommendationService = {
     location = 'Panadura Town',
     maxDistance = 10.0
   ) {
-    console.log('Calling recommendation API...');
-
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/match`,
-        {
-          params: {
-            service,
-            location,
-            maxDistance
-          }
+      const response = await axios.get(`${API_BASE_URL}/match`, {
+        params: {
+          service,
+          location,
+          maxDistance
         }
-      );
+      });
 
       const normalizedData = normalizeRecommendationResponse(response?.data);
-
-      console.log('Recommendation API response:', response.data);
 
       return {
         ...response.data,
@@ -41,12 +34,21 @@ export const recommendationService = {
       };
     } catch (error) {
       console.error('Recommendation API error:', error);
-
       return {
         status: 'ERROR',
         totalMatches: 0,
         data: []
       };
+    }
+  },
+
+  async getProviderDetails(providerId) {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/provider/${providerId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching provider details:', error);
+      return null;
     }
   }
 };

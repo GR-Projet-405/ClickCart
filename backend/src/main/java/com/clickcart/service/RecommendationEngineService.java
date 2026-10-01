@@ -15,21 +15,32 @@ public class RecommendationEngineService {
     private ProviderProfileRepository providerProfileRepository;
 
     /**
-     * Calculates multi-factor match scores using MongoDB queries with safe error
-     * handling.
+     * Calculates multi-factor match scores using MongoDB queries with safe error handling.
      */
     public List<ProviderProfile> calculateMatches(String serviceCategory, String location, double maxDistanceKm) {
         try {
-            List<ProviderProfile> providers = providerProfileRepository
-                    .findByServiceCategoryIgnoreCaseAndDistanceKmLessThanEqual(serviceCategory, maxDistanceKm);
+            List<ProviderProfile> providers;
 
+            // 1. If "All" is selected, fetch ALL verified providers from the database
+            if (serviceCategory == null || serviceCategory.equalsIgnoreCase("All")) {
+                providers = providerProfileRepository.findByIsVerifiedTrue();
+            }
+            // 2. Otherwise, filter by the specific category and distance
+            else {
+                providers = providerProfileRepository
+                    .findByServiceCategoryIgnoreCaseAndDistanceKmLessThanEqual(serviceCategory, maxDistanceKm);
+            }
+
+            // 3. If still empty, trigger the safety fallback
             if (providers == null || providers.isEmpty()) {
                 return getFallbackProviders(serviceCategory);
             }
 
-            // Sort by match score descending
+            // 4. Sort by match score descending (highest score first)
             providers.sort((p1, p2) -> Integer.compare(p2.getMatchScore(), p1.getMatchScore()));
+
             return providers;
+
         } catch (Exception e) {
             System.err.println("Database query failed, falling back to default mock list: " + e.getMessage());
             return getFallbackProviders(serviceCategory);
@@ -37,8 +48,7 @@ public class RecommendationEngineService {
     }
 
     /**
-     * Fallback mechanism (AIF-007) returning standard verified listings or
-     * hardcoded safety fallback.
+     * Fallback mechanism (AIF-007) returning standard verified listings or hardcoded safety fallback.
      */
     public List<ProviderProfile> getFallbackProviders(String serviceCategory) {
         try {
@@ -55,7 +65,7 @@ public class RecommendationEngineService {
         ProviderProfile fallbackPro = new ProviderProfile();
         fallbackPro.setId("PROV-FALLBACK-1");
         fallbackPro.setBusinessName("Panadura Verified Pro (Offline Mode)");
-        fallbackPro.setServiceCategory(serviceCategory != null ? serviceCategory : "Plumbing");
+        fallbackPro.setServiceCategory(serviceCategory != null && !serviceCategory.equalsIgnoreCase("All") ? serviceCategory : "Plumbing");
         fallbackPro.setLocation("Panadura Town");
         fallbackPro.setRating(4.8);
         fallbackPro.setReviewCount(120);
