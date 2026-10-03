@@ -21,8 +21,6 @@ import EmptyState from "../../components/common/EmptyState";
 import {
   acceptProviderJob,
   getProviderJobs,
-  getSelectedProviderId,
-  setDemoProvider,
   startProviderJob,
 } from "../../services/providerJobService";
 import {
@@ -56,7 +54,6 @@ export default function ProviderJobManagementDashboard() {
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
   const [autoDispatch, setAutoDispatch] = useState(true);
-  const [providerId, setProviderId] = useState(getSelectedProviderId());
 
   async function loadJobs() {
     setLoading(true);
@@ -73,7 +70,7 @@ export default function ProviderJobManagementDashboard() {
 
   useEffect(() => {
     loadJobs();
-  }, [providerId]);
+  }, []);
 
   const upcoming = jobs.filter(isUpcoming);
   const active = jobs.filter(isActive);
@@ -395,8 +392,8 @@ export default function ProviderJobManagementDashboard() {
             <p className="pj-muted">24/7 Operations Command Center</p>
             <p>Encountered an on-site dispute, dangerous electrical hazard, or customer cancellation mid-transit?</p>
             <div className="pj-hotline">
-              <Button variant="outline" size="sm">Live Chat</Button>
-              <Button variant="danger" size="sm" leftIcon={<Siren size={14} />}>Emergency SOS</Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/provider/messages")}>Live Chat</Button>
+              <Button variant="danger" size="sm" leftIcon={<Siren size={14} />} onClick={() => alert("Emergency services not configured for this region yet.")}>Emergency SOS</Button>
             </div>
           </section>
 
@@ -408,22 +405,6 @@ export default function ProviderJobManagementDashboard() {
         </aside>
       </div>
 
-      <div className="pj-identity">
-        <BriefcaseBusiness size={14} />
-        Demo provider identity
-        <select
-          aria-label="Demo provider identity"
-          value={providerId}
-          onChange={(event) => {
-            setDemoProvider(event.target.value);
-            setProviderId(event.target.value);
-          }}
-        >
-          <option value="provider-a">Kavinda Silva (provider-a)</option>
-          <option value="provider-b">Provider B</option>
-        </select>
-        <Link to="/provider/jobs">Refresh</Link>
-      </div>
     </section>
   );
 }

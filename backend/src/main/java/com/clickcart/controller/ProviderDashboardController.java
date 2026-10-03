@@ -1,6 +1,8 @@
 package com.clickcart.controller;
 
 import com.clickcart.dto.provider.ProviderDashboardResponse;
+import com.clickcart.security.ProviderContext;
+import com.clickcart.security.ProviderPrincipal;
 import com.clickcart.service.ProviderDashboardService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +20,14 @@ public class ProviderDashboardController {
 
     @GetMapping
     public ResponseEntity<ProviderDashboardResponse> getDashboard(
-            @RequestParam(name = "providerId", required = false, defaultValue = "PROV-1002") String providerId,
-            @RequestParam(name = "range", required = false, defaultValue = "7d") String range,
-            @RequestParam(name = "metric", required = false, defaultValue = "earnings") String metric
+            @RequestParam(name = "range", required = false, defaultValue = "7d") String range
     ) {
-        ProviderDashboardResponse response = dashboardService.getDashboardData(providerId, range, metric);
+        ProviderPrincipal principal = ProviderContext.require();
+        ProviderDashboardResponse response = dashboardService.getDashboardData(
+                principal.providerId(),
+                principal.displayName(),
+                range
+        );
         return ResponseEntity.ok(response);
     }
 }

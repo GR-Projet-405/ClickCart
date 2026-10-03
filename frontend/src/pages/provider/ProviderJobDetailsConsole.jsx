@@ -244,7 +244,7 @@ export default function ProviderJobDetailsConsole() {
               Call Client
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />}>
+          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />} onClick={() => navigate("/provider/messages")}>
             Chat
           </Button>
           {canStart ? (
