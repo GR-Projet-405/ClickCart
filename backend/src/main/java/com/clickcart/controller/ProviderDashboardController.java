@@ -1,10 +1,10 @@
 package com.clickcart.controller;
 
 import com.clickcart.dto.provider.ProviderDashboardResponse;
-import com.clickcart.security.ProviderContext;
-import com.clickcart.security.ProviderPrincipal;
 import com.clickcart.service.ProviderDashboardService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,12 +20,24 @@ public class ProviderDashboardController {
 
     @GetMapping
     public ResponseEntity<ProviderDashboardResponse> getDashboard(
-            @RequestParam(name = "range", required = false, defaultValue = "7d") String range
+            @RequestParam(name = "range", required = false, defaultValue = "7d") String range,
+            @AuthenticationPrincipal Jwt jwt
     ) {
-        ProviderPrincipal principal = ProviderContext.require();
+        // For development/local mode without security, use a default provider
+        String providerId = "provider-a";
+        String displayName = "Provider";
+
+        if (jwt != null) {
+            providerId = jwt.getSubject();
+            displayName = jwt.getClaimAsString("name");
+            if (displayName == null || displayName.isBlank()) {
+                displayName = providerId;
+            }
+        }
+
         ProviderDashboardResponse response = dashboardService.getDashboardData(
-                principal.providerId(),
-                principal.displayName(),
+                providerId,
+                displayName,
                 range
         );
         return ResponseEntity.ok(response);

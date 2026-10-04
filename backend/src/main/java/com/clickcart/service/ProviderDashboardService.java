@@ -31,6 +31,8 @@ public class ProviderDashboardService {
     }
 
     public ProviderDashboardResponse getDashboardData(String providerId, String displayName, String range) {
+        // Provider ID and display name are now passed from the controller
+        // No need to use ProviderContext anymore
         List<ProviderJob> allJobs = jobRepository.findByProviderIdOrderByScheduledStartAsc(providerId);
         List<Review> allReviews = reviewRepository.findByProviderIdOrderByCreatedAtDesc(providerId);
 
@@ -125,8 +127,8 @@ public class ProviderDashboardService {
         }
         servicePerformance.sort(Comparator.comparing(ServicePerformanceDto::getRevenue).reversed());
 
-        // 7. Chart Data (dummy structure matching UI for now, properly aggregated per day for last 7 days)
-        Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> chartData = buildChartData(allJobs);
+        // 7. Chart Data (real data from database)
+        Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> chartData = buildChartData(allJobs, allReviews);
         PerformanceOverviewDto overview = new PerformanceOverviewDto(
                 "Your performance overview",
                 chartData
@@ -169,14 +171,14 @@ public class ProviderDashboardService {
         return (hours / 24) + " days ago";
     }
 
-    private Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> buildChartData(List<ProviderJob> allJobs) {
+    private Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> buildChartData(List<ProviderJob> allJobs, List<Review> allReviews) {
         Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> ranges = new LinkedHashMap<>();
 
         // 7 Days calculation
         List<String> labels7d = new ArrayList<>();
         List<Double> earnings7d = new ArrayList<>();
         List<Double> jobs7d = new ArrayList<>();
-        List<Double> ratings7d = new ArrayList<>(); // Stubbed for now
+        List<Double> ratings7d = new ArrayList<>();
         
         ZonedDateTime now = ZonedDateTime.now(ZONE);
         for (int i = 6; i >= 0; i--) {
@@ -191,7 +193,16 @@ public class ProviderDashboardService {
             double dEarnings = dayJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
             earnings7d.add(dEarnings);
             jobs7d.add((double) dayJobs.size());
-            ratings7d.add(5.0); // Stub
+            
+            // Calculate average rating for this day from reviews
+            LocalDate dayLocal = day.toLocalDate();
+            double dayRating = allReviews.stream()
+                .filter(r -> r.getCreatedAt() != null)
+                .filter(r -> ZonedDateTime.ofInstant(r.getCreatedAt(), ZONE).toLocalDate().equals(dayLocal))
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+            ratings7d.add(dayRating);
         }
 
         double maxEarning = earnings7d.stream().max(Double::compareTo).orElse(0.0);
@@ -212,9 +223,105 @@ public class ProviderDashboardService {
         ));
         ranges.put("7d", sevenDays);
 
-        // Keep 30d and 6m stubbed to avoid over-complicating this task
-        ranges.put("30d", sevenDays); 
-        ranges.put("6m", sevenDays);
+        // 30 Days calculation
+        List<String> labels30d = new ArrayList<>();
+        List<Double> earnings30d = new ArrayList<>();
+        List<Double> jobs30d = new ArrayList<>();
+        List<Double> ratings30d = new ArrayList<>();
+
+        for (int i = 29; i >= 0; i--) {
+            ZonedDateTime day = now.minusDays(i);
+            labels30d.add(day.format(DateTimeFormatter.ofPattern("MMM d")));
+
+            List<ProviderJob> dayJobs = allJobs.stream()
+                .filter(j -> j.getStatus() == JobStatus.COMPLETED && j.getCompletedAt() != null)
+                .filter(j -> ZonedDateTime.ofInstant(j.getCompletedAt(), ZONE).toLocalDate().equals(day.toLocalDate()))
+                .collect(Collectors.toList());
+
+            double dEarnings = dayJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
+            earnings30d.add(dEarnings);
+            jobs30d.add((double) dayJobs.size());
+
+            LocalDate dayLocal = day.toLocalDate();
+            double dayRating = allReviews.stream()
+                .filter(r -> r.getCreatedAt() != null)
+                .filter(r -> ZonedDateTime.ofInstant(r.getCreatedAt(), ZONE).toLocalDate().equals(dayLocal))
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+            ratings30d.add(dayRating);
+        }
+
+        double maxEarning30d = earnings30d.stream().max(Double::compareTo).orElse(0.0);
+        double maxJob30d = jobs30d.stream().max(Double::compareTo).orElse(0.0);
+
+        List<String> eYAxis30d = Arrays.asList("LKR " + (int)maxEarning30d, "LKR " + (int)(maxEarning30d*0.8), "LKR " + (int)(maxEarning30d*0.6), "LKR " + (int)(maxEarning30d*0.4), "LKR " + (int)(maxEarning30d*0.2), "LKR 0");
+        List<String> jYAxis30d = Arrays.asList(String.valueOf((int)maxJob30d), String.valueOf((int)(maxJob30d*0.8)), String.valueOf((int)(maxJob30d*0.6)), String.valueOf((int)(maxJob30d*0.4)), String.valueOf((int)(maxJob30d*0.2)), "0");
+
+        Map<String, PerformanceOverviewDto.MetricSeries> thirtyDays = new LinkedHashMap<>();
+        thirtyDays.put("earnings", new PerformanceOverviewDto.MetricSeries(
+                eYAxis30d, maxEarning30d > 0 ? maxEarning30d : 1.0, labels30d, earnings30d, "LKR "
+        ));
+        thirtyDays.put("jobs", new PerformanceOverviewDto.MetricSeries(
+                jYAxis30d, maxJob30d > 0 ? maxJob30d : 1.0, labels30d, jobs30d, " jobs"
+        ));
+        thirtyDays.put("rating", new PerformanceOverviewDto.MetricSeries(
+                Arrays.asList("5.0", "4.0", "3.0", "2.0", "1.0", "0.0"), 5.0, labels30d, ratings30d, " / 5"
+        ));
+        ranges.put("30d", thirtyDays);
+
+        // 6 Months calculation (weekly aggregates)
+        List<String> labels6m = new ArrayList<>();
+        List<Double> earnings6m = new ArrayList<>();
+        List<Double> jobs6m = new ArrayList<>();
+        List<Double> ratings6m = new ArrayList<>();
+
+        for (int i = 23; i >= 0; i--) {
+            ZonedDateTime weekStart = now.minusWeeks(i);
+            labels6m.add(weekStart.format(DateTimeFormatter.ofPattern("MMM d")));
+
+            ZonedDateTime weekEnd = weekStart.plusDays(7);
+            List<ProviderJob> weekJobs = allJobs.stream()
+                .filter(j -> j.getStatus() == JobStatus.COMPLETED && j.getCompletedAt() != null)
+                .filter(j -> {
+                    ZonedDateTime completed = ZonedDateTime.ofInstant(j.getCompletedAt(), ZONE);
+                    return !completed.isBefore(weekStart) && completed.isBefore(weekEnd);
+                })
+                .collect(Collectors.toList());
+
+            double wEarnings = weekJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
+            earnings6m.add(wEarnings);
+            jobs6m.add((double) weekJobs.size());
+
+            double weekRating = allReviews.stream()
+                .filter(r -> r.getCreatedAt() != null)
+                .filter(r -> {
+                    ZonedDateTime created = ZonedDateTime.ofInstant(r.getCreatedAt(), ZONE);
+                    return !created.isBefore(weekStart) && created.isBefore(weekEnd);
+                })
+                .mapToInt(Review::getRating)
+                .average()
+                .orElse(0.0);
+            ratings6m.add(weekRating);
+        }
+
+        double maxEarning6m = earnings6m.stream().max(Double::compareTo).orElse(0.0);
+        double maxJob6m = jobs6m.stream().max(Double::compareTo).orElse(0.0);
+
+        List<String> eYAxis6m = Arrays.asList("LKR " + (int)maxEarning6m, "LKR " + (int)(maxEarning6m*0.8), "LKR " + (int)(maxEarning6m*0.6), "LKR " + (int)(maxEarning6m*0.4), "LKR " + (int)(maxEarning6m*0.2), "LKR 0");
+        List<String> jYAxis6m = Arrays.asList(String.valueOf((int)maxJob6m), String.valueOf((int)(maxJob6m*0.8)), String.valueOf((int)(maxJob6m*0.6)), String.valueOf((int)(maxJob6m*0.4)), String.valueOf((int)(maxJob6m*0.2)), "0");
+
+        Map<String, PerformanceOverviewDto.MetricSeries> sixMonths = new LinkedHashMap<>();
+        sixMonths.put("earnings", new PerformanceOverviewDto.MetricSeries(
+                eYAxis6m, maxEarning6m > 0 ? maxEarning6m : 1.0, labels6m, earnings6m, "LKR "
+        ));
+        sixMonths.put("jobs", new PerformanceOverviewDto.MetricSeries(
+                jYAxis6m, maxJob6m > 0 ? maxJob6m : 1.0, labels6m, jobs6m, " jobs"
+        ));
+        sixMonths.put("rating", new PerformanceOverviewDto.MetricSeries(
+                Arrays.asList("5.0", "4.0", "3.0", "2.0", "1.0", "0.0"), 5.0, labels6m, ratings6m, " / 5"
+        ));
+        ranges.put("6m", sixMonths);
 
         return ranges;
     }

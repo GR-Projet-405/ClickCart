@@ -11,15 +11,18 @@ export default function Button({
   disabled,
   className = "",
   type = "button",
+  onClick,
   ...props
 }) {
+  const { leftIcon: _, rightIcon: __, ...domProps } = props;
   return (
     <button
       className={`cc-button cc-button--${variant} cc-button--${size} ${className}`.trim()}
       type={type}
       disabled={disabled || loading}
       aria-busy={loading || undefined}
-      {...props}
+      onClick={onClick}
+      {...domProps}
     >
       {loading ? (
         <Spinner size="sm" />
