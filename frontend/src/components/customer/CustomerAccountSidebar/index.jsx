@@ -1,9 +1,10 @@
 import React from "react";
-import { CheckCircle2, LifeBuoy, ShieldCheck } from "lucide-react";
+import { CheckCircle2, LifeBuoy, ShieldCheck, LogOut } from "lucide-react";
 import Avatar from "../../common/Avatar";
 import Badge from "../../common/Badge";
 import Button from "../../common/Button";
 import { customerAccountNavigation } from "../../../config/customerAccountNavigation";
+import { useAuth } from "../../../context/AuthContext";
 import "./styles.css";
 
 export default function CustomerAccountSidebar({
@@ -12,6 +13,8 @@ export default function CustomerAccountSidebar({
   onSelectTab,
   className = "",
 }) {
+  const { logout } = useAuth();
+
   return (
     <aside className={`customer-account-sidebar ${className}`.trim()}>
       <div className="customer-account-sidebar__user-summary">
@@ -99,6 +102,31 @@ export default function CustomerAccountSidebar({
             </button>
           );
         })}
+        
+        <button
+          type="button"
+          className="customer-account-sidebar__item customer-account-sidebar__item--danger"
+          onClick={async () => {
+            try {
+              await logout();
+              window.location.href = "/login";
+            } catch (err) {
+              console.error("Logout failed", err);
+            }
+          }}
+        >
+          <span className="customer-account-sidebar__item-icon">
+            <LogOut size={18} />
+          </span>
+          <div className="customer-account-sidebar__item-text">
+            <span className="customer-account-sidebar__item-label">
+              Log Out
+            </span>
+            <span className="customer-account-sidebar__item-desc">
+              Sign out of your account
+            </span>
+          </div>
+        </button>
       </nav>
 
       <div className="customer-account-sidebar__support-card">
