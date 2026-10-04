@@ -127,7 +127,6 @@ export default function LoginPage() {
       topBarLinks={
         <>
           <Link to="/register" state={{ role: "SERVICE_PROVIDER" }}>Become a Provider</Link>
-          <a href="#help-center">Help Center</a>
         </>
       }
       panel={
