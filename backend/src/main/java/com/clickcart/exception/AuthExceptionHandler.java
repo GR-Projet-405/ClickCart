@@ -46,6 +46,15 @@ public class AuthExceptionHandler {
         return badRequest("Input validation failed for one or more fields", fieldErrors);
     }
 
+    @ExceptionHandler(org.springframework.web.bind.MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleBodyValidation(org.springframework.web.bind.MethodArgumentNotValidException ex) {
+        Map<String, String> fieldErrors = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            fieldErrors.putIfAbsent(error.getField(), error.getDefaultMessage());
+        });
+        return badRequest("Input validation failed for one or more fields", fieldErrors);
+    }
+
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ErrorResponse> handleMissingParameter(MissingServletRequestParameterException ex) {
         return badRequest("Input validation failed for one or more fields",
