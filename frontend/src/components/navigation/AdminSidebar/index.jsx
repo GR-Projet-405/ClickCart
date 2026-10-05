@@ -1,35 +1,45 @@
-import React from 'react';
-import { BarChart3 } from "lucide-react";
+import React from "react";
 import { useLocation } from "react-router-dom";
+import { BarChart3 } from "lucide-react";
 import Button from "../../common/Button";
 import SidebarItem from "../SidebarItem";
 import { adminNavigation } from "../../../config/adminNavigation";
+import "./AdminSidebar.css";
+
+function isActive(pathname, path) {
+  if (path === "/admin") return pathname === "/admin";
+  if (path === "/commission_management")
+    return pathname === path || pathname.startsWith("/commission_management/");
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
 export default function AdminSidebar({ onNavigate }) {
   const { pathname } = useLocation();
+
   return (
-    <>
-      <nav className="dashboard-sidebar__nav" aria-label="Admin navigation">
-        {adminNavigation.map(({ icon: Icon, label, path }) => (
-          <SidebarItem
-            key={path}
-            icon={<Icon />}
-            label={label}
-            to={path}
-            active={
-              pathname === path ||
-              (path === "/commission_management" && pathname.startsWith("/commission_management/")) ||
-              (path.endsWith("dashboard") && pathname === "/admin")
-            }
-            onClick={onNavigate}
-          />
-        ))}
-      </nav>
-      <aside className="dashboard-sidebar__card">
-        <span className="dashboard-sidebar__card-icon" aria-hidden="true">
+    <div className="admin-sidebar">
+      {/* ── Navigation ─────────────────────────────────────────── */}
+      <div className="admin-sidebar__scroll">
+        <nav className="admin-sidebar__nav" aria-label="Admin navigation">
+          {adminNavigation.map(({ icon: Icon, label, path }) => (
+            <SidebarItem
+              key={path}
+              icon={<Icon size={18} />}
+              label={label}
+              to={path}
+              active={isActive(pathname, path)}
+              onClick={onNavigate}
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* ── Promotional card ───────────────────────────────────── */}
+      <aside className="admin-sidebar__promo" aria-label="Admin quick action">
+        <span className="admin-sidebar__promo-icon" aria-hidden="true">
           <BarChart3 size={20} />
         </span>
-        <h2 className="cc-h4">
+        <h2>
           Grow a Safer
           <br />
           Local Services
@@ -42,9 +52,9 @@ export default function AdminSidebar({ onNavigate }) {
           All in one place.
         </p>
         <Button variant="outline" size="sm">
-          View Reports
+          View Reports →
         </Button>
       </aside>
-    </>
+    </div>
   );
 }
