@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, ArrowRight, Search, Wrench, X, MapPin } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Spinner from "../../components/common/Spinner";
@@ -116,12 +116,15 @@ function mapSelectedAvailability(selectedAvailability) {
 }
 
 export default function MarketplaceServicesPage() {
+  const [searchParams] = useSearchParams();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
   const [debouncedQuery, setDebouncedQuery] = useState("");
-  const [category, setCategory] = useState("All categories");
+  const [category, setCategory] = useState(
+    () => searchParams.get("category") || "All categories",
+  );
   const [location, setLocation] = useState("All locations");
   const [minPrice, setMinPrice] = useState(DEFAULT_MIN_PRICE);
   const [maxPrice, setMaxPrice] = useState(DEFAULT_MAX_PRICE);
@@ -168,6 +171,11 @@ export default function MarketplaceServicesPage() {
   useEffect(() => {
     loadCatalogServices();
   }, []);
+
+  useEffect(() => {
+    setQuery(searchParams.get("q") ?? "");
+    setCategory(searchParams.get("category") || "All categories");
+  }, [searchParams]);
 
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedQuery(query), 300);
