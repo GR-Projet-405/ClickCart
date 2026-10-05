@@ -1,0 +1,130 @@
+/* ==========================================================================
+   StatCard — reusable dashboard metric tile (Platform Admin Dashboard)
+   Only --cc-* tokens from src/styles/tokens.css. No hardcoded colours.
+   Card surface / border / shadow come from the shared `.cc-card` component.
+   ========================================================================== */
+
+.card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: var(--cc-space-4);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cc-space-3);
+}
+
+.label {
+  min-width: 0;
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  text-transform: uppercase;
+}
+
+.icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.125rem;
+  height: 2.125rem;
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-primary-soft);
+  color: var(--cc-primary-dark);
+}
+
+.icon--green {
+  background: var(--cc-primary-soft);
+  color: var(--cc-primary-dark);
+}
+
+.icon--blue {
+  background: var(--cc-info-soft);
+  color: var(--cc-info-text);
+}
+
+.icon--amber {
+  background: var(--cc-warning-soft);
+  color: var(--cc-warning-text);
+}
+
+.icon--red {
+  background: var(--cc-error-soft);
+  color: var(--cc-error-text);
+}
+
+.icon--neutral {
+  background: var(--cc-bg-muted);
+  color: var(--cc-text-secondary);
+}
+
+.value {
+  margin-top: var(--cc-space-3);
+  color: var(--cc-text-primary);
+  font-size: var(--cc-text-h2-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cc-space-2);
+  margin-top: var(--cc-space-2);
+}
+
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-1);
+  padding: 0.125rem var(--cc-space-2);
+  border-radius: var(--cc-radius-pill);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.positive {
+  background: var(--cc-success-soft);
+  color: var(--cc-success-text);
+}
+
+.negative {
+  background: var(--cc-error-soft);
+  color: var(--cc-error-text);
+}
+
+.hint {
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+/* Compact metric value on small screens so numbers never force
+   horizontal scrolling inside a two-column mobile grid. */
+@media (max-width: 39.99rem) {
+  .card {
+    padding: var(--cc-space-3);
+  }
+
+  .value {
+    font-size: var(--cc-text-h3-size);
+  }
+
+  .hint {
+    white-space: normal;
+  }
+}

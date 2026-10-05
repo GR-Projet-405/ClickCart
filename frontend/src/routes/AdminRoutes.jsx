@@ -7,6 +7,7 @@ import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
 
 import AdminCategoryDashboard from "../pages/AdminCategoryDashboard";
+import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import VerificationQueue from "../pages/ProviderVerification/VerificationQueue";
 
 import CommissionDashboard from "../pages/commission/CommissionDashboard";
@@ -50,7 +51,7 @@ export const adminRoutes = (
     {/* ========================================== */}
 
     <Route path="/admin" element={<AdminLayout />}>
-      <Route index element={adminWorkspace} />
+      <Route index element={<AdminDashboardPage />} />
 
       {/* Implemented Admin Features */}
       <Route
