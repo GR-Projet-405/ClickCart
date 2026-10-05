@@ -3,8 +3,10 @@ package com.clickcart.service;
 import com.clickcart.dto.provider.*;
 import com.clickcart.model.JobStatus;
 import com.clickcart.model.ProviderJob;
+import com.clickcart.model.ProviderProfile;
 import com.clickcart.model.Review;
 import com.clickcart.repository.ProviderJobRepository;
+import com.clickcart.repository.ProviderProfileRepository;
 import com.clickcart.repository.ReviewRepository;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +26,19 @@ public class ProviderDashboardService {
 
     private final ProviderJobRepository jobRepository;
     private final ReviewRepository reviewRepository;
+    private final ProviderProfileRepository profileRepository;
+    private final ProviderProfileService profileService;
 
-    public ProviderDashboardService(ProviderJobRepository jobRepository, ReviewRepository reviewRepository) {
+    public ProviderDashboardService(
+            ProviderJobRepository jobRepository,
+            ReviewRepository reviewRepository,
+            ProviderProfileRepository profileRepository,
+            ProviderProfileService profileService
+    ) {
         this.jobRepository = jobRepository;
         this.reviewRepository = reviewRepository;
+        this.profileRepository = profileRepository;
+        this.profileService = profileService;
     }
 
     public ProviderDashboardResponse getDashboardData(String providerId, String displayName, String range) {
@@ -36,8 +47,9 @@ public class ProviderDashboardService {
         List<ProviderJob> allJobs = jobRepository.findByProviderIdOrderByScheduledStartAsc(providerId);
         List<Review> allReviews = reviewRepository.findByProviderIdOrderByCreatedAtDesc(providerId);
 
-        // 1. Profile
+        // 1. Profile - calculate completion from actual provider profile
         String greeting = getGreeting(displayName);
+        int profileCompletion = calculateProfileCompletion(providerId);
         ProviderProfileDto profile = new ProviderProfileDto(
                 providerId,
                 displayName,
@@ -47,7 +59,7 @@ public class ProviderDashboardService {
                 true,
                 greeting,
                 "Here's how your business is performing today.",
-                0 // Profile completion managed elsewhere
+                profileCompletion
         );
 
         // 2. Booking Performance
@@ -324,5 +336,15 @@ public class ProviderDashboardService {
         ranges.put("6m", sixMonths);
 
         return ranges;
+    }
+
+    private int calculateProfileCompletion(String providerId) {
+        Optional<ProviderProfile> profileOpt = profileRepository.findById(providerId);
+        if (profileOpt.isEmpty()) {
+            return 0;
+        }
+
+        ProviderProfile profile = profileOpt.get();
+        return profileService.calculateCompletionPercentage(profile);
     }
 }

@@ -2,8 +2,8 @@ package com.clickcart.controller;
 
 import com.clickcart.dto.provider.ProviderDashboardResponse;
 import com.clickcart.service.ProviderDashboardService;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +14,9 @@ public class ProviderDashboardController {
 
     private final ProviderDashboardService dashboardService;
 
+    @Value("${clickcart.security.enabled:false}")
+    private boolean securityEnabled;
+
     public ProviderDashboardController(ProviderDashboardService dashboardService) {
         this.dashboardService = dashboardService;
     }
@@ -21,18 +24,25 @@ public class ProviderDashboardController {
     @GetMapping
     public ResponseEntity<ProviderDashboardResponse> getDashboard(
             @RequestParam(name = "range", required = false, defaultValue = "7d") String range,
-            @AuthenticationPrincipal Jwt jwt
+            @org.springframework.security.core.annotation.AuthenticationPrincipal Jwt jwt
     ) {
-        // For development/local mode without security, use a default provider
-        String providerId = "provider-a";
-        String displayName = "Provider";
+        String providerId;
+        String displayName;
 
-        if (jwt != null) {
+        if (securityEnabled && jwt != null) {
+            // Production mode: use authenticated provider
             providerId = jwt.getSubject();
             displayName = jwt.getClaimAsString("name");
             if (displayName == null || displayName.isBlank()) {
                 displayName = providerId;
             }
+        } else if (!securityEnabled) {
+            // Development mode: use default provider for testing
+            providerId = "provider-b";
+            displayName = "QuickFix Electrical Services";
+        } else {
+            // Security enabled but no JWT
+            throw new IllegalArgumentException("Authentication required: JWT token missing");
         }
 
         ProviderDashboardResponse response = dashboardService.getDashboardData(

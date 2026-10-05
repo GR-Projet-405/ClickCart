@@ -1,2 +1,30 @@
-MONGODB_URI=mongodb+srv://itpmmongo_db_user:8ucixnbW7Hwu8MWo@cluster0.cws09ir.mongodb.net/?appName=Cluster0
+# ==========================================
+# ClickCart Backend - Environment Variables
+# ==========================================
+
+# --- Server Settings ---
 SERVER_PORT=8080
+CORS_ALLOWED_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
+
+# --- Database Settings ---
+MONGODB_URI=mongodb+srv://itpmmongo_db_user:8ucixnbW7Hwu8MWo@cluster0.cws09ir.mongodb.net/clickcart?appName=Cluster0
+DATABASE_NAME=clickcart
+
+# --- Email Settings (SMTP) ---
+MAIL_USERNAME=clickcart.noreply@gmail.com
+MAIL_PASSWORD=xsin josc xxok favn
+
+# --- Cloudinary Settings (Image Uploads) ---
+CLOUDINARY_CLOUD_NAME=hnhtwkob
+CLOUDINARY_API_KEY=383927427949791
+CLOUDINARY_API_SECRET=iHMgs5jF5Ol2I87wTjZbe_RPgP4
+
+# --- Security & JWT Settings ---
+CLICKCART_SECURITY_ENABLED=false
+JWT_SECRET=clickcart-local-dev-secret-please-change-32-bytes-long!
+JWT_ACCESS_TOKEN_TTL_MINUTES=15
+CLICKCART_DEV_AUTH_FALLBACK=true
+
+# --- File Upload Directories ---
+ATTACHMENTS_DIR=./data/clickcart-attachments
+CLICKCART_PROOF_DIR=./data/job-proofs
