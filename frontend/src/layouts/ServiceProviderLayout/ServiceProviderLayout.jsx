@@ -19,7 +19,7 @@ export default function ServiceProviderLayout() {
     return () => document.removeEventListener("keydown", onKeyDown);
   }, []);
   return (
-    <div className="dashboard-shell">
+    <div className="dashboard-shell dashboard-shell--provider">
       <ProviderTopBar />
       <ProviderHeader
         menuOpen={menuOpen}

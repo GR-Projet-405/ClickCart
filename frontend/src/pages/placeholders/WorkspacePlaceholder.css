@@ -1,6 +1,51 @@
 .workspace-placeholder {
-  padding-block: var(--cc-space-10);
+  width: 100%;
+  max-width: none;
+  padding: clamp(var(--cc-space-5), 4vw, var(--cc-space-10));
 }
-.workspace-placeholder p {
-  margin: var(--cc-space-2) 0 0;
+.workspace-placeholder__header {
+  padding-bottom: var(--cc-space-8);
+  border-bottom: 1px solid var(--cc-border-soft);
+}
+.workspace-placeholder__eyebrow {
+  margin: 0 0 var(--cc-space-2);
+  color: var(--cc-primary-dark);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.workspace-placeholder__header > p:last-child {
+  max-width: 42rem;
+  margin: var(--cc-space-3) 0 0;
+}
+.workspace-placeholder__notice {
+  display: flex;
+  max-width: 42rem;
+  align-items: flex-start;
+  gap: var(--cc-space-4);
+  margin-top: var(--cc-space-8);
+  padding: var(--cc-space-5);
+  background: var(--cc-bg-muted);
+  border: 1px solid var(--cc-border-soft);
+  border-radius: var(--cc-radius-xl);
+}
+.workspace-placeholder__notice-mark {
+  display: grid;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  place-items: center;
+  color: var(--cc-primary-dark);
+  background: var(--cc-primary-soft);
+  border-radius: 50%;
+  font-size: 1.25rem;
+  line-height: 1;
+}
+.workspace-placeholder__notice h2,
+.workspace-placeholder__notice p {
+  margin: 0;
+}
+.workspace-placeholder__notice p {
+  margin-top: var(--cc-space-1);
 }

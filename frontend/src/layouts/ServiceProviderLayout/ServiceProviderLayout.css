@@ -1,1 +1,18 @@
-/* Provider-specific feature geometry belongs inside routed pages, not this shell. */
+.dashboard-shell--provider .dashboard-sidebar {
+  position: sticky;
+  top: var(--cc-space-4);
+  max-height: calc(100vh - var(--cc-space-8));
+  overflow-y: auto;
+}
+
+.dashboard-shell--provider .dashboard-shell__main {
+  display: flex;
+  align-items: flex-start;
+}
+
+@media (max-width: 1023px) {
+  .dashboard-shell--provider .dashboard-sidebar {
+    position: static;
+    max-height: none;
+  }
+}

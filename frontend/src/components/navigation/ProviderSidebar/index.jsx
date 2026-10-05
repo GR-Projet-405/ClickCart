@@ -7,6 +7,20 @@ import { providerNavigation } from "../../../config/providerNavigation";
 
 export default function ProviderSidebar({ onNavigate }) {
   const { pathname } = useLocation();
+
+  const isActivePath = (path) => {
+    const pathSegments = path.split("/").filter(Boolean);
+    const currentSegments = pathname.split("/").filter(Boolean);
+
+    return (
+      pathSegments.length <= currentSegments.length &&
+      pathSegments.every(
+        (segment, index) =>
+          segment.startsWith(":") || segment === currentSegments[index],
+      )
+    );
+  };
+
   return (
     <>
       <nav className="dashboard-sidebar__nav" aria-label="Provider navigation">
@@ -17,7 +31,7 @@ export default function ProviderSidebar({ onNavigate }) {
             label={label}
             to={path}
             active={
-              pathname === path ||
+              isActivePath(path) ||
               (path.endsWith("dashboard") && pathname === "/provider")
             }
             badge={

@@ -30,7 +30,7 @@ export default function ProviderHeader({ menuOpen, onMenuToggle }) {
         <div className="dashboard-header__search">
           <SearchInput
             aria-label="Provider workspace search"
-            placeholder="Search users, bookings, services, reports..."
+            placeholder="Search services, bookings, messages..."
           />
         </div>
         <div className="dashboard-header__spacer" />
