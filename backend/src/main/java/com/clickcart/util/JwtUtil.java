@@ -11,7 +11,6 @@ import javax.crypto.SecretKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
 import com.clickcart.dto.auth.AuthenticatedUser;
 import com.clickcart.model.ProviderType;
@@ -29,7 +28,6 @@ import io.jsonwebtoken.security.Keys;
  * Claims: sub = user id, email, role, providerType (providers only), ver = user token version.
  * The signing key comes from JWT_SECRET in backend/.env and is never committed to Git (SEC-014).
  */
-@Component
 public class JwtUtil {
 
     private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);

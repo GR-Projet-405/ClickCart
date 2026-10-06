@@ -1,0 +1,181 @@
+.notification-center {
+  min-height: 100%;
+  padding: var(--cc-space-8) var(--cc-space-6);
+  background: var(--cc-bg-app);
+  color: var(--cc-text-primary);
+  font-family: var(--cc-font-sans);
+}
+
+.notification-center__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+  margin-bottom: var(--cc-space-5);
+}
+
+.notification-center__header h1 {
+  margin: 0;
+  color: var(--cc-primary-dark);
+  font-size: var(--cc-text-h2-size);
+  font-weight: 700;
+}
+
+.notification-center__header p,
+.notification-center__card-heading p,
+.notification-center__group span {
+  margin: var(--cc-space-1) 0 0;
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.notification-center__preferences,
+.notification-center__actions button:last-child {
+  border: 0;
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-warning);
+  color: var(--cc-text-primary);
+  font-size: var(--cc-text-button-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notification-center__preferences {
+  padding: var(--cc-space-2) var(--cc-space-5);
+}
+
+.notification-center__preferences:focus-visible,
+.notification-center__actions button:focus-visible,
+.notification-center__switch:focus-visible {
+  outline: none;
+  box-shadow: var(--cc-focus-ring);
+}
+
+.notification-center__error,
+.notification-center__status,
+.notification-center__loading {
+  margin: 0 0 var(--cc-space-4);
+  font-size: var(--cc-text-body-sm-size);
+}
+
+.notification-center__error {
+  color: var(--cc-error-text);
+}
+
+.notification-center__status {
+  color: var(--cc-success-text);
+}
+
+.notification-center__card {
+  padding: var(--cc-space-6);
+  border: 1px solid var(--cc-primary-border-soft);
+  border-radius: var(--cc-radius-xl);
+  background: var(--cc-primary-softer);
+}
+
+.notification-center__card-heading h2 {
+  margin: 0;
+  color: var(--cc-primary-dark);
+  font-size: var(--cc-text-h3-size);
+}
+
+.notification-center__group h3 {
+  margin: var(--cc-space-6) 0 var(--cc-space-2);
+  color: var(--cc-success-text);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.notification-center__group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.notification-center__group li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+  padding: var(--cc-space-4) 0;
+  border-top: 1px solid var(--cc-primary-border-soft);
+}
+
+.notification-center__group strong {
+  display: block;
+  font-size: var(--cc-text-body-size);
+}
+
+.notification-center__group span {
+  display: block;
+}
+
+.notification-center__switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 1.5rem;
+  border: 0;
+  border-radius: var(--cc-radius-pill);
+  background: var(--cc-border);
+  cursor: pointer;
+}
+
+.notification-center__switch::after {
+  content: "";
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--cc-radius-pill);
+  background: var(--cc-bg-surface);
+  transition: transform 0.15s ease;
+}
+
+.notification-center__switch[aria-checked="true"] {
+  background: var(--cc-primary);
+}
+
+.notification-center__switch[aria-checked="true"]::after {
+  transform: translateX(1.25rem);
+}
+
+.notification-center__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--cc-space-5);
+  margin-top: var(--cc-space-6);
+}
+
+.notification-center__actions button:first-child {
+  border: 0;
+  background: transparent;
+  color: var(--cc-primary-dark);
+  font-size: var(--cc-text-button-size);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.notification-center__actions button:last-child {
+  padding: var(--cc-space-2) var(--cc-space-5);
+}
+
+.notification-center__actions button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+@media (max-width: 40rem) {
+  .notification-center {
+    padding: var(--cc-space-5) var(--cc-space-4);
+  }
+
+  .notification-center__header,
+  .notification-center__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

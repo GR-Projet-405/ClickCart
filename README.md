@@ -89,7 +89,8 @@ For local development, the backend automatically loads `backend/.env`. Environme
 
 - `/` — Customer base layout
 - `/provider` — Service Provider base layout
-- `/admin` — Platform Admin base layout
+- `/commission_management` — Commission management dashboard
+- `/admin` — Platform Admin base layout (redirects to commission management)
 - `/dev/ui-foundation` — shared component showcase
 
 Temporary configured navigation paths render neutral workspace placeholders. Assigned developers add actual pages as children of the correct layout.
