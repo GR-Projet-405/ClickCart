@@ -41,6 +41,15 @@
 .customer-header__actions > .cc-icon-button {
   border-color: var(--cc-border);
   border-radius: 50%;
+  transition: all var(--cc-transition-fast, 150ms ease);
+}
+.customer-header__actions > .cc-icon-button.customer-header__action--active {
+  color: #ef4444;
+  border-color: #fecdd3;
+  background-color: #fef2f2;
+}
+.customer-header__actions > .cc-icon-button:hover {
+  border-color: var(--cc-primary-border, #bbf7d0);
 }
 .customer-header__account span {
   display: grid;

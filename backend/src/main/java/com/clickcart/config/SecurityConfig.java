@@ -120,7 +120,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
+
+                        //for ai service
+                        .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()
                         .anyRequest().authenticated())
+
                 // DEV-01: rate limits run after CORS so browsers can read 429 responses
                 .addFilterAfter(authRateLimitFilter, CorsFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
