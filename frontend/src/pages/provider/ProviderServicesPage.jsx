@@ -21,6 +21,7 @@ import {
   RotateCcw,
   Search,
   Star,
+  Trash2,
   Wrench,
   X,
 } from "lucide-react";
@@ -89,7 +90,7 @@ function StatusBadge({ status }) {
   return <span className={`provider-service-status provider-service-status--${status.toLowerCase()}`}>{statusLabel(status)}</span>;
 }
 
-function ListingMenu({ service, onEdit, onChangeStatus, onArchive }) {
+function ListingMenu({ service, onDelete, onChangeStatus, onArchive }) {
   const closeMenu = (event) => {
     const details = event.currentTarget.closest("details");
     if (details) details.open = false;
@@ -101,8 +102,8 @@ function ListingMenu({ service, onEdit, onChangeStatus, onArchive }) {
       </summary>
       <div className="provider-service-menu__panel">
         {service.status !== "ARCHIVED" && (
-          <button type="button" onClick={(event) => { closeMenu(event); onEdit(service); }}>
-            <Pencil size={15} /> Edit service
+          <button className="provider-service-menu__danger" type="button" onClick={(event) => { closeMenu(event); onDelete(service); }}>
+            <Trash2 size={15} /> Delete service
           </button>
         )}
         {service.status === "ACTIVE" ? (
@@ -123,18 +124,6 @@ function ListingMenu({ service, onEdit, onChangeStatus, onArchive }) {
             <Archive size={15} /> Archive service
           </button>
         )}
-        
-        {/* DEV-07: Added Pricing option to the dropdown menu for alternative access */}
-        <button 
-          type="button" 
-          onClick={(event) => { 
-            closeMenu(event); 
-            // Note: useNavigate is not directly available here, so we rely on the footer/table buttons for navigation, 
-            // or we can pass navigate down as a prop if needed. For now, footer/table buttons are primary.
-          }}
-        >
-          <DollarSign size={15} /> Manage pricing
-        </button>
       </div>
     </details>
   );
@@ -259,6 +248,7 @@ export default function ProviderServicesPage() {
   const [formState, setFormState] = useState(null);
   const [details, setDetails] = useState(null);
   const [toArchive, setToArchive] = useState(null);
+  const [toDelete, setToDelete] = useState(null);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState("");
   const [busyId, setBusyId] = useState("");
@@ -335,6 +325,23 @@ export default function ProviderServicesPage() {
     }
   };
 
+  const deleteService = async (service) => {
+    setBusyId(service.id);
+    try {
+      await providerServicesApi.delete(service.id);
+      setServices((current) => current.filter((item) => item.id !== service.id));
+      setDetails((current) => current?.id === service.id ? null : current);
+      setToDelete(null);
+      setToastIsError(false);
+      setToast("Service deleted successfully.");
+    } catch (error) {
+      setToastIsError(true);
+      setToast(error.message || "The service could not be deleted.");
+    } finally {
+      setBusyId("");
+    }
+  };
+
   const openCreate = () => { setFormError(""); setFormState({ service: null }); };
   const openEdit = (service) => { setDetails(null); setFormError(""); setFormState({ service }); };
   const noServices = !loading && !loadError && services.length === 0;
@@ -392,7 +399,7 @@ export default function ProviderServicesPage() {
                 <div className="provider-service-card__media">
                   <ServiceArtwork service={service} />
                   <StatusBadge status={service.status} />
-                  <ListingMenu service={service} onEdit={openEdit} onChangeStatus={changeStatus} onArchive={setToArchive} />
+                  <ListingMenu service={service} onDelete={setToDelete} onChangeStatus={changeStatus} onArchive={setToArchive} />
                 </div>
                 <div className="provider-service-card__body">
                   <div className="provider-service-card__category"><span>{categoryIcon(service.category)}</span>{service.category}</div>
@@ -487,6 +494,22 @@ export default function ProviderServicesPage() {
               <button className="provider-service-button provider-service-button--danger" type="button" disabled={busyId === toArchive.id} onClick={() => changeStatus(toArchive, "ARCHIVED")}>
                 {busyId === toArchive.id ? <LoaderCircle className="provider-service-spin" size={16} /> : <Archive size={16} />}
                 Archive service
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {toDelete && (
+        <div className="provider-service-overlay" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setToDelete(null)}>
+          <section className="provider-service-confirm" role="alertdialog" aria-modal="true" aria-labelledby="delete-title">
+            <div className="provider-service-confirm__icon"><Trash2 size={20} /></div>
+            <h2 id="delete-title">Delete this service?</h2>
+            <p><strong>{toDelete.title}</strong> will be permanently removed from your listings. This cannot be undone.</p>
+            <div>
+              <button className="provider-service-button provider-service-button--quiet" type="button" onClick={() => setToDelete(null)}>Cancel</button>
+              <button className="provider-service-button provider-service-button--danger" type="button" disabled={busyId === toDelete.id} onClick={() => deleteService(toDelete)}>
+                {busyId === toDelete.id ? <LoaderCircle className="provider-service-spin" size={16} /> : <Trash2 size={16} />}
+                Delete service
               </button>
             </div>
           </section>
