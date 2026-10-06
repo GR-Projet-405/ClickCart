@@ -10,7 +10,6 @@ import {
   Navigation,
   Phone,
   Plus,
-  Siren,
   UserRound,
 } from "lucide-react";
 import Avatar from "../../components/common/Avatar";
@@ -21,8 +20,6 @@ import EmptyState from "../../components/common/EmptyState";
 import {
   acceptProviderJob,
   getProviderJobs,
-  getSelectedProviderId,
-  setDemoProvider,
   startProviderJob,
 } from "../../services/providerJobService";
 import {
@@ -38,6 +35,7 @@ import {
   statusLabel,
   weekRevenue,
 } from "./jobUi";
+import CreateCustomJobModal from "./CreateCustomJobModal";
 import "./providerJobs.css";
 
 const TABS = [
@@ -46,23 +44,35 @@ const TABS = [
   { id: "ACTIVE", label: "Active / Live" },
   { id: "COMPLETED", label: "Completed" },
 ];
+const AUTO_DISPATCH_STORAGE_KEY = "clickcart-provider-auto-dispatch";
 
 export default function ProviderJobManagementDashboard() {
   const navigate = useNavigate();
   const [jobs, setJobs] = useState([]);
+  const [timelineSourceJobs, setTimelineSourceJobs] = useState([]);
   const [tab, setTab] = useState("ALL");
   const [query, setQuery] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
-  const [autoDispatch, setAutoDispatch] = useState(true);
-  const [providerId, setProviderId] = useState(getSelectedProviderId());
+  const [autoDispatch, setAutoDispatch] = useState(() => {
+    try {
+      return window.localStorage.getItem(AUTO_DISPATCH_STORAGE_KEY) === "true";
+    } catch {
+      return false;
+    }
+  });
+  const [showCustomJobModal, setShowCustomJobModal] = useState(false);
+  const [selectedMonth, setSelectedMonth] = useState(new Date());
+  const [selectedTimelineDate, setSelectedTimelineDate] = useState(() => new Date());
 
   async function loadJobs() {
     setLoading(true);
     setError("");
     try {
-      const data = await getProviderJobs();
+      const year = selectedMonth.getFullYear();
+      const month = selectedMonth.getMonth() + 1;
+      const data = await getProviderJobs(null, year, month);
       setJobs(Array.isArray(data) ? data : []);
     } catch (err) {
       setError(err.message || "Unable to load jobs");
@@ -73,7 +83,40 @@ export default function ProviderJobManagementDashboard() {
 
   useEffect(() => {
     loadJobs();
-  }, [providerId]);
+  }, [selectedMonth]);
+
+  useEffect(() => {
+    let isMounted = true;
+    const monday = new Date(selectedTimelineDate);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const months = new Map(
+      [monday, sunday].map((date) => [`${date.getFullYear()}-${date.getMonth() + 1}`, date]),
+    );
+
+    Promise.all(
+      [...months.values()].map((date) =>
+        getProviderJobs(null, date.getFullYear(), date.getMonth() + 1),
+      ),
+    )
+      .then((monthJobs) => {
+        if (isMounted) {
+          const uniqueJobs = new Map(monthJobs.flat().map((job) => [job.id, job]));
+          setTimelineSourceJobs([...uniqueJobs.values()]);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setTimelineSourceJobs([]);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedTimelineDate]);
 
   const upcoming = jobs.filter(isUpcoming);
   const active = jobs.filter(isActive);
@@ -104,6 +147,29 @@ export default function ProviderJobManagementDashboard() {
   const todayDistance = jobs
     .filter((job) => isSameDay(job.scheduledStart) || isActive(job))
     .reduce((sum, job) => sum + Number(job.distanceKm || 0), 0);
+  const weekDates = useMemo(() => {
+    const monday = new Date(selectedTimelineDate);
+    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
+    return Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(monday);
+      date.setDate(monday.getDate() + index);
+      return date;
+    });
+  }, [selectedTimelineDate]);
+  const timelineJobs = timelineSourceJobs
+    .filter((job) => job.scheduledStart && job.status !== "COMPLETED" && isSameDay(job.scheduledStart, selectedTimelineDate))
+    .sort((first, second) => new Date(first.scheduledStart) - new Date(second.scheduledStart));
+
+  function toggleAutoDispatch() {
+    const nextValue = !autoDispatch;
+    setAutoDispatch(nextValue);
+    try {
+      window.localStorage.setItem(AUTO_DISPATCH_STORAGE_KEY, String(nextValue));
+    } catch {
+      setError("Unable to save the auto-dispatch preference in this browser.");
+    }
+  }
 
   async function onAccept(job) {
     setBusyId(job.id);
@@ -140,11 +206,21 @@ export default function ProviderJobManagementDashboard() {
           <p className="pj-kicker">Manage active field bookings, upcoming schedule, and job lifecycle.</p>
         </div>
         <div className="pj-header__actions">
-          <span className="pj-month">
+          <div className="pj-month-selector">
             <CalendarDays size={16} aria-hidden="true" />
-            {new Intl.DateTimeFormat("en-LK", { month: "short", year: "numeric" }).format(new Date())} · This Month
-          </span>
-          <Button leftIcon={<Plus size={16} />} onClick={() => setError("Custom jobs and quotes are not part of this module.")}>
+            <input
+              type="month"
+              value={`${selectedMonth.getFullYear()}-${String(selectedMonth.getMonth() + 1).padStart(2, '0')}`}
+              onChange={(e) => {
+                if (e.target.value) {
+                  const [year, month] = e.target.value.split('-').map(Number);
+                  setSelectedMonth(new Date(year, month - 1, 1));
+                }
+              }}
+              className="pj-month-input"
+            />
+          </div>
+          <Button leftIcon={<Plus size={16} />} onClick={() => setShowCustomJobModal(true)}>
             New Custom Job / Quote
           </Button>
         </div>
@@ -347,11 +423,19 @@ export default function ProviderJobManagementDashboard() {
           <section className="pj-side-card">
             <div className="pj-side-card__head">
               <h2>Dispatch & Matching</h2>
-              <span className="pj-chip pj-chip--green">Active</span>
+              <span className={`pj-chip ${autoDispatch ? "pj-chip--green" : "pj-chip--muted"}`}>
+                {autoDispatch ? "Enabled" : "Paused"}
+              </span>
             </div>
             <div className="pj-toggle">
-              <span>Instant Auto-Dispatch<br /><small>Accept urgent leads automatically</small></span>
-              <button className="pj-switch" type="button" aria-pressed={autoDispatch} onClick={() => setAutoDispatch((value) => !value)}>
+              <span>Instant Auto-Dispatch<br /><small>Preference saved in this browser</small></span>
+              <button
+                className="pj-switch"
+                type="button"
+                aria-label={`${autoDispatch ? "Disable" : "Enable"} auto-dispatch preference`}
+                aria-pressed={autoDispatch}
+                onClick={toggleAutoDispatch}
+              >
                 <span />
               </button>
             </div>
@@ -365,20 +449,36 @@ export default function ProviderJobManagementDashboard() {
           <section className="pj-side-card">
             <div className="pj-side-card__head">
               <h2>Schedule Timeline</h2>
-              <span className="pj-muted">Today</span>
+              <span className="pj-muted">
+                {new Intl.DateTimeFormat("en-LK", { weekday: "short", day: "numeric", month: "short" }).format(selectedTimelineDate)}
+              </span>
             </div>
-            <div className="pj-week" aria-hidden="true">
-              {["M", "T", "W", "T", "F", "S", "S"].map((label, index) => (
-                <button key={`${label}-${index}`} className={index === (new Date().getDay() + 6) % 7 ? "is-today" : ""} type="button">
-                  {label}
-                </button>
-              ))}
+            <div className="pj-week" role="group" aria-label="Choose a day for the schedule">
+              {weekDates.map((date) => {
+                const isToday = isSameDay(date.toISOString());
+                const isSelected = isSameDay(date.toISOString(), selectedTimelineDate);
+                return (
+                  <button
+                    key={date.toISOString()}
+                    className={`${isToday ? "is-today" : ""}${isSelected ? " is-selected" : ""}`}
+                    type="button"
+                    aria-label={new Intl.DateTimeFormat("en-LK", { weekday: "long", day: "numeric", month: "long" }).format(date)}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedTimelineDate(date)}
+                  >
+                    {new Intl.DateTimeFormat("en-LK", { weekday: "narrow" }).format(date)}
+                  </button>
+                );
+              })}
             </div>
-            {jobs
-              .filter((job) => job.scheduledStart && job.status !== "COMPLETED")
-              .slice(0, 4)
-              .map((job) => (
-                <div key={job.id} className="pj-slot">
+            {timelineJobs.length ? timelineJobs.map((job) => (
+                <button
+                  key={job.id}
+                  className="pj-slot"
+                  type="button"
+                  onClick={() => navigate(`/provider/jobs/${job.id}`)}
+                  aria-label={`View ${job.serviceTitle} job details`}
+                >
                   <time>
                     {new Intl.DateTimeFormat("en-LK", { hour: "2-digit", minute: "2-digit" }).format(new Date(job.scheduledStart))}
                   </time>
@@ -386,17 +486,15 @@ export default function ProviderJobManagementDashboard() {
                     <strong>{job.serviceTitle}</strong>
                     <div className="pj-muted">{job.city || job.address}</div>
                   </div>
-                </div>
-              ))}
+                </button>
+              )) : <p className="pj-muted pj-empty-day">No scheduled jobs for this day.</p>}
           </section>
 
           <section className="pj-side-card">
-            <h2>Provider Live Hotline</h2>
-            <p className="pj-muted">24/7 Operations Command Center</p>
-            <p>Encountered an on-site dispute, dangerous electrical hazard, or customer cancellation mid-transit?</p>
+            <h2>Provider Support</h2>
+            <p>Need help with a booking or customer issue?</p>
             <div className="pj-hotline">
-              <Button variant="outline" size="sm">Live Chat</Button>
-              <Button variant="danger" size="sm" leftIcon={<Siren size={14} />}>Emergency SOS</Button>
+              <Button variant="outline" size="sm" onClick={() => navigate("/provider/messages")}>Live Chat</Button>
             </div>
           </section>
 
@@ -408,22 +506,12 @@ export default function ProviderJobManagementDashboard() {
         </aside>
       </div>
 
-      <div className="pj-identity">
-        <BriefcaseBusiness size={14} />
-        Demo provider identity
-        <select
-          aria-label="Demo provider identity"
-          value={providerId}
-          onChange={(event) => {
-            setDemoProvider(event.target.value);
-            setProviderId(event.target.value);
-          }}
-        >
-          <option value="provider-a">Kavinda Silva (provider-a)</option>
-          <option value="provider-b">Provider B</option>
-        </select>
-        <Link to="/provider/jobs">Refresh</Link>
-      </div>
+      <CreateCustomJobModal
+        open={showCustomJobModal}
+        onClose={() => setShowCustomJobModal(false)}
+        onSuccess={() => loadJobs()}
+      />
+
     </section>
   );
 }

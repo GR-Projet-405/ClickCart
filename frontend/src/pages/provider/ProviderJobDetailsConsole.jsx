@@ -5,7 +5,6 @@ import {
   CalendarDays,
   Check,
   Download,
-  Flag,
   MapPin,
   MessageSquare,
   Navigation,
@@ -236,15 +235,12 @@ export default function ProviderJobDetailsConsole() {
           </div>
         </div>
         <div className="pj-header__actions">
-          <Button variant="outline" size="sm" leftIcon={<Flag size={14} />} onClick={() => setError("Issue reporting is handled in another module.")}>
-            Report Issue
-          </Button>
           {job.customerPhone ? (
             <Button variant="outline" size="sm" leftIcon={<Phone size={14} />} onClick={() => window.open(`tel:${job.customerPhone}`)}>
               Call Client
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />}>
+          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />} onClick={() => navigate("/provider/messages")}>
             Chat
           </Button>
           {canStart ? (
