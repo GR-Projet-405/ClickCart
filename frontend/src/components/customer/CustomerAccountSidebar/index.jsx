@@ -1,19 +1,37 @@
 import React from "react";
-import { CheckCircle2, LifeBuoy, ShieldCheck, LogOut } from "lucide-react";
+import { CheckCircle2, LifeBuoy, LogIn, LogOut, ShieldCheck } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import Badge from "../../common/Badge";
 import Button from "../../common/Button";
 import { customerAccountNavigation } from "../../../config/customerAccountNavigation";
-import { useAuth } from "../../../context/AuthContext";
+import { useCustomer } from "../../../context/CustomerContext";
 import "./styles.css";
 
 export default function CustomerAccountSidebar({
   profile,
   activeTab,
   onSelectTab,
+  favoritesCount,
   className = "",
 }) {
-  const { logout } = useAuth();
+  const navigate = useNavigate();
+  const { authUser, authStatus, logout } = useCustomer();
+
+  const displayFavoritesCount =
+    typeof favoritesCount === "number"
+      ? favoritesCount
+      : profile?.stats?.favoriteProviders || 0;
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed:", err);
+      navigate("/login");
+    }
+  };
 
   return (
     <aside className={`customer-account-sidebar ${className}`.trim()}>
@@ -28,10 +46,10 @@ export default function CustomerAccountSidebar({
         </div>
         <div className="customer-account-sidebar__identity">
           <h2 className="cc-h4 customer-account-sidebar__name">
-            {profile?.fullName || "Customer"}
+            {profile?.fullName || authUser?.fullName || "Customer"}
           </h2>
           <span className="customer-account-sidebar__email">
-            {profile?.email || ""}
+            {profile?.email || authUser?.email || ""}
           </span>
           {profile?.verification?.badgeLabel && (
             <div className="customer-account-sidebar__badge-row">
@@ -94,7 +112,12 @@ export default function CustomerAccountSidebar({
                   {profile.savedAddresses.length}
                 </span>
               )}
-              {item.badge && item.id !== "addresses" && (
+              {item.id === "favorites" && displayFavoritesCount > 0 && (
+                <span className="customer-account-sidebar__badge">
+                  {displayFavoritesCount}
+                </span>
+              )}
+              {item.badge && item.id !== "addresses" && item.id !== "favorites" && (
                 <span className="customer-account-sidebar__badge">
                   {item.badge}
                 </span>
@@ -102,31 +125,47 @@ export default function CustomerAccountSidebar({
             </button>
           );
         })}
-        
-        <button
-          type="button"
-          className="customer-account-sidebar__item customer-account-sidebar__item--danger"
-          onClick={async () => {
-            try {
-              await logout();
-              window.location.href = "/login";
-            } catch (err) {
-              console.error("Logout failed", err);
-            }
-          }}
-        >
-          <span className="customer-account-sidebar__item-icon">
-            <LogOut size={18} />
-          </span>
-          <div className="customer-account-sidebar__item-text">
-            <span className="customer-account-sidebar__item-label">
-              Log Out
+
+        {/* Authentication Navigation Link */}
+        {authStatus === "authenticated" ? (
+          <button
+            type="button"
+            className="customer-account-sidebar__item customer-account-sidebar__item--logout"
+            onClick={handleLogout}
+            style={{ color: "var(--cc-danger)", marginTop: "4px" }}
+          >
+            <span className="customer-account-sidebar__item-icon">
+              <LogOut size={18} />
             </span>
-            <span className="customer-account-sidebar__item-desc">
-              Sign out of your account
+            <div className="customer-account-sidebar__item-text">
+              <span className="customer-account-sidebar__item-label">
+                Sign Out
+              </span>
+              <span className="customer-account-sidebar__item-desc">
+                Log out of your account
+              </span>
+            </div>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="customer-account-sidebar__item"
+            onClick={() => navigate("/login")}
+            style={{ color: "var(--cc-primary)", marginTop: "4px" }}
+          >
+            <span className="customer-account-sidebar__item-icon">
+              <LogIn size={18} />
             </span>
-          </div>
-        </button>
+            <div className="customer-account-sidebar__item-text">
+              <span className="customer-account-sidebar__item-label">
+                Sign In
+              </span>
+              <span className="customer-account-sidebar__item-desc">
+                Access your personalized profile
+              </span>
+            </div>
+          </button>
+        )}
       </nav>
 
       <div className="customer-account-sidebar__support-card">
@@ -146,3 +185,4 @@ export default function CustomerAccountSidebar({
     </aside>
   );
 }
+

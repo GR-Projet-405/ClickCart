@@ -5,6 +5,19 @@ import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
 import { providerNavigation } from "../config/providerNavigation";
 
+import { Route, Navigate } from "react-router-dom";
+
+// Layout
+import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
+
+// Placeholders & Fallbacks
+import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
+import NotFound from "../pages/placeholders/NotFound";
+
+// Config
+import { providerNavigation } from "../config/providerNavigation";
+
+// Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import PricingSetupPage from "../pages/Provider/PricingSetupPage";
@@ -17,6 +30,7 @@ import ProviderJobManagementDashboard from "../pages/provider/ProviderJobManagem
 import ProviderJobDetailsConsole from "../pages/provider/ProviderJobDetailsConsole";
 import AvailabilityPage from "../pages/provider/AvailabilityPage";
 
+// Provider Profile & Earnings
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
 import EditProviderProfile from "../pages/Provider/profile/EditProviderProfile";
@@ -98,5 +112,105 @@ export default function ProviderRoutes() {
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
+// Reviews
+import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
+
+// Messaging
+import MessagesPage from "../pages/Messages/MessagesPage";
+import ConversationsPage from "../pages/messaging/ConversationsPage";
+
+/**
+ * ProviderRoutes — Group 2: Service Provider Dashboard & Routing
+ *
+ * Dedicated routing module for all /provider routes under ServiceProviderLayout.
+ * Includes:
+ *  - /provider & /provider/dashboard
+ *  - /provider/services, /provider/services/:serviceId/pricing, /provider/services/:serviceId/media
+ *  - /provider/bookings
+ *  - /provider/service-areas, /provider/service-areas/new, /provider/service-areas/:id/edit
+ *  - /provider/jobs, /provider/jobs/:jobId
+ *  - /provider/profile, /provider/profile/setup, /provider/profile/edit, /provider/profile/public
+ *  - /provider/reviews
+ *  - /provider/availability
+ *  - /provider/settlements
+ *  - /provider/earnings, /provider/earnings/transactions
+ *  - /provider/messages, /provider/messages/conversations, /provider/messages/:conversationId
+ *  - Dynamic routes from providerNavigation (e.g. calendar, settings)
+ */
+export default function ProviderRoutes() {
+  return (
+    <Route path="/provider" element={<ServiceProviderLayout />}>
+      {/* Dashboard */}
+      <Route index element={<ProviderDashboard />} />
+      <Route path="dashboard" element={<ProviderDashboard />} />
+
+      {/* Services, Pricing & Media */}
+      <Route path="services" element={<ProviderServicesPage />} />
+      <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
+      <Route path="services/:serviceId/media" element={<ServiceMedia />} />
+
+      {/* Bookings */}
+      <Route path="bookings" element={<BookingApprovalPage />} />
+
+      {/* Service Areas */}
+      <Route path="service-areas" element={<ServiceAreasPage />} />
+      <Route path="service-areas/new" element={<AddServiceAreaPage />} />
+      <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+
+      {/* Job Management */}
+      <Route path="jobs" element={<ProviderJobManagementDashboard />} />
+      <Route path="jobs/:jobId" element={<ProviderJobDetailsConsole />} />
+
+      {/* Profile & Setup */}
+      <Route path="profile" element={<ProviderProfileOverview />} />
+      <Route path="profile/setup" element={<ProviderSetup />} />
+      <Route path="profile/edit" element={<EditProviderProfile />} />
+      <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+
+      {/* Reviews & Availability */}
+      <Route path="reviews" element={<ProviderReviewsPage />} />
+      <Route path="availability" element={<AvailabilityPage />} />
+
+      {/* Settlements & Earnings (DEV-28) */}
+      <Route path="settlements" element={<SettlementTrackingPage />} />
+      <Route path="earnings" element={<EarningsDashboardPage />} />
+      <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+
+      {/* Messages */}
+      <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+      <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
+      <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
+
+      {/* Dynamic routes from providerNavigation (e.g. calendar, settings) */}
+      {providerNavigation
+        .filter(
+          ({ path }) =>
+            path !== "/provider/dashboard" &&
+            path !== "/provider/services" &&
+            path !== "/provider/bookings" &&
+            path !== "/provider/messages" &&
+            path !== "/provider/service-areas" &&
+            path !== "/provider/availability" &&
+            path !== "/provider/reviews" &&
+            path !== "/provider/profile" &&
+            path !== "/provider/earnings" &&
+            path !== "/provider/jobs" &&
+            path !== "/provider/settlements"
+        )
+        .map(({ path }) => (
+          <Route
+            key={path}
+            path={path.replace("/provider/", "")}
+            element={
+              <WorkspacePlaceholder
+                title="Service Provider Workspace"
+                description="This area is reserved for service provider feature pages."
+              />
+            }
+          />
+        ))}
+
+      <Route path="*" element={<NotFound />} />
+    </Route>
   );
 }

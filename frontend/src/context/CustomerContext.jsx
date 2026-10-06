@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "./AuthContext";
 import {
   getCustomerProfile,
   updateCustomerProfile,
@@ -7,6 +8,7 @@ import {
 const CustomerContext = createContext(null);
 
 export function CustomerProvider({ children }) {
+  const { user, status, logout } = useAuth();
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -25,9 +27,12 @@ export function CustomerProvider({ children }) {
     }
   }, []);
 
+  // Re-fetch profile whenever the authenticated user or session status changes
   useEffect(() => {
-    fetchProfile();
-  }, [fetchProfile]);
+    if (status !== "loading") {
+      fetchProfile();
+    }
+  }, [user?.id, status, fetchProfile]);
 
   const saveProfile = useCallback(async (updatedFields) => {
     const payload = {
@@ -39,8 +44,8 @@ export function CustomerProvider({ children }) {
     return saved;
   }, [profile]);
 
-  const displayName = profile?.preferredName?.trim() || profile?.fullName?.trim()?.split(" ")[0] || "Customer";
-  const avatarFallback = (profile?.fullName?.trim() || "CP").slice(0, 2).toUpperCase();
+  const displayName = profile?.preferredName?.trim() || profile?.fullName?.trim()?.split(" ")[0] || user?.fullName?.split(" ")[0] || "Customer";
+  const avatarFallback = (profile?.fullName?.trim() || user?.fullName?.trim() || "CP").slice(0, 2).toUpperCase();
 
   const value = {
     profile,
@@ -49,6 +54,9 @@ export function CustomerProvider({ children }) {
     avatarFallback,
     isLoading,
     error,
+    authUser: user,
+    authStatus: status,
+    logout,
     refreshProfile: fetchProfile,
     saveProfile,
   };
@@ -67,3 +75,4 @@ export function useCustomer() {
   }
   return context;
 }
+

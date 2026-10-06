@@ -3,6 +3,8 @@ package com.clickcart.service;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import org.springframework.core.io.FileSystemResource;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.clickcart.dto.CompleteJobRequest;
+import com.clickcart.dto.CreateCustomJobRequest;
 import com.clickcart.dto.ProviderJobDetailDto;
 import com.clickcart.dto.ProviderJobSummaryDto;
 import com.clickcart.exception.ApiException;
@@ -19,8 +22,6 @@ import com.clickcart.model.JobPhoto;
 import com.clickcart.model.JobStatus;
 import com.clickcart.model.ProviderJob;
 import com.clickcart.repository.ProviderJobRepository;
-import com.clickcart.security.ProviderContext;
-import com.clickcart.security.ProviderPrincipal;
 
 @Service
 public class ProviderJobService {
@@ -33,20 +34,103 @@ public class ProviderJobService {
         this.storageService = storageService;
     }
 
-    public List<ProviderJobSummaryDto> listJobs(JobStatus status) {
-        String providerId = currentProvider().providerId();
+    public List<ProviderJobSummaryDto> listJobs(String providerId, JobStatus status) {
         List<ProviderJob> jobs = status == null
             ? repository.findByProviderIdOrderByScheduledStartAsc(providerId)
             : repository.findByProviderIdAndStatusOrderByScheduledStartAsc(providerId, status);
         return jobs.stream().map(this::toSummary).toList();
     }
 
-    public ProviderJobDetailDto getJob(String jobId) {
-        return toDetail(requireOwnedJob(jobId));
+    public List<ProviderJobSummaryDto> listJobsByMonth(String providerId, JobStatus status, int year, int month) {
+        LocalDate monthStart = LocalDate.of(year, month, 1);
+        LocalDate monthEnd = monthStart.plusMonths(1);
+
+        Instant startInstant = monthStart.atStartOfDay(ZoneOffset.UTC).toInstant();
+        Instant endInstant = monthEnd.atStartOfDay(ZoneOffset.UTC).toInstant();
+
+        List<ProviderJob> jobs;
+        if (status == null) {
+            jobs = repository.findByProviderIdAndScheduledStartBetweenOrderByScheduledStartAsc(
+                providerId, startInstant, endInstant
+            );
+        } else {
+            jobs = repository.findByProviderIdAndStatusAndScheduledStartBetweenOrderByScheduledStartAsc(
+                providerId, status, startInstant, endInstant
+            );
+        }
+        return jobs.stream().map(this::toSummary).toList();
     }
 
-    public ProviderJobDetailDto acceptJob(String jobId) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public ProviderJobDetailDto createCustomJob(String providerId, CreateCustomJobRequest request) {
+        Instant now = Instant.now();
+
+        ProviderJob job = new ProviderJob();
+        job.setProviderId(providerId);
+        job.setStatus(JobStatus.PLACED);
+        job.setPublicCode(generatePublicCode());
+        job.setBookingCode(generateBookingCode());
+        job.setPlacedAt(now);
+        job.setCreatedAt(now);
+        job.setUpdatedAt(now);
+
+        job.setCustomerId(request.customerId());
+        job.setCustomerName(request.customerName());
+        job.setCustomerPhone(request.customerPhone());
+        job.setCustomerVerified(false);
+
+        job.setServiceTitle(request.serviceTitle());
+        job.setServiceCategory(request.serviceCategory());
+        job.setPackageName(request.packageName());
+
+        job.setAddress(request.address());
+        job.setCity(request.city());
+        job.setLatitude(request.latitude());
+        job.setLongitude(request.longitude());
+
+        job.setScheduledStart(request.scheduledStart());
+        job.setScheduledEnd(request.scheduledEnd());
+
+        job.setServiceBaseFee(request.serviceBaseFee());
+        job.setPartsTopUp(request.partsTopUp());
+
+        double platformCommission = (request.serviceBaseFee() != null ? request.serviceBaseFee() : 0.0) * 0.15;
+        if (request.partsTopUp() != null) {
+            platformCommission += request.partsTopUp() * 0.10;
+        }
+        job.setPlatformCommission(platformCommission);
+
+        double netPayout = (request.serviceBaseFee() != null ? request.serviceBaseFee() : 0.0)
+            + (request.partsTopUp() != null ? request.partsTopUp() : 0.0)
+            - platformCommission;
+        job.setNetPayout(netPayout);
+
+        job.setPaymentHold("ESCROW");
+        job.setProgressLabel("Custom job awaiting confirmation");
+        job.setProgressPercent(0);
+
+        job.setAccessInstructions(request.accessInstructions());
+
+        if (request.notes() != null && !request.notes().isBlank()) {
+            job.setCompletionNotes(request.notes());
+        }
+
+        return toDetail(repository.save(job));
+    }
+
+    private String generatePublicCode() {
+        return "CJ-" + System.currentTimeMillis();
+    }
+
+    private String generateBookingCode() {
+        return "BK-" + System.currentTimeMillis();
+    }
+
+    public ProviderJobDetailDto getJob(String providerId, String jobId) {
+        return toDetail(requireOwnedJob(providerId, jobId));
+    }
+
+    public ProviderJobDetailDto acceptJob(String providerId, String jobId) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         requireStatus(job, JobStatus.PLACED, "Only placed jobs can be accepted");
         Instant now = Instant.now();
         job.setStatus(JobStatus.ACCEPTED);
@@ -57,8 +141,8 @@ public class ProviderJobService {
         return toDetail(repository.save(job));
     }
 
-    public ProviderJobDetailDto startJob(String jobId) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public ProviderJobDetailDto startJob(String providerId, String jobId) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         requireStatus(job, JobStatus.ACCEPTED, "Only accepted jobs can be started");
         Instant now = Instant.now();
         job.setStatus(JobStatus.IN_PROGRESS);
@@ -69,8 +153,8 @@ public class ProviderJobService {
         return toDetail(repository.save(job));
     }
 
-    public ProviderJobDetailDto uploadProof(String jobId, MultipartFile file) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public ProviderJobDetailDto uploadProof(String providerId, String jobId, MultipartFile file) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         if (job.getStatus() != JobStatus.IN_PROGRESS) {
             throw ApiException.badRequest("Photographic proof can only be added while the job is in progress");
         }
@@ -83,8 +167,8 @@ public class ProviderJobService {
         return toDetail(repository.save(job));
     }
 
-    public ProviderJobDetailDto completeJob(String jobId, CompleteJobRequest request) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public ProviderJobDetailDto completeJob(String providerId, String jobId, CompleteJobRequest request) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         requireStatus(job, JobStatus.IN_PROGRESS, "Only in-progress jobs can be marked complete");
         if (job.getPhotos() == null || job.getPhotos().isEmpty()) {
             throw ApiException.badRequest("Upload at least one photographic proof before completing the job");
@@ -101,8 +185,8 @@ public class ProviderJobService {
         return toDetail(repository.save(job));
     }
 
-    public Resource loadProof(String jobId, String photoId) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public Resource loadProof(String providerId, String jobId, String photoId) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         JobPhoto photo = job.getPhotos().stream()
             .filter(item -> photoId.equals(item.getId()))
             .findFirst()
@@ -114,8 +198,8 @@ public class ProviderJobService {
         return new FileSystemResource(path);
     }
 
-    public MediaType mediaTypeFor(String jobId, String photoId) {
-        ProviderJob job = requireOwnedJob(jobId);
+    public MediaType mediaTypeFor(String providerId, String jobId, String photoId) {
+        ProviderJob job = requireOwnedJob(providerId, jobId);
         JobPhoto photo = job.getPhotos().stream()
             .filter(item -> photoId.equals(item.getId()))
             .findFirst()
@@ -126,10 +210,10 @@ public class ProviderJobService {
         return MediaType.parseMediaType(photo.getContentType());
     }
 
-    private ProviderJob requireOwnedJob(String jobId) {
+    private ProviderJob requireOwnedJob(String providerId, String jobId) {
         ProviderJob job = repository.findById(jobId)
             .orElseThrow(() -> ApiException.notFound("Job not found"));
-        if (!currentProvider().providerId().equals(job.getProviderId())) {
+        if (!providerId.equals(job.getProviderId())) {
             throw ApiException.forbidden("You are not allowed to access this job");
         }
         return job;
@@ -139,10 +223,6 @@ public class ProviderJobService {
         if (job.getStatus() != expected) {
             throw ApiException.badRequest(message);
         }
-    }
-
-    private ProviderPrincipal currentProvider() {
-        return ProviderContext.require();
     }
 
     private ProviderJobSummaryDto toSummary(ProviderJob job) {
