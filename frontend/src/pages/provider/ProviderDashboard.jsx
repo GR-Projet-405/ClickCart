@@ -24,19 +24,8 @@ import {
 } from "lucide-react";
 import {
   fetchProviderDashboard,
-  MOCK_DASHBOARD_DATA,
 } from "../../services/providerDashboardService";
-import kamalAvatar from "../../assets/avatar-kamal.jpg";
-import acRepairImg from "../../assets/service-ac-repair.jpg";
-import cleaningImg from "../../assets/service-cleaning.jpg";
-import plumbingImg from "../../assets/service-plumbing.jpg";
 import "./ProviderDashboard.css";
-
-const serviceImageMap = {
-  "SVC-01": acRepairImg,
-  "SVC-02": cleaningImg,
-  "SVC-03": plumbingImg,
-};
 
 // Helper to compute smooth cubic spline path for SVG
 function getSmoothCurvePath(points) {
@@ -61,7 +50,9 @@ function getSmoothCurvePath(points) {
 }
 
 export default function ProviderDashboard() {
-  const [dashboardData, setDashboardData] = useState(MOCK_DASHBOARD_DATA);
+  const [dashboardData, setDashboardData] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [timeRange, setTimeRange] = useState("7d"); // "7d" | "30d" | "6m"
   const [activeMetric, setActiveMetric] = useState("earnings"); // "earnings" | "jobs" | "rating"
   const [hoveredIndex, setHoveredIndex] = useState(null);
@@ -69,15 +60,49 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     let isMounted = true;
-    fetchProviderDashboard().then((data) => {
-      if (isMounted && data) {
-        setDashboardData(data);
-      }
-    });
+    setIsLoading(true);
+    fetchProviderDashboard(timeRange)
+      .then((data) => {
+        if (isMounted && data) {
+          setDashboardData(data);
+          setError(null);
+        }
+      })
+      .catch((err) => {
+        if (isMounted) {
+          setError(err.message || "Failed to load dashboard data");
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [timeRange]);
+
+  if (isLoading) {
+    return (
+      <div className="cc-provider-dashboard" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="cc-provider-dashboard" style={{ padding: '2rem' }}>
+        <div style={{ padding: '1rem', background: '#fee2e2', color: '#b91c1c', borderRadius: '8px' }}>
+          <h3>Error Loading Dashboard</h3>
+          <p>{error}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!dashboardData) return null;
 
   const {
     provider,
@@ -135,12 +160,12 @@ export default function ProviderDashboard() {
 
         <div className="cc-welcome-card__profile">
           <img
-            src={provider.avatar || kamalAvatar}
+            src={provider.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name)}&background=random`}
             alt={provider.name}
             className="cc-profile-avatar"
             onError={(e) => {
               e.currentTarget.onerror = null;
-              e.currentTarget.src = kamalAvatar;
+              e.currentTarget.src = "https://ui-avatars.com/api/?name=Provider";
             }}
           />
           <div className="cc-profile-meta">
@@ -670,12 +695,12 @@ export default function ProviderDashboard() {
                 <div key={service.id} className="cc-service-item">
                   <span className="cc-service-rank">{service.rank}</span>
                   <img
-                    src={serviceImageMap[service.id] || service.image || acRepairImg}
+                    src={service.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(service.title)}&background=random`}
                     alt={service.title}
                     className="cc-service-thumb"
                     onError={(e) => {
                       e.currentTarget.onerror = null;
-                      e.currentTarget.src = serviceImageMap[service.id] || acRepairImg;
+                      e.currentTarget.src = "https://ui-avatars.com/api/?name=Service";
                     }}
                   />
                   <div className="cc-service-details">
