@@ -24,6 +24,9 @@ import ProviderJobManagementDashboard from "../pages/provider/ProviderJobManagem
 import ProviderJobDetailsConsole from "../pages/provider/ProviderJobDetailsConsole";
 import AvailabilityPage from "../pages/provider/AvailabilityPage";
 
+// DEV-04: Provider Verification Form Component (ආපහු එකතු කළා)
+import ProviderVerification from "../components/provider/ProviderVerification";
+
 // Provider Profile & Earnings
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
@@ -36,25 +39,6 @@ import ConversationsPage from "../pages/messaging/ConversationsPage";
 import MessagesPage from "../pages/Messages/MessagesPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
-/**
- * ProviderRoutes — Group 2: Service Provider Dashboard & Routing
- *
- * Dedicated routing module for all /provider routes under ServiceProviderLayout.
- * Includes:
- *  - /provider & /provider/dashboard
- *  - /provider/services, /provider/services/:serviceId/pricing, /provider/services/:serviceId/media
- *  - /provider/bookings
- *  - /provider/service-areas, /provider/service-areas/new, /provider/service-areas/:id/edit
- *  - /provider/jobs, /provider/jobs/:jobId
- *  - /provider/profile, /provider/profile/setup, /provider/profile/edit, /provider/profile/public
- *  - /provider/reviews
- *  - /provider/availability
- *  - /provider/settlements
- *  - /provider/earnings, /provider/earnings/transactions
- *  - /provider/messages, /provider/messages/conversations, /provider/messages/:conversationId
- *  - Dynamic routes from providerNavigation (e.g. calendar, settings)
- */
-
 export default function ProviderRoutes() {
   return (
     <Routes>
@@ -62,6 +46,12 @@ export default function ProviderRoutes() {
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
+
+
+        {/* DEV-04: Provider Verification Route */}
+        <Route path="verification" element={<ProviderVerification />} />
+
+        {/* DEV-07: Service Pricing & Packages Route */}
         <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
         <Route path="services/:serviceId/media" element={<ServiceMedia />} />
 
@@ -72,22 +62,27 @@ export default function ProviderRoutes() {
         <Route path="jobs" element={<ProviderJobManagementDashboard />} />
         <Route path="jobs/:jobId" element={<ProviderJobDetailsConsole />} />
 
+        {/* DEV-03: Provider Registration & Profile Routes */}
         <Route path="profile" element={<ProviderProfileOverview />} />
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
         <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
+        {/* Provider Reviews & Availability */}
         <Route path="reviews" element={<ProviderReviewsPage />} />
         <Route path="availability" element={<AvailabilityPage />} />
 
+        {/* Settlement Tracking & Earnings */}
         <Route path="settlements" element={<SettlementTrackingPage />} />
         <Route path="earnings" element={<EarningsDashboardPage />} />
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
 
+        {/* DEV-25: Messages */}
         <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
         <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
+        {/* Dynamic routing for remaining provider navigation */}
         {providerNavigation
           .filter(
             ({ path }) =>
@@ -101,7 +96,8 @@ export default function ProviderRoutes() {
               path !== "/provider/profile" &&
               path !== "/provider/earnings" &&
               path !== "/provider/jobs" &&
-              path !== "/provider/settlements"
+              path !== "/provider/settlements" &&
+              path !== "/provider/verification"
           )
           .map(({ path }) => (
             <Route

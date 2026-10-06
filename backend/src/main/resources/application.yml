@@ -8,7 +8,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
-      database: ${MONGODB_DATABASE:Clickcart_db}
+      database: ${MONGODB_DATABASE:clickcart}
   servlet:
     multipart:
       enabled: true
