@@ -1,6 +1,6 @@
 import React from 'react';
 import { Bell, ChevronDown, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";
@@ -10,6 +10,8 @@ import kamalAvatar from "../../../assets/avatar-kamal.jpg";
 import { CheckCircle2 } from 'lucide-react';
 
 export default function ProviderHeader({ menuOpen, onMenuToggle }) {
+  const navigate = useNavigate();
+
   return (
     <header className="dashboard-header">
       <PageContainer className="dashboard-header__inner">
@@ -42,6 +44,7 @@ export default function ProviderHeader({ menuOpen, onMenuToggle }) {
               icon={<Bell size={18} />}
               label="Notifications"
               variant="ghost"
+              onClick={() => navigate("/provider/notifications")}
             />
             <span
               style={{

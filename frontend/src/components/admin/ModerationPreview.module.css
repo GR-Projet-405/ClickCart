@@ -1,0 +1,136 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-3);
+}
+
+.summary {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(6rem, 1fr));
+  gap: var(--cc-space-2);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border: 1px solid var(--cc-border-soft);
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-bg-muted);
+}
+
+.statValue {
+  color: var(--cc-text-primary);
+  font-size: var(--cc-text-h4-size);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.statLabel {
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-2);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border: 1px solid var(--cc-border-soft);
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-bg-surface);
+}
+
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-primary-soft);
+  color: var(--cc-primary-dark);
+}
+
+.identity {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 11rem;
+  min-width: 0;
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--cc-space-2);
+  min-width: 0;
+}
+
+.code {
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+
+.title {
+  color: var(--cc-text-primary);
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.meta {
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  overflow-wrap: anywhere;
+}
+
+.aside {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--cc-space-1);
+  margin-inline-start: auto;
+}
+
+.time {
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  white-space: nowrap;
+}
+
+.footnote {
+  margin: 0;
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.5;
+}
+
+@media (max-width: 30rem) {
+  .aside {
+    width: 100%;
+    margin-inline-start: 0;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}

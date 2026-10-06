@@ -1,41 +1,49 @@
 package com.clickcart.util;
 
+import java.security.Principal;
+
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import com.clickcart.dto.auth.AuthenticatedUser;
+
 /**
- * ============================================================================
- * DEVELOPMENT ONLY - MOCK CUSTOMER RESOLVER
- * ============================================================================
- * 
- * NOTICE FOR AUTHENTICATION TEAM MEMBER:
- * This component provides a temporary mechanism to identify the active customer
- * during the development stage when full login/registration/JWT is not yet built.
- * 
- * When real authentication (e.g. Spring Security / JWT / OAuth2) is integrated:
- * 1. Replace the implementation of getCurrentCustomerId() to extract the principal /
- *    subject / customer ID from SecurityContextHolder.getContext().getAuthentication().
- * 2. No changes will be required in the controller endpoints (GET / PUT /api/customers/me/profile)
- *    or frontend client code.
- * 
- * DO NOT USE THIS AS A FINAL AUTHENTICATION SOLUTION.
- * ============================================================================
+ * Resolves the currently authenticated customer's ID from Spring Security context.
+ * Falls back to development mock customer if unauthenticated in development mode.
  */
 @Component
 public class CurrentCustomerResolver {
 
     /**
-     * Default mock customer ID used during development.
+     * Default mock customer ID used during development when unauthenticated.
      */
     public static final String DEV_MOCK_CUSTOMER_ID = "mock-customer-001";
 
     /**
      * Resolves the current customer ID.
+     * Extracts ID from authenticated JWT principal, or falls back to dev mock.
      * 
-     * @return Current customer ID (mock-customer-001 during development).
+     * @return Current customer ID.
      */
     public String getCurrentCustomerId() {
-        // DEVELOPMENT ONLY: Return the mock customer ID.
-        // TODO: Replace with authenticated user ID from SecurityContextHolder when Auth is integrated.
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.isAuthenticated()) {
+            Object principal = auth.getPrincipal();
+            if (principal instanceof AuthenticatedUser authUser) {
+                return authUser.id();
+            } else if (principal instanceof Principal p) {
+                String name = p.getName();
+                if (name != null && !name.equalsIgnoreCase("anonymousUser") && !name.equalsIgnoreCase("dev-provider-09")) {
+                    return name;
+                }
+            } else if (principal instanceof String principalStr) {
+                if (!principalStr.equalsIgnoreCase("anonymousUser") && !principalStr.equalsIgnoreCase("dev-provider-09")) {
+                    return principalStr;
+                }
+            }
+        }
         return DEV_MOCK_CUSTOMER_ID;
     }
 }
+

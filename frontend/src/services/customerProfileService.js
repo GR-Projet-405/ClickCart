@@ -1,4 +1,5 @@
 import { API_BASE_URL } from "../config/api";
+import { authFetch } from "./authService";
 
 /**
  * Customer Profile API Service
@@ -9,14 +10,12 @@ import { API_BASE_URL } from "../config/api";
  */
 
 /**
- * Fetch the active customer's profile.
- * During development, backend resolves this to the MongoDB mock customer (mock-customer-001).
- * When real authentication is integrated, the backend will resolve the customer from the auth context.
+ * Fetch the active customer's profile using the authenticated session.
  * 
  * @returns {Promise<Object>} The customer profile object
  */
 export async function getCustomerProfile() {
-  const response = await fetch(`${API_BASE_URL}/customers/me/profile`, {
+  const response = await authFetch(`${API_BASE_URL}/customers/me/profile`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
@@ -35,13 +34,13 @@ export async function getCustomerProfile() {
 }
 
 /**
- * Update the active customer's profile.
+ * Update the active customer's profile using the authenticated session.
  * 
  * @param {Object} updateData Profile fields to update
  * @returns {Promise<Object>} The updated customer profile object
  */
 export async function updateCustomerProfile(updateData) {
-  const response = await fetch(`${API_BASE_URL}/customers/me/profile`, {
+  const response = await authFetch(`${API_BASE_URL}/customers/me/profile`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -59,3 +58,4 @@ export async function updateCustomerProfile(updateData) {
 
   return response.json();
 }
+
