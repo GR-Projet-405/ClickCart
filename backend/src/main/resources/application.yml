@@ -53,3 +53,7 @@ logging:
     org.springframework.data.mongodb: DEBUG
     com.clickcart: DEBUG
 
+# Gemini AI Settings
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
