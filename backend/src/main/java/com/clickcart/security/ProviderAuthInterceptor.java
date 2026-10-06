@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.clickcart.exception.ApiException;
@@ -15,7 +14,6 @@ import com.clickcart.dto.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-@Component
 public class ProviderAuthInterceptor implements HandlerInterceptor {
 
     private final JwtTokenService jwtTokenService;

@@ -20,6 +20,7 @@ import { providerNavigation } from "../config/providerNavigation";
 
 // Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
+import NotificationsPage from "../pages/provider/NotificationsPage";
 import ProviderServicesPage from "../pages/provider/ProviderServicesPage";
 import PricingSetupPage from "../pages/Provider/PricingSetupPage";
 import ServiceMedia from "../pages/provider/ServiceMedia";
@@ -91,6 +92,7 @@ export default function AppRoutes() {
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="services" element={<ProviderServicesPage />} />
 
         {/* DEV-07: Service Pricing & Packages Route */}
@@ -114,10 +116,6 @@ export default function AppRoutes() {
         <Route path="profile" element={<ProviderProfileOverview />} />
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
-        <Route
-          path="profile/public"
-          element={<Navigate to="/providers/12345" replace />}
-        />
 
         {/* Provider Reviews & Availability */}
         <Route path="reviews" element={<ProviderReviewsPage />} />
@@ -174,12 +172,53 @@ export default function AppRoutes() {
       </Route>
 
       {/* ========================================== */}
+      {/* ADMIN ROUTES                               */}
+      {/* ========================================== */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route
+          index
+          element={
+            <WorkspacePlaceholder
+              title="Platform Admin Workspace"
+              description="This area is reserved for platform admin feature pages."
+            />
+          }
+        />
+        <Route path="categories" element={<AdminCategoryDashboard />} />
+        <Route path="providers" element={<VerificationQueue />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+
+        {/* Dynamic routing for remaining admin navigation */}
+        {adminNavigation
+          .filter(
+            ({ path }) =>
+              path !== "/admin/categories" &&
+              path !== "/admin/providers" &&
+              path !== "/commission_management"
+          )
+          .map(({ path }) => (
+            <Route
+              key={path}
+              path={path.replace("/admin/", "")}
+              element={
+                <WorkspacePlaceholder
+                  title="Platform Admin Workspace"
+                  description="This area is reserved for platform admin feature pages."
+                />
+              }
+            />
+          ))}
+        <Route path="*" element={<NotFound />} />
+      </Route>
+
+      {/* ========================================== */}
       {/* CUSTOMER ROUTES                            */}
       {/* ========================================== */}
       <Route element={<CustomerLayout />}>
         <Route index element={<CustomerWorkspace />} />
 
         {/* Provider Matching & Recommendations */}
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="explore" element={<CustomerExplorePage />} />
 

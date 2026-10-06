@@ -1,6 +1,9 @@
 import React from "react";
 import { Bell, ChevronDown, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Link } from "react-router-dom";
+import React from 'react';
+import { Bell, ChevronDown, Menu } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import Badge from "../../common/Badge";
 import BrandLogo from "../../common/BrandLogo";
@@ -24,6 +27,9 @@ export default function AdminHeader({
   sidebarCollapsed,
   onSidebarToggle,
 }) {
+export default function AdminHeader({ menuOpen, onMenuToggle }) {
+  const navigate = useNavigate();
+
   return (
     <header className="dashboard-header">
       <PageContainer className="dashboard-header__inner">
@@ -81,6 +87,7 @@ export default function AdminHeader({
             icon={<Bell size={18} />}
             label="Notifications"
             variant="ghost"
+            onClick={() => navigate("/admin/notifications")}
           />
           <button
             className="dashboard-header__identity"

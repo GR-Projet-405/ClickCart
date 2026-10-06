@@ -1,5 +1,6 @@
 package com.clickcart.repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -13,6 +14,14 @@ public interface ProviderJobRepository extends MongoRepository<ProviderJob, Stri
     List<ProviderJob> findByProviderIdOrderByScheduledStartAsc(String providerId);
 
     List<ProviderJob> findByProviderIdAndStatusOrderByScheduledStartAsc(String providerId, JobStatus status);
+
+    List<ProviderJob> findByProviderIdAndScheduledStartBetweenOrderByScheduledStartAsc(
+        String providerId, Instant start, Instant end
+    );
+
+    List<ProviderJob> findByProviderIdAndStatusAndScheduledStartBetweenOrderByScheduledStartAsc(
+        String providerId, JobStatus status, Instant start, Instant end
+    );
 
     Optional<ProviderJob> findByIdAndProviderId(String id, String providerId);
 }
