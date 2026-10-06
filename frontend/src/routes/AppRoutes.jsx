@@ -7,6 +7,9 @@ import UIFoundationShowcase from "../App";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
 
+// Provider Routes (Group 2)
+import ProviderRoutes from "./ProviderRoutes";
+
 // Placeholders & Utility
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
@@ -88,7 +91,7 @@ export default function AppRoutes() {
       {adminRoutes}
 
       {/* ========================================== */}
-      {/* PROVIDER ROUTES                            */}
+      {/* PROVIDER ROUTES (Group 2: ProviderRoutes) */}
       {/* ========================================== */}
       <Route path="/provider" element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
