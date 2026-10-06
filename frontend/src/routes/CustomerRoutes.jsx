@@ -24,44 +24,29 @@ import PaymentResultPage from "../pages/checkout/PaymentResultPage";
 import ReceiptPage from "../pages/checkout/ReceiptPage";
 import PaymentHistoryPage from "../pages/customer/PaymentHistoryPage";
 
-// Auth & Public Pages
+// Public Pages
 import LandingPage from "../pages/customer/LandingPage";
-import LoginPage from "../pages/auth/LoginPage";
-import RegisterPage from "../pages/auth/RegisterPage";
-import ForgotPasswordPage from "../pages/auth/ForgotPasswordPage";
-
-// Others
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ConversationsPage from "../pages/messaging/ConversationsPage";
 import MessagesPage from "../pages/Messages/MessagesPage";
+import NotificationsPage from "../pages/provider/NotificationsPage";
 
 export default function CustomerRoutes() {
   return (
     <Routes>
-      {/* Public Pages */}
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-
-      {/* Authenticated Customer & Landing Routes */}
       <Route element={<CustomerLayout />}>
-        {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
-
-        {/* If no exact path is provided to CustomerLayout, maybe CustomerWorkspace */}
+        <Route index element={<LandingPage />} />
         <Route path="workspace" element={<CustomerWorkspace />} />
-        
-        {/* Provider Matching & Recommendations */}
+
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="recommendations" element={<RecommendationsPage />} />
         <Route path="explore" element={<CustomerExplorePage />} />
 
-        {/* DEV-25 Messages */}
         <Route path="messages" element={<MessagesPage role="CUSTOMER" />} />
         <Route path="messages/conversations" element={<ConversationsPage role="CUSTOMER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
 
-        {/* DEV-26 Checkout Feature Routes */}
         <Route path="checkout" element={<CheckoutPage />} />
         <Route path="checkout/result" element={<PaymentResultPage />} />
         <Route path="receipt/:id" element={<ReceiptPage />} />
@@ -71,7 +56,6 @@ export default function CustomerRoutes() {
         <Route path="find-services/map" element={<FindServices />} />
         <Route path="booking/create" element={<BookingCreation />} />
 
-        {/* Explicit Routes */}
         <Route path="my-bookings" element={<MyBookingsPage />} />
         <Route path="bookings" element={<MyBookingsPage />} />
         <Route path="favorites" element={<MyFavorites />} />
@@ -81,12 +65,10 @@ export default function CustomerRoutes() {
         <Route path="profile" element={<CustomerProfilePage />} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
-        {/* Search Routes */}
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
         <Route path="ai-service-search" element={<AiServiceSearchPage />} />
 
-        {/* Dynamic routing for remaining customer navigation */}
         {customerNavigation
           .slice(1)
           .filter(
@@ -96,7 +78,8 @@ export default function CustomerRoutes() {
               to !== "/explore" &&
               to !== "/checkout" &&
               to !== "/customer/payments" &&
-              to !== "/messages"
+              to !== "/messages" &&
+              to !== "/notifications"
           )
           .map(({ to }) => (
             <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
