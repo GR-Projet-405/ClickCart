@@ -1,0 +1,149 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-3);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--cc-space-2);
+}
+
+.legend {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+}
+
+.legendDot {
+  flex: none;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--cc-primary);
+}
+
+/* --------------------------------------------------------------------------
+   Chart grid: y-axis scale column + plot column + x-axis labels row.
+   The scale column stretches to the SVG height, so the labels (positioned by
+   percentage of that height) line up with the SVG grid lines exactly.
+   -------------------------------------------------------------------------- */
+
+.chart {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  column-gap: var(--cc-space-2);
+  row-gap: var(--cc-space-1);
+}
+
+.scale {
+  position: relative;
+  /* The labels are absolutely positioned, so the track would otherwise
+     collapse to zero width and spill the axis labels out of the card. */
+  width: 3rem;
+}
+
+.yLabel {
+  position: absolute;
+  right: 0;
+  transform: translateY(-50%);
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.plot {
+  min-width: 0;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 420 / 170;
+}
+
+.grid {
+  stroke: var(--cc-border);
+  stroke-width: 1;
+}
+
+.axis {
+  stroke: var(--cc-border);
+  stroke-width: 1;
+}
+
+.line {
+  fill: none;
+  stroke: var(--cc-primary);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.area {
+  stroke: none;
+}
+
+.point {
+  fill: var(--cc-bg-surface);
+  stroke: var(--cc-primary);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.stopTop {
+  stop-color: var(--cc-primary);
+  stop-opacity: 0.3;
+}
+
+.stopBottom {
+  stop-color: var(--cc-primary);
+  stop-opacity: 0.02;
+}
+
+.xAxis {
+  position: relative;
+  grid-column: 2;
+  height: 1.1em;
+}
+
+.xLabel {
+  position: absolute;
+  top: 0;
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+/* The card is only four columns wide, so alternate labels are dropped to
+   keep them readable. Full labels return once the viewport has room. */
+.xLabel:nth-child(even) {
+  display: none;
+}
+
+.summary {
+  margin: 0;
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.5;
+}
+
+.summary strong {
+  color: var(--cc-text-primary);
+}
+
+@media (min-width: 85rem) {
+  .xLabel:nth-child(even) {
+    display: block;
+  }
+}

@@ -1,3 +1,6 @@
+import React from "react";
+import { Bell, ChevronDown, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { Link } from "react-router-dom";
 import React from 'react';
 import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -8,12 +11,29 @@ import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import SearchInput from "../../common/SearchInput";
 
+/**
+ * AdminHeader
+ *
+ * Props
+ * ─────
+ * menuOpen          — boolean  Mobile nav drawer open state
+ * onMenuToggle      — fn       Toggle mobile nav drawer (mobile only)
+ * sidebarCollapsed  — boolean  Desktop sidebar collapsed state
+ * onSidebarToggle   — fn       Toggle desktop sidebar collapse
+ */
+export default function AdminHeader({
+  menuOpen,
+  onMenuToggle,
+  sidebarCollapsed,
+  onSidebarToggle,
+}) {
 export default function AdminHeader({ menuOpen, onMenuToggle }) {
   const navigate = useNavigate();
 
   return (
     <header className="dashboard-header">
       <PageContainer className="dashboard-header__inner">
+        {/* Mobile hamburger — visible below lg breakpoint */}
         <IconButton
           className="dashboard-header__menu"
           icon={<Menu size={20} />}
@@ -23,20 +43,45 @@ export default function AdminHeader({ menuOpen, onMenuToggle }) {
           aria-controls="admin-mobile-navigation"
           onClick={onMenuToggle}
         />
+
+        {/* Desktop sidebar collapse toggle — visible at lg+ */}
+        {onSidebarToggle && (
+          <IconButton
+            className="dashboard-header__sidebar-toggle"
+            icon={
+              sidebarCollapsed ? (
+                <PanelLeftOpen size={20} />
+              ) : (
+                <PanelLeftClose size={20} />
+              )
+            }
+            label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+            variant="ghost"
+            aria-pressed={sidebarCollapsed}
+            onClick={onSidebarToggle}
+          />
+        )}
+
+        {/* Brand */}
         <Link
           className="dashboard-header__brand"
-          to="/commission_management"
+          to="/admin"
           aria-label="ClickCart admin home"
         >
           <BrandLogo size="shell" showTagline />
         </Link>
+
+        {/* Search */}
         <div className="dashboard-header__search">
           <SearchInput
             aria-label="Global admin search"
             placeholder="Search users, providers, bookings, reports..."
           />
         </div>
+
         <div className="dashboard-header__spacer" />
+
+        {/* Actions */}
         <div className="dashboard-header__actions">
           <IconButton
             icon={<Bell size={18} />}
