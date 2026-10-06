@@ -329,7 +329,6 @@ export default function CustomerProfilePage() {
                         ...profile.stats,
                         favoriteProviders: favoritesCount,
                       }}
-                      activities={profile.recentActivities || []}
                       onExploreServices={() => handleTabChange("favorites")}
                     />
                   )}
