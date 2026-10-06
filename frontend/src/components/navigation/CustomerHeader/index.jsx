@@ -15,8 +15,9 @@ import "./styles.css";
 
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const location = useLocation();
+  const { pathname } = useLocation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { pathname, search } = location;
   const { profile, displayName, avatarFallback } = useCustomer();
 
@@ -67,6 +68,7 @@ export default function CustomerHeader() {
             icon={<Bell size={18} />}
             label="Notifications"
             variant="ghost"
+            onClick={() => navigate("/notifications")}
           />
           <Link
             className="customer-header__account"
