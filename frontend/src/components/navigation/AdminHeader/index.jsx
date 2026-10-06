@@ -1,8 +1,5 @@
 import React from "react";
 import { Bell, ChevronDown, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
-import { Link } from "react-router-dom";
-import React from 'react';
-import { Bell, ChevronDown, Menu } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import Badge from "../../common/Badge";
@@ -27,7 +24,6 @@ export default function AdminHeader({
   sidebarCollapsed,
   onSidebarToggle,
 }) {
-export default function AdminHeader({ menuOpen, onMenuToggle }) {
   const navigate = useNavigate();
 
   return (

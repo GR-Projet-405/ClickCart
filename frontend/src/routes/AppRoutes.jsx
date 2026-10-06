@@ -16,8 +16,6 @@ import NotFound from "../pages/placeholders/NotFound";
 import { customerNavigation } from "../config/customerNavigation";
 import { providerNavigation } from "../config/providerNavigation";
 
-// Admin & Commission Pages
-
 // Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import NotificationsPage from "../pages/provider/NotificationsPage";
@@ -84,6 +82,9 @@ export default function AppRoutes() {
 
       <Route path="/" element={<Navigate to="/provider/dashboard" replace />} />
 
+      {/* ========================================== */}
+      {/* ADMIN ROUTES (Imported securely from AdminRoutes) */}
+      {/* ========================================== */}
       {adminRoutes}
 
       {/* ========================================== */}
@@ -164,46 +165,6 @@ export default function AppRoutes() {
                 <WorkspacePlaceholder
                   title="Service Provider Workspace"
                   description="This area is reserved for service provider feature pages."
-                />
-              }
-            />
-          ))}
-        <Route path="*" element={<NotFound />} />
-      </Route>
-
-      {/* ========================================== */}
-      {/* ADMIN ROUTES                               */}
-      {/* ========================================== */}
-      <Route path="/admin" element={<AdminLayout />}>
-        <Route
-          index
-          element={
-            <WorkspacePlaceholder
-              title="Platform Admin Workspace"
-              description="This area is reserved for platform admin feature pages."
-            />
-          }
-        />
-        <Route path="categories" element={<AdminCategoryDashboard />} />
-        <Route path="providers" element={<VerificationQueue />} />
-        <Route path="notifications" element={<NotificationsPage />} />
-
-        {/* Dynamic routing for remaining admin navigation */}
-        {adminNavigation
-          .filter(
-            ({ path }) =>
-              path !== "/admin/categories" &&
-              path !== "/admin/providers" &&
-              path !== "/commission_management"
-          )
-          .map(({ path }) => (
-            <Route
-              key={path}
-              path={path.replace("/admin/", "")}
-              element={
-                <WorkspacePlaceholder
-                  title="Platform Admin Workspace"
-                  description="This area is reserved for platform admin feature pages."
                 />
               }
             />
