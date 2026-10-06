@@ -15,10 +15,11 @@ import "./styles.css";
 
 export default function CustomerHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { pathname } = useLocation();
   const navigate = useNavigate();
+
   const location = useLocation();
   const { pathname, search } = location;
+
   const { profile, displayName, avatarFallback } = useCustomer();
 
   const isFavoritesActive =
@@ -50,9 +51,8 @@ export default function CustomerHeader() {
         </nav>
         <div className="customer-header__actions">
           <IconButton
-            className={`customer-header__desktop-action ${
-              isFavoritesActive ? "customer-header__action--active" : ""
-            }`}
+            className={`customer-header__desktop-action ${isFavoritesActive ? "customer-header__action--active" : ""
+              }`}
             icon={
               <Heart
                 size={18}
