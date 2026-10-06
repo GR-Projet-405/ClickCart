@@ -8,6 +8,7 @@ import Button from "../../common/Button";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import { customerNavigation } from "../../../config/customerNavigation";
+import { useAuth } from "../../../context/AuthContext";
 import { useCustomer } from "../../../context/CustomerContext";
 import CustomerMobileNav from "../CustomerMobileNav";
 import NavItem from "../NavItem";
@@ -70,22 +71,35 @@ export default function CustomerHeader() {
             variant="ghost"
             onClick={() => navigate("/notifications")}
           />
-          <Link
-            className="customer-header__account"
-            to="/customer/profile"
-            aria-label="View customer profile"
-          >
-            <Avatar
-              src={profile?.avatarUrl}
-              fallback={avatarFallback || "TH"}
-              size="sm"
-            />
-            <span>
-              <small>Hello,</small>
-              <strong>{displayName || "Tharindu"}</strong>
-            </span>
-          </Link>
-          <Button className="customer-header__cta">Post a Service</Button>
+          {status === 'authenticated' && user ? (
+            <>
+              <Link
+                className="customer-header__account"
+                to="/customer/profile"
+                aria-label="View customer profile"
+              >
+                <Avatar
+                  src={profile?.avatarUrl}
+                  fallback={(user?.fullName || "CP").slice(0, 2).toUpperCase()}
+                  size="sm"
+                />
+                <span>
+                  <small>Hello,</small>
+                  <strong>{user?.fullName?.split(" ")[0] || "Customer"}</strong>
+                </span>
+              </Link>
+              <Button className="customer-header__cta">Post a Service</Button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <Link to="/login" style={{ textDecoration: 'none', color: 'var(--cc-text-secondary)', fontWeight: 500 }}>
+                Log In
+              </Link>
+              <Link to="/register" className="cc-button cc-button--primary cc-button--md">
+                Sign Up
+              </Link>
+            </div>
+          )}
           <IconButton
             className="customer-header__menu"
             icon={menuOpen ? <X size={20} /> : <Menu size={20} />}

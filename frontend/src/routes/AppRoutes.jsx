@@ -1,4 +1,10 @@
 import React from "react";
+import { Routes, Route } from "react-router-dom";
+import UIFoundationShowcase from "../App";
+
+import AdminRoutes from "./AdminRoutes";
+import ProviderRoutes from "./ProviderRoutes";
+import CustomerRoutes from "./CustomerRoutes";
 import { Route, Routes, Navigate } from "react-router-dom";
 import { adminRoutes } from "./AdminRoutes";
 import UIFoundationShowcase from "../App";
@@ -78,6 +84,13 @@ export default function AppRoutes() {
       {/* Dev Showcase Route */}
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
+      {/* Sub-routers using the wildcard '*' syntax */}
+      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="/commission_management/*" element={<AdminRoutes isCommission />} />
+      <Route path="/provider/*" element={<ProviderRoutes />} />
+      
+      {/* Customer Routes acts as catch-all / root since it handles /, /login, etc. */}
+      <Route path="/*" element={<CustomerRoutes />} />
       {/* Public authentication pages */}
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />

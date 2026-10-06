@@ -18,16 +18,10 @@ export default function AuthLayout({ panel, panelSide = "left", topBarLinks, chi
       <div className="auth-topbar">
         <div className="auth-topbar__inner">
           <div className="auth-topbar__support">
-            <Phone size={14} aria-hidden="true" />
-            <span>Need Help?</span>
-            <a href="tel:+942538862516">(025) 3886 25 16</a>
+            {/* Phone number removed as per request */}
           </div>
           <nav className="auth-topbar__links" aria-label="Utility navigation">
             {topBarLinks}
-            <button type="button" className="auth-topbar__language" aria-label="Language: English">
-              <span>Eng</span>
-              <ChevronDown size={12} aria-hidden="true" />
-            </button>
           </nav>
         </div>
       </div>
