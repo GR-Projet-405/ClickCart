@@ -20,8 +20,8 @@ import { providerNavigation } from "../config/providerNavigation";
 // Admin & Commission Pages
 import AdminCategoryDashboard from "../pages/AdminCategoryDashboard";
 import VerificationQueue from "../pages/ProviderVerification/VerificationQueue";
-import CommissionDashboard from "../pages/commission/CommissionDashboard";
-import CommissionTransactionPage from "../pages/commission/CommissionTransactionPage";
+import CommissionManagement from "../pages/commission/CommissionManagement";
+import CommissionTransaction from "../pages/commission/CommissionTransaction";
 
 // Provider Pages
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
@@ -92,8 +92,8 @@ export default function AppRoutes() {
       {/* COMMISSION MANAGEMENT ROUTES               */}
       {/* ========================================== */}
       <Route path="/commission_management" element={<AdminLayout />}>
-        <Route index element={<CommissionDashboard />} />
-        <Route path="transactions/new" element={<CommissionTransactionPage />} />
+        <Route index element={<CommissionManagement />} />
+        <Route path="transactions/new" element={<CommissionTransaction />} />
       </Route>
 
       {/* ========================================== */}
