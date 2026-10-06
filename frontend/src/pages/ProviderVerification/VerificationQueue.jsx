@@ -29,7 +29,17 @@ const VerificationQueue = () => {
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/admin/providers/verifications');
+      // LocalStorage 
+      const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+
+      const response = await fetch('http://localhost:8080/api/admin/providers/verifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data)) {
@@ -37,6 +47,8 @@ const VerificationQueue = () => {
         } else {
           setProviders([]);
         }
+      } else {
+        console.error(`Backend returned status code: ${response.status}`);
       }
     } catch (err) {
       console.error('Failed to fetch backend data:', err);

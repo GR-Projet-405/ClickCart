@@ -2,7 +2,6 @@ package com.clickcart.service;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -12,14 +11,24 @@ import java.util.Map;
 @Service
 public class CloudinaryService {
 
-    @Autowired
-    private Cloudinary cloudinary;
+    private final Cloudinary cloudinary;
+
+    public CloudinaryService(Cloudinary cloudinary) {
+        this.cloudinary = cloudinary;
+    }
 
     public String uploadFile(MultipartFile file) throws IOException {
-        Map uploadResult = cloudinary.uploader().upload(
+        if (file == null || file.isEmpty()) {
+            return null;
+        }
+
+        Map<?, ?> uploadResult = cloudinary.uploader().upload(
             file.getBytes(),
             ObjectUtils.asMap("folder", "provider_documents")
         );
-        return uploadResult.get("secure_url").toString();
+
+        return uploadResult.get("secure_url") != null 
+                ? uploadResult.get("secure_url").toString() 
+                : uploadResult.get("url").toString();
     }
 }
