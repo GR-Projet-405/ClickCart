@@ -36,6 +36,9 @@ import ProviderJobManagementDashboard from "../pages/provider/ProviderJobManagem
 import ProviderJobDetailsConsole from "../pages/provider/ProviderJobDetailsConsole";
 import AvailabilityPage from "../pages/provider/AvailabilityPage";
 
+// DEV-04 Provider Verification Form Component 
+import ProviderVerification from "../components/provider/ProviderVerification";
+
 // Provider Profile & Earnings
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
@@ -104,6 +107,9 @@ export default function AppRoutes() {
         <Route path="dashboard" element={<ProviderDashboard />} />
         <Route path="services" element={<ProviderServicesPage />} />
 
+        {/* DEV-04: Provider Verification Form Route  */}
+        <Route path="verification" element={<ProviderVerification />} />
+
         {/* DEV-07: Service Pricing & Packages Route */}
         <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
         <Route path="services/:serviceId/media" element={<ServiceMedia />} />
@@ -149,7 +155,8 @@ export default function AppRoutes() {
               path !== "/provider/profile" &&
               path !== "/provider/earnings" &&
               path !== "/provider/jobs" &&
-              path !== "/provider/settlements"
+              path !== "/provider/settlements" &&
+              path !== "/provider/verification"
           )
           .map(({ path }) => (
             <Route

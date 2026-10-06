@@ -49,7 +49,7 @@ public class ProviderVerificationController {
         }
     }
 
-    // Provider Reject කිරීම සඳහා Endpoint එක
+    
     @PatchMapping("/{id}/reject")
     public ResponseEntity<?> rejectProvider(
             @PathVariable("id") String id,
