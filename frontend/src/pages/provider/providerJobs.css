@@ -48,6 +48,39 @@
   font-weight: 600;
 }
 
+.pj-month-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.75rem;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-md);
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+}
+
+.pj-month-input {
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-sm);
+  font-size: var(--cc-text-body-sm-size);
+  font-weight: 600;
+  color: var(--cc-text-secondary);
+  background: var(--cc-bg-surface);
+  cursor: pointer;
+}
+
+.pj-month-input::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+.pj-month-input::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
 .pj-stats {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -359,19 +392,35 @@
   width: 2.5rem;
   height: 1.4rem;
   padding: 0.15rem;
-  background: var(--cc-primary);
+  background: var(--cc-border);
   border: 0;
   border-radius: var(--cc-radius-pill);
   cursor: pointer;
+  transition: background-color 160ms ease;
+}
+
+.pj-switch[aria-pressed="true"] {
+  background: var(--cc-primary);
 }
 
 .pj-switch span {
   display: block;
   width: 1.1rem;
   height: 1.1rem;
-  margin-left: auto;
   background: white;
   border-radius: 50%;
+  transition: transform 160ms ease;
+}
+
+.pj-switch[aria-pressed="true"] span {
+  transform: translateX(1.1rem);
+}
+
+.pj-switch:focus-visible,
+.pj-week button:focus-visible,
+.pj-slot:focus-visible {
+  outline: 2px solid var(--cc-primary-dark);
+  outline-offset: 2px;
 }
 
 .pj-metrics {
@@ -401,12 +450,18 @@
   background: var(--cc-bg-muted);
   border: 0;
   border-radius: 0.45rem;
+  cursor: pointer;
 }
 
-.pj-week button.is-today {
+.pj-week button.is-selected {
   color: var(--cc-text-on-primary);
   background: var(--cc-primary);
   font-weight: 700;
+}
+
+.pj-week button.is-today:not(.is-selected) {
+  outline: 1px solid var(--cc-primary);
+  outline-offset: 1px;
 }
 
 .pj-slot {
@@ -414,7 +469,23 @@
   grid-template-columns: 3.6rem 1fr;
   gap: 0.55rem;
   margin-top: 0.7rem;
+  width: 100%;
+  padding: 0.3rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0.35rem;
   font-size: 0.78rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pj-slot:hover {
+  background: var(--cc-bg-muted);
+}
+
+.pj-empty-day {
+  margin: 0.8rem 0 0;
 }
 
 .pj-slot time {

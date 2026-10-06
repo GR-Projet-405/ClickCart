@@ -1,1 +1,62 @@
-/* Admin-specific feature geometry belongs inside routed pages, not this shell. */
+/* ============================================================
+   AdminLayout — admin-specific shell geometry
+   Feature geometry lives inside routed pages, not here.
+   ============================================================ */
+
+/* ── Layout root ─────────────────────────────────────────── */
+.admin-layout {
+  /* CSS custom properties for sidebar width — override in collapsed state */
+  --admin-sidebar-width: 16rem;
+}
+
+/* ── Sidebar container (wraps the aside in dashboard-shell__body) ──────── */
+.admin-layout__sidebar {
+  width: var(--admin-sidebar-width);
+  flex: 0 0 var(--admin-sidebar-width);
+  /* Smooth width collapse on desktop */
+  transition: width 250ms ease, flex-basis 250ms ease;
+  /* overflow handled by dashboard-sidebar's overflow-y:auto */
+}
+
+/* ── Collapsed state (set via data-sidebar-collapsed on .admin-layout) ─── */
+@media (min-width: 1024px) {
+  .admin-layout[data-sidebar-collapsed] {
+    --admin-sidebar-width: 0rem;
+  }
+
+  .admin-layout[data-sidebar-collapsed] .admin-layout__sidebar {
+    padding: 0;
+    border-width: 0;
+    overflow: hidden;      /* clip content during collapse transition */
+  }
+}
+
+/* ── Sticky header ──────────────────────────────────────────────────────── */
+.admin-layout .dashboard-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+/* ── Skip-to-content link (accessibility) ───────────────────────────────── */
+.admin-layout__skip {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.admin-layout__skip:focus {
+  left: var(--cc-space-4);
+  top: var(--cc-space-4);
+  width: auto;
+  height: auto;
+  padding: var(--cc-space-2) var(--cc-space-4);
+  color: var(--cc-text-on-primary);
+  background: var(--cc-primary);
+  border-radius: var(--cc-radius-md);
+  font-weight: 700;
+  z-index: 100;
+}

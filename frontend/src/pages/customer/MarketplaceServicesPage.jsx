@@ -130,6 +130,7 @@ export default function MarketplaceServicesPage() {
   const [selectedService, setSelectedService] = useState(null);
   const [totalElements, setTotalElements] = useState(0);
   const [catalogServices, setCatalogServices] = useState([]);
+  const [query, setQuery] = useState("");
 
   const loadCatalogServices = async () => {
     try {

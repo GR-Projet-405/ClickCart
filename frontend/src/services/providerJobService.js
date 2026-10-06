@@ -1,27 +1,5 @@
 import { API_BASE_URL } from "../config/api";
-
-const TOKEN_KEY = "clickcart.providerToken";
-const PROVIDER_KEY = "clickcart.providerId";
-
-export function getSelectedProviderId() {
-  return localStorage.getItem(PROVIDER_KEY) || "provider-a";
-}
-
-export function getProviderToken() {
-  return localStorage.getItem(TOKEN_KEY) || import.meta.env.VITE_PROVIDER_ACCESS_TOKEN || "";
-}
-
-export function setDemoProvider(providerId) {
-  localStorage.setItem(PROVIDER_KEY, providerId);
-  localStorage.removeItem(TOKEN_KEY);
-}
-
-function authHeaders(extra = {}) {
-  return {
-    Authorization: `Bearer ${getProviderToken()}`,
-    ...extra,
-  };
-}
+import { authFetch } from "./authService";
 
 async function parseJson(response) {
   const text = await response.text();
@@ -36,10 +14,10 @@ async function parseJson(response) {
 }
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await authFetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {
-      ...authHeaders(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
+      ...(options.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
       ...options.headers,
     },
   });
@@ -53,8 +31,16 @@ async function request(path, options = {}) {
   return data;
 }
 
-export function getProviderJobs(status) {
-  const query = status && status !== "ALL" ? `?status=${encodeURIComponent(status)}` : "";
+export function getProviderJobs(status, year, month) {
+  const params = new URLSearchParams();
+  if (status && status !== "ALL") {
+    params.append("status", status);
+  }
+  if (year != null && month != null) {
+    params.append("year", year);
+    params.append("month", month);
+  }
+  const query = params.toString() ? `?${params.toString()}` : "";
   return request(`/provider/jobs${query}`);
 }
 
@@ -83,17 +69,21 @@ export function uploadCompletionProof(jobId, file) {
   return request(`/provider/jobs/${jobId}/proofs`, {
     method: "POST",
     body,
-    headers: authHeaders(),
   });
 }
 
 export async function fetchProofObjectUrl(jobId, photoId) {
-  const response = await fetch(`${API_BASE_URL}/provider/jobs/${jobId}/proofs/${photoId}`, {
-    headers: authHeaders(),
-  });
+  const response = await authFetch(`${API_BASE_URL}/provider/jobs/${jobId}/proofs/${photoId}`);
   if (!response.ok) {
     throw new Error("Unable to load photo");
   }
   const blob = await response.blob();
   return URL.createObjectURL(blob);
+}
+
+export function createCustomJob(jobData) {
+  return request(`/provider/jobs`, {
+    method: "POST",
+    body: JSON.stringify(jobData),
+  });
 }

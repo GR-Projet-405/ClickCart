@@ -92,61 +92,47 @@ export default function RecommendationsPage() {
   const [selectedProfileProvider, setSelectedProfileProvider] =
     useState(null);
 
-  useEffect(() => {
+   useEffect(() => {
     let isMounted = true;
 
     async function loadData() {
       setLoading(true);
 
       try {
-        if (selectedCategory === 'All') {
-          if (isMounted) {
-            setProviders(fallbackMockRecommendations);
-            setLoading(false);
-          }
-          return;
-        }
-
-        const serviceQuery = selectedCategory;
-
+        // Always ask the backend, passing "All", "Plumbing", "AC Repair", etc.
         const response = await recommendationService.getMatchedProviders(
-          serviceQuery,
+          selectedCategory, 
           'Panadura Town',
           10.0
         );
 
-        let data = Array.isArray(response)
-          ? response
-          : Array.isArray(response?.data)
-            ? response.data
-            : [];
+        let data = response?.data || [];
 
+        // If backend returns nothing, use local fallbacks
         if (!Array.isArray(data) || data.length === 0) {
-          data = fallbackMockRecommendations.filter(
-            (provider) =>
-              (provider.serviceCategory || '').toLowerCase() ===
-              serviceQuery.toLowerCase()
-          );
+          data = selectedCategory === 'All' 
+            ? fallbackMockRecommendations 
+            : fallbackMockRecommendations.filter(p => 
+                (p.serviceCategory || '').toLowerCase() === selectedCategory.toLowerCase()
+              );
+        } else {
+          // Map backend fields to UI expectations (e.g., profileImage -> image)
+          data = data.map(provider => ({
+            ...provider,
+            image: provider.profileImage || 
+                   (provider.serviceCategory === 'Plumbing' ? plumberImg : 
+                    provider.serviceCategory === 'AC Repair' ? acSolutionImg : electricianImg),
+            isVerified: provider.verified
+          }));
         }
 
         if (isMounted) {
           setProviders(data);
         }
       } catch (error) {
-        console.warn(
-          'Backend unavailable, using local mock recommendations:',
-          error.message
-        );
-
+        console.warn('Backend unavailable, using local mock recommendations:', error.message);
         if (isMounted) {
-          setProviders(
-            fallbackMockRecommendations.filter(
-              (provider) =>
-                selectedCategory === 'All' ||
-                (provider.serviceCategory || '').toLowerCase() ===
-                  selectedCategory.toLowerCase()
-            )
-          );
+          setProviders(selectedCategory === 'All' ? fallbackMockRecommendations : fallbackMockRecommendations.filter(p => (p.serviceCategory || '').toLowerCase() === selectedCategory.toLowerCase()));
         }
       } finally {
         if (isMounted) {

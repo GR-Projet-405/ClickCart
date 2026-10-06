@@ -52,7 +52,7 @@ public class SecurityConfig {
             AuthRateLimitFilter authRateLimitFilter,
             ObjectMapper objectMapper,
             ObjectProvider<JwtUtil> jwtUtil,
-            @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173}") List<String> allowedOrigins) {
+            @Value("${CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174}") List<String> allowedOrigins) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authRateLimitFilter = authRateLimitFilter;
         this.objectMapper = objectMapper;
@@ -120,7 +120,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
+
+                        //for ai service
+                        .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()
                         .anyRequest().authenticated())
+
                 // DEV-01: rate limits run after CORS so browsers can read 429 responses
                 .addFilterAfter(authRateLimitFilter, CorsFilter.class)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

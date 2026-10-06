@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -68,5 +69,14 @@ public class ServiceListingController {
         @Valid @RequestBody ServiceListingStatusRequest request
     ) {
         return service.updateStatus(providerId, id, request.status());
+    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(
+        @PathVariable String id,
+        @RequestParam @NotBlank String providerId
+    ) {
+        service.delete(providerId, id);
     }
 }

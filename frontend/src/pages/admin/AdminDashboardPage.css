@@ -1,0 +1,320 @@
+/* ==========================================================================
+   Platform Admin Dashboard — page shell + section grid (Phases 1-4)
+   ---------------------------------------------------------------------------
+   Only design tokens from src/styles/tokens.css (--cc-*) are used.
+   No Tailwind, Bootstrap, or third-party styling system.
+   Admin sidebar / header / top bar geometry lives in AdminLayout + the
+   dashboard shell, so this file only styles routed page content.
+
+   Section flow — two independent columns, each with its own height:
+     Wide (8/12)              | Narrow (4/12)
+       Verification queue     | Reported content (Phase 4 sample panel)
+       Revenue & commission   | Bookings trend
+       Disputes (Phase 4)     | Service categories
+       System status          | Recent admin actions
+   Section bodies live in components/admin/*.module.css.
+   ========================================================================== */
+
+.adm-dashboard {
+  display: grid;
+  gap: var(--cc-space-6);
+  padding-block: var(--cc-space-6) var(--cc-space-8);
+}
+
+/* --------------------------------------------------------------------------
+   Page header
+   -------------------------------------------------------------------------- */
+
+.adm-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cc-space-4);
+}
+
+.adm-header__text {
+  display: grid;
+  gap: var(--cc-space-2);
+  min-width: 0;
+}
+
+.adm-header__title {
+  letter-spacing: -0.02em;
+}
+
+.adm-header__subtitle {
+  margin: 0;
+}
+
+.adm-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cc-space-2);
+}
+
+.adm-header__range {
+  padding: var(--cc-space-2) var(--cc-space-3);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-pill);
+  background: var(--cc-bg-surface);
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+}
+
+/* --------------------------------------------------------------------------
+   Summary / stat cards
+   6 across on wide desktop · 3 across on tablet/desktop · 2 on mobile
+   (breakpoints mirror --cc-breakpoint-mobile: 40rem; media queries cannot
+    read custom properties, so the literal rem values are kept in sync)
+   -------------------------------------------------------------------------- */
+
+.adm-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--cc-space-4);
+}
+
+@media (max-width: 20rem) {
+  .adm-summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 40rem) {
+  .adm-summary {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Six cards in a single row only when the content area can hold them
+   without shrinking the metric values. */
+@media (min-width: 85rem) {
+  .adm-summary {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Responsive section grid
+   12 columns on desktop · 2 columns on tablet · single column on mobile
+   (breakpoints mirror --cc-breakpoint-desktop: 64rem and
+    --cc-breakpoint-mobile: 40rem; media queries cannot read custom properties)
+   -------------------------------------------------------------------------- */
+
+/* Cards keep their natural content height instead of stretching to the
+   tallest card in their grid row (shorter neighbours no longer grow
+   empty space at the bottom). */
+/* --------------------------------------------------------------------------
+   Responsive section flow — two independent column streams
+   Wide column = the existing 8/12 proportion · narrow column = 4/12
+   Each column stacks its own cards, so a tall card never leaves empty
+   space under the card beside it in the other column. Cards keep their
+   natural (content) height — no equal-height stretching.
+   (Breakpoints mirror --cc-breakpoint-desktop: 64rem and
+    --cc-breakpoint-mobile: 40rem; media queries cannot read custom properties)
+   -------------------------------------------------------------------------- */
+
+.adm-dashboard-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--cc-space-4);
+}
+
+.adm-dashboard-column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-4);
+  min-width: 0;
+}
+
+/* Section span hints. Sections now flow inside a column wrapper, so these
+   are informational only (grid-column is inert on flex children); they are
+   kept so the markup still documents each card's original proportion. */
+.adm-col--4 {
+  grid-column: span 4;
+}
+
+.adm-col--6 {
+  grid-column: span 6;
+}
+
+.adm-col--8 {
+  grid-column: span 8;
+}
+
+.adm-col--12 {
+  grid-column: span 12;
+}
+
+/* --------------------------------------------------------------------------
+   Section card
+   -------------------------------------------------------------------------- */
+
+.adm-section {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+}
+
+.adm-section__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-4) var(--cc-space-5);
+  border-bottom: 1px solid var(--cc-border-soft);
+}
+
+.adm-section__icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--cc-radius-md);
+  background: var(--cc-primary-soft);
+  color: var(--cc-primary-dark);
+}
+
+.adm-section__heading {
+  display: grid;
+  gap: 0.125rem;
+  min-width: 0;
+}
+
+.adm-section__title {
+  margin: 0;
+  color: var(--cc-text-primary);
+  font-size: var(--cc-text-h4-size);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.adm-section__subtitle {
+  margin: 0;
+  color: var(--cc-text-muted);
+  font-size: var(--cc-text-caption-size);
+  line-height: 1.4;
+}
+
+.adm-section__action {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  margin-left: auto;
+}
+
+/* "View All" / "View Details" / "Manage All" header link */
+.adm-section__link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--cc-space-1);
+  padding: var(--cc-space-1) var(--cc-space-2);
+  border-radius: var(--cc-radius-sm);
+  color: var(--cc-primary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.adm-section__link:hover {
+  color: var(--cc-primary-dark);
+  text-decoration: underline;
+}
+
+.adm-section__link:focus-visible {
+  outline: 0;
+  box-shadow: var(--cc-focus-ring);
+}
+
+.adm-section__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--cc-space-1) var(--cc-space-3);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-pill);
+  background: var(--cc-bg-surface);
+  color: var(--cc-text-secondary);
+  font-size: var(--cc-text-caption-size);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.adm-section__body {
+  display: grid;
+  flex: 1;
+  align-content: start;
+  gap: var(--cc-space-4);
+  padding: var(--cc-space-5);
+}
+
+/* --------------------------------------------------------------------------
+   Tablet — two columns
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 63.99rem) {
+  /* Tablet keeps two side-by-side columns, now of equal width. */
+  .adm-dashboard-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adm-col--4,
+  .adm-col--6,
+  .adm-col--8 {
+    grid-column: span 6;
+  }
+
+  .adm-section__body {
+    padding: var(--cc-space-4);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Mobile — single column
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 39.99rem) {
+  .adm-dashboard {
+    gap: var(--cc-space-4);
+    padding-block: var(--cc-space-4) var(--cc-space-6);
+  }
+
+  .adm-header {
+    gap: var(--cc-space-3);
+  }
+
+  .adm-header__actions {
+    width: 100%;
+  }
+
+  /* Single column stream: the left column's cards stack first, then the
+     right column's — matching the requested mobile order. */
+  .adm-dashboard-columns {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--cc-space-3);
+  }
+
+  .adm-dashboard-column {
+    gap: var(--cc-space-3);
+  }
+
+  .adm-col--4,
+  .adm-col--6,
+  .adm-col--8,
+  .adm-col--12 {
+    grid-column: span 12;
+  }
+
+  .adm-summary {
+    gap: var(--cc-space-3);
+  }
+
+  .adm-section__header {
+    padding: var(--cc-space-4);
+  }
+}
