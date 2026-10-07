@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FiUploadCloud, FiFileText, FiCheck } from 'react-icons/fi';
+import { CloudUpload as FiUploadCloud, FileText as FiFileText, Check as FiCheck } from 'lucide-react';
 import { providerVerificationService } from '../../services/providerVerificationService';
 
 const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess }) => {

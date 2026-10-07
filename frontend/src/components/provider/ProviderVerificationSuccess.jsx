@@ -1,5 +1,5 @@
 import React from "react";
-import { FiCheck } from "react-icons/fi";
+import { Check as FiCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function ProviderVerificationSuccess() {
