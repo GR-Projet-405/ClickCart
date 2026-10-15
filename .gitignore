@@ -12,6 +12,7 @@ backend/.classpath
 backend/.project
 backend/.settings/
 backend/.env
+backend/src/main/resources/application.yml
 
 # Editors
 .vscode/
@@ -28,3 +29,4 @@ Desktop.ini
 *.swp
 .env.example
 
+backend/src/main/resources/application.yml
