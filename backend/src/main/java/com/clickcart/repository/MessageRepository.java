@@ -29,7 +29,7 @@ public interface MessageRepository extends MongoRepository<Message, String> {
             String conversationId, String senderRole);
 
     /** New: Returns all unread messages in a conversation sent by someone else. */
-    @Query("{ 'conversationId': ?0, 'senderId': { '$ne': ?1 }, 'readAt': { '$exists': false } }")
+    @Query("{ 'conversationId': ?0, 'senderId': { '$ne': ?1 }, 'readAt': null }")
     List<Message> findUnreadMessagesForRecipient(String conversationId, String senderId);
 
     /**

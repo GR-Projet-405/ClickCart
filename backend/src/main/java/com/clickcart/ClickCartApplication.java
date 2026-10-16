@@ -10,10 +10,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.data.mongodb.config.EnableMongoAuditing;
+// import org.springframework.data.mongodb.config.EnableMongoAuditing;
 
 @SpringBootApplication
-@EnableMongoAuditing
+// @EnableMongoAuditing
+// The annotation @EnableMongoAuditing is declared in two different places in
+// the backend code
 public class ClickCartApplication {
 
     private static final Logger log = LoggerFactory.getLogger(ClickCartApplication.class);

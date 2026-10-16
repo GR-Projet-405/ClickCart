@@ -29,6 +29,8 @@ import java.util.UUID;
 @Service
 public class MessageService {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(MessageService.class);
+
     @Value("${clickcart.attachments.dir:${java.io.tmpdir}/clickcart-attachments}")
     private String attachmentsDir;
 
@@ -299,17 +301,26 @@ public class MessageService {
         String recipientId = senderRole == SenderRole.CUSTOMER
                 ? conv.getProviderId()
                 : conv.getCustomerId();
+        if (recipientId == null) {
+            log.warn("Skipping NEW_MESSAGE notification: conversationId={} has no recipient", conv.getId());
+            return;
+        }
 
         Role recipientRole = senderRole == SenderRole.CUSTOMER ? Role.SERVICE_PROVIDER : Role.CUSTOMER;
         String preview = content != null && content.length() > 60 ? content.substring(0, 57) + "..." : content;
-        notificationService.publish(
-                recipientId,
-                recipientRole,
-                NotificationType.NEW_MESSAGE,
-                "New Message",
-                preview != null && !preview.isBlank() ? preview : "You have a new message.",
-                "CONVERSATION",
-                conv.getId());
+        try {
+            notificationService.publish(
+                    recipientId,
+                    recipientRole,
+                    NotificationType.NEW_MESSAGE,
+                    "New Message",
+                    preview != null && !preview.isBlank() ? preview : "You have a new message.",
+                    "CONVERSATION",
+                    conv.getId());
+        } catch (RuntimeException ex) {
+            // The message is already saved; a notification failure must not fail the request.
+            log.warn("Failed to publish NEW_MESSAGE notification for conversationId={}", conv.getId(), ex);
+        }
     }
 
     MessageRepository getMessageRepository() {

@@ -75,16 +75,26 @@ public class ConversationService {
                 .orElseThrow(() -> new ResourceNotFoundException("Conversation not found: " + conversationId));
 
         if ("CUSTOMER".equalsIgnoreCase(role)) {
-            if (!conv.getCustomerId().equals(userId)) {
+            if (userId == null || !userId.equals(conv.getCustomerId())) {
                 throw new AccessDeniedException("You do not have access to this conversation.");
             }
         } else if ("PROVIDER".equalsIgnoreCase(role)) {
-            if (!conv.getProviderId().equals(userId)) {
+            if (userId == null || !userId.equals(conv.getProviderId())) {
                 throw new AccessDeniedException("You do not have access to this conversation.");
             }
         } else {
             throw new AccessDeniedException("Invalid role.");
         }
+        return conv;
+    }
+
+    /**
+     * Loads a conversation and verifies the caller (resolved from the security principal)
+     * is one of its participants. Throws 404 if missing and 403 if not a participant.
+     */
+    public Conversation getParticipantConversation(String conversationId, String currentUserId) {
+        Conversation conv = findConversationById(conversationId);
+        assertParticipant(conv, currentUserId);
         return conv;
     }
 
@@ -104,10 +114,10 @@ public class ConversationService {
 
     public void markRead(String conversationId, String userId, String role) {
         conversationRepo.findById(conversationId).ifPresent(conv -> {
-            if ("CUSTOMER".equalsIgnoreCase(role) && conv.getCustomerId().equals(userId)) {
+            if ("CUSTOMER".equalsIgnoreCase(role) && userId != null && userId.equals(conv.getCustomerId())) {
                 conv.setUnreadByCustomer(0);
                 conversationRepo.save(conv);
-            } else if ("PROVIDER".equalsIgnoreCase(role) && conv.getProviderId().equals(userId)) {
+            } else if ("PROVIDER".equalsIgnoreCase(role) && userId != null && userId.equals(conv.getProviderId())) {
                 conv.setUnreadByProvider(0);
                 conversationRepo.save(conv);
             }
@@ -176,8 +186,9 @@ public class ConversationService {
     }
 
     void assertParticipant(Conversation conversation, String currentUserId) {
-        boolean isParticipant = currentUserId.equals(conversation.getCustomerId())
-                || currentUserId.equals(conversation.getProviderId());
+        boolean isParticipant = currentUserId != null
+                && (currentUserId.equals(conversation.getCustomerId())
+                        || currentUserId.equals(conversation.getProviderId()));
         if (!isParticipant) {
             log.warn("Access denied: userId={} is not a participant of conversationId={}", currentUserId,
                     conversation.getId());
