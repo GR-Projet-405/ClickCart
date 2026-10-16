@@ -98,6 +98,28 @@ class BookingServiceTest {
     }
 
     @Test
+    void approveMovesAPendingBookingToConfirmed() {
+        when(bookingRepository.findById("bk-1")).thenReturn(Optional.of(pendingBooking()));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = bookingService.approve("bk-1", "provider-1");
+
+        assertEquals(BookingStatus.CONFIRMED, response.getStatus());
+        verify(bookingRepository).save(any(Booking.class));
+    }
+
+    @Test
+    void rejectMovesAPendingBookingToDeclined() {
+        when(bookingRepository.findById("bk-1")).thenReturn(Optional.of(pendingBooking()));
+        when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        var response = bookingService.reject("bk-1", "provider-1");
+
+        assertEquals(BookingStatus.DECLINED, response.getStatus());
+        verify(bookingRepository).save(any(Booking.class));
+    }
+
+    @Test
     void acceptMovesAPendingBookingToAccepted() {
         when(bookingRepository.findById("bk-1")).thenReturn(Optional.of(pendingBooking()));
         when(bookingRepository.save(any(Booking.class))).thenAnswer(invocation -> invocation.getArgument(0));
