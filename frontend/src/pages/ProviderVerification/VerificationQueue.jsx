@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, Clock, CheckCircle2, XCircle, FileText, 
+import {
+  Search, Clock, CheckCircle2, XCircle, FileText,
   Check, X, RefreshCw, Filter, Calendar, Eye,
   ShieldCheck, Mail, Phone, MapPin, Download, AlertCircle, Wrench
 } from 'lucide-react';
@@ -8,7 +8,7 @@ import {
 const VerificationQueue = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Modals State
   const [selectedProvider, setSelectedProvider] = useState(null); // Details Modal
   const [rejectingProvider, setRejectingProvider] = useState(null); // Reject Modal
@@ -29,7 +29,17 @@ const VerificationQueue = () => {
   const fetchProviders = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/admin/providers/verifications');
+      // LocalStorage 
+      const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+
+      const response = await fetch('http://localhost:8080/api/admin/providers/verifications', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
       if (response.ok) {
         const data = await response.json();
         if (Array.isArray(data)) {
@@ -37,6 +47,8 @@ const VerificationQueue = () => {
         } else {
           setProviders([]);
         }
+      } else {
+        console.error(`Backend returned status code: ${response.status}`);
       }
     } catch (err) {
       console.error('Failed to fetch backend data:', err);
@@ -51,17 +63,17 @@ const VerificationQueue = () => {
 
   const safeProviders = Array.isArray(providers) ? providers : [];
 
-  
+
   const getAvatarUrl = (provider) => {
     if (!provider) return 'https://ui-avatars.com/api/?name=User&background=0284c7&color=fff&bold=true';
-    
-    
+
+
     const profileImg = provider.avatar || provider.profilePic || provider.profilePicture || provider.imageUrl || provider.profileImage;
     if (profileImg && profileImg.trim() !== '') {
       return profileImg;
     }
-    
-    
+
+
     const name = provider.ownerName || provider.businessName || 'Provider';
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=0284c7&color=fff&bold=true`;
   };
@@ -85,8 +97,8 @@ const VerificationQueue = () => {
 
   const handleDownload = (docUrl, fileName = 'document') => {
     if (!docUrl) return;
-    const fetchUrl = docUrl.includes('cloudinary.com') 
-      ? docUrl.replace('/upload/', '/upload/fl_attachment/') 
+    const fetchUrl = docUrl.includes('cloudinary.com')
+      ? docUrl.replace('/upload/', '/upload/fl_attachment/')
       : docUrl;
     window.open(fetchUrl, '_blank');
   };
@@ -111,8 +123,8 @@ const VerificationQueue = () => {
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
-          Array.isArray(prev) 
-            ? prev.map(p => ((p.id === id || p._id === id) ? { ...p, ...updatedData, status: newStatus } : p)) 
+          Array.isArray(prev)
+            ? prev.map(p => ((p.id === id || p._id === id) ? { ...p, ...updatedData, status: newStatus } : p))
             : []
         );
       }
@@ -126,7 +138,7 @@ const VerificationQueue = () => {
     setSelectedReasons([]);
     setAdditionalComments('');
     setSendEmail(true);
-    if (selectedProvider) setSelectedProvider(null); 
+    if (selectedProvider) setSelectedProvider(null);
   };
 
   const handleReasonToggle = (reason) => {
@@ -156,8 +168,8 @@ const VerificationQueue = () => {
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
-          Array.isArray(prev) 
-            ? prev.map(p => ((p.id === pId || p._id === pId) ? { ...p, ...updatedData, status: 'REJECTED' } : p)) 
+          Array.isArray(prev)
+            ? prev.map(p => ((p.id === pId || p._id === pId) ? { ...p, ...updatedData, status: 'REJECTED' } : p))
             : []
         );
         setRejectingProvider(null);
@@ -177,10 +189,10 @@ const VerificationQueue = () => {
     if (typeof dateValue === 'string' && dateValue.includes('IST')) {
       const parts = dateValue.trim().split(/\s+/);
       if (parts.length >= 6) {
-        const monthStr = parts[1]; 
-        const day = parts[2];      
-        const time = parts[3];     
-        const year = parts[5];     
+        const monthStr = parts[1];
+        const day = parts[2];
+        const time = parts[3];
+        const year = parts[5];
         const parsed = new Date(`${monthStr} ${day}, ${year} ${time}`);
         if (!isNaN(parsed.getTime())) return parsed;
       }
@@ -215,7 +227,7 @@ const VerificationQueue = () => {
     if (activeTab !== 'All' && p.status?.toUpperCase() !== activeTab.toUpperCase()) return false;
     if (typeFilter !== 'All' && p.providerType?.toLowerCase() !== typeFilter.toLowerCase()) return false;
     const term = searchTerm.toLowerCase();
-    const matchSearch = 
+    const matchSearch =
       (p.ownerName && p.ownerName.toLowerCase().includes(term)) ||
       (p.businessName && p.businessName.toLowerCase().includes(term)) ||
       (p.email && p.email.toLowerCase().includes(term)) ||
@@ -251,7 +263,7 @@ const VerificationQueue = () => {
 
   return (
     <div style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      
+
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
@@ -263,7 +275,7 @@ const VerificationQueue = () => {
           </p>
         </div>
 
-        <button 
+        <button
           onClick={handleRefresh}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
@@ -322,14 +334,14 @@ const VerificationQueue = () => {
 
       {/* Main Table Area */}
       <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
-        
+
         {/* Filter Toolbar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
-            
+
             <div style={{ position: 'relative', flex: '1', minWidth: '260px' }}>
               <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
-              <input 
+              <input
                 type="text"
                 placeholder="Search by Provider Name, Email, or Category..."
                 value={searchTerm}
@@ -423,14 +435,14 @@ const VerificationQueue = () => {
                     <tr key={pId} style={{ borderBottom: '1px solid #f1f5f9' }}>
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <img 
-                            src={getAvatarUrl(p)} 
-                            alt={providerName} 
+                          <img
+                            src={getAvatarUrl(p)}
+                            alt={providerName}
                             onError={(e) => {
                               e.target.onerror = null;
                               e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(providerName)}&background=0284c7&color=fff&bold=true`;
                             }}
-                            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }} 
+                            style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
                           />
                           <div>
                             <div style={{ fontWeight: 700, color: '#0f172a' }}>
@@ -442,10 +454,10 @@ const VerificationQueue = () => {
                       </td>
 
                       <td style={{ padding: '12px 14px' }}>
-                        <span style={{ 
-                          padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, 
-                          background: isBusiness ? '#f3e8ff' : '#e0f2fe', 
-                          color: isBusiness ? '#7e22ce' : '#0369a1' 
+                        <span style={{
+                          padding: '4px 10px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
+                          background: isBusiness ? '#f3e8ff' : '#e0f2fe',
+                          color: isBusiness ? '#7e22ce' : '#0369a1'
                         }}>
                           {p.providerType || 'Business'}
                         </span>
@@ -459,7 +471,7 @@ const VerificationQueue = () => {
                             p.documents.map((doc, idx) => {
                               const docLabel = getDocumentLabel(doc, idx);
                               return (
-                                <span 
+                                <span
                                   key={idx}
                                   style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '5px',
@@ -484,10 +496,10 @@ const VerificationQueue = () => {
                       </td>
 
                       <td style={{ padding: '12px 14px' }}>
-                        <span style={{ 
-                          padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700, 
-                          background: statusFormatted === 'PENDING' ? '#fef3c7' : statusFormatted === 'APPROVED' ? '#dcfce7' : '#fee2e2', 
-                          color: statusFormatted === 'PENDING' ? '#d97706' : statusFormatted === 'APPROVED' ? '#15803d' : '#dc2626' 
+                        <span style={{
+                          padding: '4px 12px', borderRadius: '12px', fontSize: '12px', fontWeight: 700,
+                          background: statusFormatted === 'PENDING' ? '#fef3c7' : statusFormatted === 'APPROVED' ? '#dcfce7' : '#fee2e2',
+                          color: statusFormatted === 'PENDING' ? '#d97706' : statusFormatted === 'APPROVED' ? '#15803d' : '#dc2626'
                         }}>
                           {statusFormatted === 'PENDING' ? 'Pending' : statusFormatted === 'APPROVED' ? 'Approved' : 'Rejected'}
                         </span>
@@ -495,10 +507,10 @@ const VerificationQueue = () => {
 
                       <td style={{ padding: '12px 14px', textAlign: 'left' }}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '8px', whiteSpace: 'nowrap' }}>
-                          <button 
+                          <button
                             onClick={() => setSelectedProvider(p)}
-                            style={{ 
-                              background: '#0070f3', color: '#ffffff', border: 'none', 
+                            style={{
+                              background: '#0070f3', color: '#ffffff', border: 'none',
                               padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                               display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap'
                             }}
@@ -520,7 +532,7 @@ const VerificationQueue = () => {
                               >
                                 <Check size={16} />
                               </button>
-                              
+
                               <button
                                 onClick={() => openRejectModal(p)}
                                 title="Reject Request"
@@ -563,7 +575,7 @@ const VerificationQueue = () => {
               maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               display: 'flex', flexDirection: 'column', padding: '24px'
             }}>
-              
+
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{ background: '#dcfce7', width: '36px', height: '36px', borderRadius: '10px', display: 'grid', placeItems: 'center', color: '#16a34a' }}>
@@ -593,14 +605,14 @@ const VerificationQueue = () => {
               }}>
                 {/* Left Side: Profile Info */}
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'flex-start' }}>
-                  <img 
-                    src={getAvatarUrl(selectedProvider)} 
-                    alt={providerName} 
+                  <img
+                    src={getAvatarUrl(selectedProvider)}
+                    alt={providerName}
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(providerName)}&background=0284c7&color=fff&bold=true`;
                     }}
-                    style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }} 
+                    style={{ width: '56px', height: '56px', borderRadius: '50%', objectFit: 'cover' }}
                   />
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -661,45 +673,45 @@ const VerificationQueue = () => {
                               <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>No Document Link</div>
                             )}
                           </div>
-                          
+
                           {/* Document Action Buttons (View Full & Download) */}
                           <div style={{ display: 'flex', gap: '8px' }}>
-                            <button 
-                              onClick={() => docUrl && window.open(docUrl, '_blank')} 
-                              style={{ 
-                                flex: 1, 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
-                                gap: '6px', 
-                                padding: '8px 12px', 
-                                background: '#ffffff', 
-                                border: '1px solid #0070f3', 
-                                color: '#0070f3', 
-                                borderRadius: '8px', 
-                                fontSize: '12px', 
-                                fontWeight: 600, 
-                                cursor: 'pointer' 
+                            <button
+                              onClick={() => docUrl && window.open(docUrl, '_blank')}
+                              style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                padding: '8px 12px',
+                                background: '#ffffff',
+                                border: '1px solid #0070f3',
+                                color: '#0070f3',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
                               }}
                             >
                               <Eye size={14} /> View Full
                             </button>
-                            <button 
-                              onClick={() => handleDownload(docUrl, docType)} 
-                              style={{ 
-                                flex: 1, 
-                                display: 'flex', 
-                                alignItems: 'center', 
-                                justifyContent: 'center', 
-                                gap: '6px', 
-                                padding: '8px 12px', 
-                                background: '#0070f3', 
-                                border: 'none', 
-                                color: '#ffffff', 
-                                borderRadius: '8px', 
-                                fontSize: '12px', 
-                                fontWeight: 600, 
-                                cursor: 'pointer' 
+                            <button
+                              onClick={() => handleDownload(docUrl, docType)}
+                              style={{
+                                flex: 1,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '6px',
+                                padding: '8px 12px',
+                                background: '#0070f3',
+                                border: 'none',
+                                color: '#ffffff',
+                                borderRadius: '8px',
+                                fontSize: '12px',
+                                fontWeight: 600,
+                                cursor: 'pointer'
                               }}
                             >
                               <Download size={14} /> Download
@@ -744,7 +756,7 @@ const VerificationQueue = () => {
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               display: 'flex', flexDirection: 'column', padding: '24px', position: 'relative'
             }}>
-              
+
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '20px' }}>
                 <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
@@ -761,8 +773,8 @@ const VerificationQueue = () => {
                   </div>
                 </div>
 
-                <button 
-                  onClick={() => setRejectingProvider(null)} 
+                <button
+                  onClick={() => setRejectingProvider(null)}
                   style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px' }}
                 >
                   <X size={20} />
@@ -779,7 +791,7 @@ const VerificationQueue = () => {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {availableReasons.map((reason, idx) => (
                     <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
-                      <input 
+                      <input
                         type="checkbox"
                         checked={selectedReasons.includes(reason)}
                         onChange={() => handleReasonToggle(reason)}
@@ -819,7 +831,7 @@ const VerificationQueue = () => {
               {/* Send Email Checkbox */}
               <div style={{ marginBottom: '24px', marginTop: '10px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
-                  <input 
+                  <input
                     type="checkbox"
                     checked={sendEmail}
                     onChange={(e) => setSendEmail(e.target.checked)}
