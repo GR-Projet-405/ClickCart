@@ -121,6 +121,18 @@ public class SecurityConfig {
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
 
+                        // BE-049: refund endpoints – all require authentication;
+                        //   listing all refunds and changing status require ADMIN
+                        .requestMatchers(HttpMethod.POST,  "/api/refunds").authenticated()
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/refunds/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH,  "/api/refunds/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds").hasRole("ADMIN")
+
+                        // BE-049: settlement endpoints – all require at least authentication
+                        .requestMatchers("/api/settlements/**").authenticated()
+
                         //for ai service
                         .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()
                         .anyRequest().authenticated())
