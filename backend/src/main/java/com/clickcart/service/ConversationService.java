@@ -166,6 +166,12 @@ public class ConversationService {
         PagedMessagesResponse messages = messageService
                 .getMessages(conversationId, currentUserId, PageRequest.of(messagePage, messageSize));
 
+        boolean isCustomer = currentUserId.equals(conv.getCustomerId());
+        String storedName = isCustomer ? conv.getProviderName() : conv.getCustomerName();
+        String otherPartyId = isCustomer ? conv.getProviderId() : conv.getCustomerId();
+        String otherPartyName = (storedName != null && !storedName.isBlank()) ? storedName : otherPartyId;
+        String otherPartyAvatarUrl = isCustomer ? conv.getProviderAvatarFallback() : conv.getCustomerAvatarFallback();
+
         return new ConversationDetailResponse(
                 conv.getId(),
                 conv.getCustomerId(),
@@ -173,7 +179,9 @@ public class ConversationService {
                 conv.getServiceId(),
                 conv.getBookingId(),
                 conv.getCreatedAt(),
-                messages);
+                messages,
+                otherPartyName,
+                otherPartyAvatarUrl);
     }
 
     // -----------------------------------------------------------------------
@@ -209,8 +217,9 @@ public class ConversationService {
         String otherPartyId = isCustomer ? conv.getProviderId() : conv.getCustomerId();
         int unreadCount = isCustomer ? conv.getUnreadByCustomer() : conv.getUnreadByProvider();
 
-        // Placeholder until User service is wired
-        String otherPartyName = otherPartyId;
+        // Placeholder until User service is wired: prefer the stored display name, fall back to the ID
+        String storedName = isCustomer ? conv.getProviderName() : conv.getCustomerName();
+        String otherPartyName = (storedName != null && !storedName.isBlank()) ? storedName : otherPartyId;
         String otherPartyAvatarUrl = null;
 
         return new ConversationSummaryResponse(
@@ -222,6 +231,7 @@ public class ConversationService {
                 conv.getBookingId(),
                 conv.getLastMessagePreview(),
                 conv.getLastMessageAt(),
-                unreadCount);
+                unreadCount,
+                conv.getBookingStatus());
     }
 }

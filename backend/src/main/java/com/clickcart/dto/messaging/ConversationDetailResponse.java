@@ -19,6 +19,8 @@ import java.time.Instant;
  * @param bookingId     optional booking context; null if none was set
  * @param createdAt     when the conversation was first created
  * @param messages      first page of messages (oldest-first), may be empty if no messages yet
+ * @param otherPartyName display name of the other participant
+ * @param otherPartyAvatarUrl avatar URL of the other participant; null if none
  */
 public record ConversationDetailResponse(
         String id,
@@ -27,5 +29,18 @@ public record ConversationDetailResponse(
         String serviceId,
         String bookingId,
         Instant createdAt,
-        PagedMessagesResponse messages
-) {}
+        PagedMessagesResponse messages,
+        String otherPartyName,
+        String otherPartyAvatarUrl
+) {
+    public ConversationDetailResponse(
+            String id,
+            String customerId,
+            String providerId,
+            String serviceId,
+            String bookingId,
+            Instant createdAt,
+            PagedMessagesResponse messages) {
+        this(id, customerId, providerId, serviceId, bookingId, createdAt, messages, null, null);
+    }
+}
