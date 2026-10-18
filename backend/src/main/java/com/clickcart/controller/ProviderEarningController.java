@@ -1,16 +1,24 @@
 package com.clickcart.controller;
 
 import com.clickcart.dto.*;
+import com.clickcart.dto.auth.AuthenticatedUser;
+import com.clickcart.exception.BadRequestException;
+import com.clickcart.exception.ForbiddenException;
+import com.clickcart.exception.UnauthorizedException;
+import com.clickcart.model.Role;
 import com.clickcart.service.ProviderEarningService;
 import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.Instant;
+import java.time.*;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 /**
@@ -24,60 +32,181 @@ public class ProviderEarningController {
 
     private final ProviderEarningService earningService;
 
+    @Value("${clickcart.security.enabled:false}")
+    private boolean securityEnabled;
+
     public ProviderEarningController(ProviderEarningService earningService) {
         this.earningService = earningService;
     }
 
+    /**
+     * Validates that the caller is authenticated as a SERVICE_PROVIDER (or PLATFORM_ADMIN)
+     * and owns the requested provider account.
+     * Enforces BE-039 (ownership check) and BE-040 (role check).
+     */
+    private String resolveAndValidateProviderId(String requestedProviderId, Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()
+                && !"anonymousUser".equals(authentication.getPrincipal())) {
+
+            // 1. Enforce Role Check: Customers are strictly forbidden from accessing provider earnings
+            boolean hasCustomerRole = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_CUSTOMER")
+                            || a.getAuthority().equalsIgnoreCase("CUSTOMER"));
+            if (hasCustomerRole) {
+                throw new ForbiddenException("Access denied: Customers are not permitted to access service provider earnings (Role: CUSTOMER)");
+            }
+
+            if (authentication.getPrincipal() instanceof AuthenticatedUser user) {
+                if (user.role() == Role.CUSTOMER) {
+                    throw new ForbiddenException("Access denied: Customers are not permitted to access service provider earnings (Role: CUSTOMER)");
+                }
+            }
+
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_PLATFORM_ADMIN")
+                            || a.getAuthority().equalsIgnoreCase("PLATFORM_ADMIN"));
+
+            String authenticatedProviderId = null;
+            if (authentication.getPrincipal() instanceof AuthenticatedUser user) {
+                authenticatedProviderId = user.id();
+            } else if (authentication.getPrincipal() instanceof Jwt jwt) {
+                authenticatedProviderId = jwt.getSubject();
+            } else if (authentication.getPrincipal() instanceof String principalStr) {
+                authenticatedProviderId = principalStr;
+            }
+
+            // 2. Enforce Ownership Check (BE-039): A provider cannot access another provider's earnings
+            if (!isAdmin && authenticatedProviderId != null && !authenticatedProviderId.isBlank()) {
+                if (requestedProviderId != null && !requestedProviderId.isBlank()
+                        && !requestedProviderId.equalsIgnoreCase(authenticatedProviderId)) {
+                    throw new ForbiddenException("Access denied: You do not have permission to access another provider's earnings (Requested: "
+                            + requestedProviderId + ", Authenticated: " + authenticatedProviderId + ")");
+                }
+                return authenticatedProviderId;
+            }
+        } else if (securityEnabled) {
+            // BE-040: When security is enabled, require authentication
+            throw new UnauthorizedException("Full authentication is required to access provider earnings");
+        }
+
+        return (requestedProviderId != null && !requestedProviderId.isBlank()) ? requestedProviderId : "provider-101";
+    }
+
+    /**
+     * Parses dates flexibly: supports ISO-8601 Instant, OffsetDateTime, LocalDateTime, LocalDate (YYYY-MM-DD), and Epoch millis.
+     * Enforces BE-036.
+     */
+    public static Instant parseDate(String dateStr, boolean isEndOfDay) {
+        if (dateStr == null || dateStr.isBlank()) {
+            return null;
+        }
+        String trimmed = dateStr.trim();
+        // 1. Try Instant ISO-8601 (e.g. 2026-05-01T00:00:00Z)
+        try {
+            return Instant.parse(trimmed);
+        } catch (DateTimeParseException ignored) {}
+
+        // 2. Try OffsetDateTime (e.g. 2026-05-01T00:00:00+05:30)
+        try {
+            return OffsetDateTime.parse(trimmed).toInstant();
+        } catch (DateTimeParseException ignored) {}
+
+        // 3. Try LocalDateTime (e.g. 2026-05-01T00:00:00)
+        try {
+            return LocalDateTime.parse(trimmed).atZone(ZoneOffset.UTC).toInstant();
+        } catch (DateTimeParseException ignored) {}
+
+        // 4. Try LocalDate (e.g. 2026-05-01)
+        try {
+            LocalDate date = LocalDate.parse(trimmed);
+            if (isEndOfDay) {
+                return date.atTime(LocalTime.MAX).atZone(ZoneOffset.UTC).toInstant();
+            } else {
+                return date.atStartOfDay(ZoneOffset.UTC).toInstant();
+            }
+        } catch (DateTimeParseException ignored) {}
+
+        // 5. Try Epoch Milliseconds
+        try {
+            long epoch = Long.parseLong(trimmed);
+            return Instant.ofEpochMilli(epoch);
+        } catch (NumberFormatException ignored) {}
+
+        throw new BadRequestException("Invalid date format: '" + dateStr + "'. Expected format is YYYY-MM-DD or ISO-8601 DateTime.");
+    }
+
     @GetMapping("/summary")
     public ResponseEntity<EarningsSummaryResponse> getEarningsSummary(
-            @RequestParam(defaultValue = "provider-101") String providerId,
-            @RequestParam(defaultValue = "30days") String period) {
-        return ResponseEntity.ok(earningService.getEarningsSummary(providerId, period));
+            @RequestParam(required = false) String providerId,
+            @RequestParam(required = false, defaultValue = "30days") String period,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        return ResponseEntity.ok(earningService.getEarningsSummary(resolvedId, period));
     }
 
     @GetMapping("/trends")
     public ResponseEntity<List<MonthlyTrendDto>> getMonthlyTrends(
-            @RequestParam(defaultValue = "provider-101") String providerId) {
-        return ResponseEntity.ok(earningService.getMonthlyTrends(providerId));
+            @RequestParam(required = false) String providerId,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        return ResponseEntity.ok(earningService.getMonthlyTrends(resolvedId));
     }
 
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryBreakdownDto>> getCategoryBreakdown(
-            @RequestParam(defaultValue = "provider-101") String providerId) {
-        return ResponseEntity.ok(earningService.getCategoryBreakdown(providerId));
+            @RequestParam(required = false) String providerId,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        return ResponseEntity.ok(earningService.getCategoryBreakdown(resolvedId));
     }
 
     @GetMapping("/transactions")
     public ResponseEntity<Page<ProviderTransactionDto>> getTransactions(
-            @RequestParam(defaultValue = "provider-101") String providerId,
+            @RequestParam(required = false) String providerId,
             @RequestParam(required = false) String search,
             @RequestParam(required = false) String status,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) Instant endDate,
+            @RequestParam(required = false) String startDate,
+            @RequestParam(required = false) String endDate,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        Instant parsedStart = parseDate(startDate, false);
+        Instant parsedEnd = parseDate(endDate, true);
+
+        // BE-037: Validate date order
+        if (parsedStart != null && parsedEnd != null && parsedEnd.isBefore(parsedStart)) {
+            throw new BadRequestException("Invalid date range: endDate (" + endDate + ") cannot be earlier than startDate (" + startDate + ")");
+        }
+
         return ResponseEntity.ok(earningService.getTransactions(
-                providerId, search, status, startDate, endDate, PageRequest.of(page, size)));
+                resolvedId, search, status, parsedStart, parsedEnd, PageRequest.of(page, size)));
     }
 
     @GetMapping("/transactions/{transactionId}")
     public ResponseEntity<ProviderTransactionDto> getTransactionById(
             @PathVariable String transactionId,
-            @RequestParam(defaultValue = "provider-101") String providerId) {
-        return ResponseEntity.ok(earningService.getTransactionById(providerId, transactionId));
+            @RequestParam(required = false) String providerId,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        return ResponseEntity.ok(earningService.getTransactionById(resolvedId, transactionId));
     }
 
     @PostMapping("/payout")
     public ResponseEntity<PayoutResponse> requestPayout(
-            @RequestParam(defaultValue = "provider-101") String providerId,
-            @Valid @RequestBody PayoutRequest request) {
-        PayoutResponse response = earningService.requestPayout(providerId, request);
+            @RequestParam(required = false) String providerId,
+            @Valid @RequestBody PayoutRequest request,
+            Authentication authentication) {
+        String resolvedId = resolveAndValidateProviderId(providerId, authentication);
+        PayoutResponse response = earningService.requestPayout(resolvedId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/record")
     public ResponseEntity<ProviderTransactionDto> recordEarning(
-            @Valid @RequestBody CreateEarningRequest request) {
+            @Valid @RequestBody CreateEarningRequest request,
+            Authentication authentication) {
+        resolveAndValidateProviderId(request.getProviderId(), authentication);
         ProviderTransactionDto created = earningService.recordEarning(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

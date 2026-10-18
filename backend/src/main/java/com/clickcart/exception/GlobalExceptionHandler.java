@@ -1,6 +1,5 @@
 package com.clickcart.exception;
 
-import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -15,8 +14,13 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
+
+import com.clickcart.exception.AccessDeniedException;
+import com.clickcart.exception.AccessForbiddenException;
+import com.clickcart.exception.BadRequestException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -118,7 +122,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler({ ForbiddenException.class, AccessDeniedException.class })
+    @ExceptionHandler({
+            ForbiddenException.class,
+            AccessDeniedException.class,
+            AccessForbiddenException.class,
+            org.springframework.security.access.AccessDeniedException.class
+    })
     public ResponseEntity<ErrorResponse> handleForbidden(Exception ex) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
@@ -155,6 +164,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            BadRequestException.class,
+            MethodArgumentTypeMismatchException.class,
             MaxUploadSizeExceededException.class,
             MissingServletRequestPartException.class,
             IllegalArgumentException.class
