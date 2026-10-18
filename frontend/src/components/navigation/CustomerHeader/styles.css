@@ -1,6 +1,6 @@
 .customer-header {
   position: relative;
-  z-index: 10;
+  z-index: 50;
   background: var(--cc-bg-surface);
   border-bottom: 1px solid var(--cc-border);
 }
@@ -27,17 +27,111 @@
   align-items: center;
   gap: var(--cc-space-2);
 }
+
+/* Profile Icon Button: Direct link to /customer/profile */
 .customer-header__account {
-  display: none;
+  display: inline-flex;
   align-items: center;
   gap: var(--cc-space-2);
-  padding: var(--cc-space-1);
+  padding: 0.35rem 0.65rem;
   color: var(--cc-text-primary);
   background: transparent;
-  border: 0;
-  border-radius: var(--cc-radius-md);
+  border: 1px solid transparent;
+  border-radius: var(--cc-radius-lg, 12px);
   cursor: pointer;
+  text-decoration: none;
+  transition: all var(--cc-transition-fast, 150ms ease);
 }
+.customer-header__account:hover {
+  background: var(--cc-bg-subtle, #f8fafc);
+  border-color: var(--cc-border, #e2e8f0);
+}
+.customer-header__account--active {
+  background: #f0fdf4 !important;
+  border-color: #86efac !important;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.15);
+}
+
+.customer-header__account-text {
+  display: grid;
+  text-align: left;
+}
+.customer-header__account-text small {
+  color: var(--cc-text-muted);
+  font-size: 0.625rem;
+  line-height: 1.1;
+}
+.customer-header__account-text strong {
+  font-size: var(--cc-text-body-sm-size);
+  color: var(--cc-text-primary);
+  font-weight: 600;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* On mobile (<640px): Show avatar icon only */
+@media (max-width: 639px) {
+  .customer-header__account-text {
+    display: none !important;
+  }
+  .customer-header__account {
+    padding: 0.25rem;
+    border-radius: 50%;
+    border: 1px solid var(--cc-border, #e2e8f0);
+  }
+}
+
+/* Sign Out Button in Header */
+.customer-header__signout-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--cc-text-secondary, #64748b);
+  background: transparent;
+  border: 1px solid var(--cc-border, #e2e8f0);
+  border-radius: var(--cc-radius-md, 8px);
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.customer-header__signout-btn:hover {
+  color: #ef4444;
+  border-color: #fecdd3;
+  background-color: #fef2f2;
+}
+
+@media (max-width: 639px) {
+  .customer-header__signout-btn span {
+    display: none !important;
+  }
+  .customer-header__signout-btn {
+    padding: 0.45rem;
+    border-radius: 50%;
+  }
+}
+
+/* Auth Buttons when logged out */
+.customer-header__auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+}
+.customer-header__login-link {
+  text-decoration: none;
+  color: var(--cc-text-secondary);
+  font-weight: 500;
+  font-size: 0.875rem;
+  transition: color 150ms ease;
+}
+.customer-header__login-link:hover {
+  color: var(--cc-text-primary);
+}
+
+/* Icon Buttons in Actions */
 .customer-header__actions > .cc-icon-button {
   border-color: var(--cc-border);
   border-radius: 50%;
@@ -51,32 +145,20 @@
 .customer-header__actions > .cc-icon-button:hover {
   border-color: var(--cc-primary-border, #bbf7d0);
 }
-.customer-header__account span {
-  display: grid;
-  text-align: left;
-}
-.customer-header__account small {
-  color: var(--cc-text-muted);
-  font-size: 0.625rem;
-}
-.customer-header__account strong {
-  font-size: var(--cc-text-body-sm-size);
-}
-.customer-header__cta,
+
 .customer-header__desktop-action {
   display: none;
 }
 .customer-header__menu {
   display: inline-flex;
 }
+
 @media (max-width: 420px) {
   .customer-header__brand .cc-brand-logo__copy {
     display: none;
   }
 }
 @media (min-width: 640px) {
-  .customer-header__account,
-  .customer-header__cta,
   .customer-header__desktop-action {
     display: inline-flex;
   }
@@ -95,8 +177,6 @@
   }
   .customer-header__actions {
     flex-shrink: 0;
-  }
-  .customer-header__actions {
     gap: var(--cc-space-2);
   }
   .customer-header__menu {
@@ -105,9 +185,6 @@
 }
 @media (min-width: 640px) and (max-width: 1199px) {
   .customer-header__brand .cc-brand-logo__tagline {
-    display: none;
-  }
-  .customer-header__cta {
     display: none;
   }
 }

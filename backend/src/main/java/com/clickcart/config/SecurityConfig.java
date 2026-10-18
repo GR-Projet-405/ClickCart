@@ -65,7 +65,9 @@ public class SecurityConfig {
     SecurityFilterChain localSecurityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -120,6 +122,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
+                        .requestMatchers("/api/customers/me/**", "/api/customers/**").authenticated()
 
                         //for ai service
                         .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()

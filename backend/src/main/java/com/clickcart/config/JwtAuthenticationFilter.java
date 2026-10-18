@@ -71,11 +71,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 util.parseAccessToken(token).ifPresent(user -> setAuthentication(request, user,
                         List.of(new SimpleGrantedAuthority(user.role().authority()))));
             }
-        } else if (devAuthFallback) {
+        } else if (devAuthFallback && authHeader == null && !isCustomerPath(request)) {
             applyDevFallback(request);
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean isCustomerPath(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        return uri != null && uri.startsWith("/api/customers");
     }
 
     /**
