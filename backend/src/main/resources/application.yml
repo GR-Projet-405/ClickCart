@@ -8,7 +8,7 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI:mongodb://localhost:27017/clickcart}
-      database: ${MONGODB_DATABASE:Clickcart_db}
+      database: ${DATABASE_NAME:${MONGODB_DATABASE:clickcart}}
   servlet:
     multipart:
       enabled: true
@@ -43,7 +43,7 @@ clickcart:
     issuer-uri: ${JWT_ISSUER_URI:}
     audience: ${JWT_AUDIENCE:clickcart}
   jwt:
-    secret: ${CLICKCART_JWT_SECRET:clickcart-local-dev-secret-please-change-32}
+    secret: ${JWT_SECRET:${CLICKCART_JWT_SECRET:clickcart-local-dev-secret-please-change-32}}
     ttl-seconds: ${CLICKCART_JWT_TTL:31536000}
   upload:
     proof-dir: ${CLICKCART_PROOF_DIR:./data/job-proofs}

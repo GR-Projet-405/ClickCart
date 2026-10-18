@@ -2,6 +2,7 @@ package com.clickcart.service.impl;
 
 import com.clickcart.dto.*;
 import com.clickcart.exception.BadRequestException;
+import com.clickcart.exception.ForbiddenException;
 import com.clickcart.exception.ResourceNotFoundException;
 import com.clickcart.model.EarningStatus;
 import com.clickcart.model.ProviderEarning;
@@ -32,11 +33,35 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
         this.earningRepository = earningRepository;
     }
 
+    private static final Set<String> SUPPORTED_PERIODS = Set.of(
+            "7days", "7d", "week",
+            "30days", "30d", "month",
+            "90days", "90d", "quarter",
+            "365days", "1year", "1y", "year",
+            "all"
+    );
+
     @Override
     public EarningsSummaryResponse getEarningsSummary(String providerId, String period) {
+        String normPeriod = (period == null || period.isBlank()) ? "30days" : period.trim().toLowerCase();
+        if (!SUPPORTED_PERIODS.contains(normPeriod)) {
+            throw new BadRequestException("Unsupported earnings period: '" + period + "'. Supported periods are: 7days, 30days, 90days, 365days, all.");
+        }
+
         seedInitialDataIfEmpty(providerId);
 
         List<ProviderEarning> earnings = earningRepository.findByProviderId(providerId);
+
+        Instant cutoff = null;
+        if (normPeriod.equals("7days") || normPeriod.equals("7d") || normPeriod.equals("week")) {
+            cutoff = Instant.now().minus(7, ChronoUnit.DAYS);
+        } else if (normPeriod.equals("30days") || normPeriod.equals("30d") || normPeriod.equals("month")) {
+            cutoff = Instant.now().minus(30, ChronoUnit.DAYS);
+        } else if (normPeriod.equals("90days") || normPeriod.equals("90d") || normPeriod.equals("quarter")) {
+            cutoff = Instant.now().minus(90, ChronoUnit.DAYS);
+        } else if (normPeriod.equals("365days") || normPeriod.equals("1year") || normPeriod.equals("1y") || normPeriod.equals("year")) {
+            cutoff = Instant.now().minus(365, ChronoUnit.DAYS);
+        }
 
         BigDecimal totalGross = BigDecimal.ZERO;
         BigDecimal totalCommission = BigDecimal.ZERO;
@@ -45,13 +70,18 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
         long pendingCount = 0;
 
         for (ProviderEarning earning : earnings) {
+            Instant created = earning.getCreatedAt() != null ? earning.getCreatedAt()
+                    : (earning.getServiceCompletedAt() != null ? earning.getServiceCompletedAt() : Instant.EPOCH);
+
             BigDecimal gross = earning.getGrossAmount() != null ? earning.getGrossAmount() : BigDecimal.ZERO;
             BigDecimal comm = earning.getCommissionAmount() != null ? earning.getCommissionAmount() : BigDecimal.ZERO;
             BigDecimal net = earning.getNetAmount() != null ? earning.getNetAmount() : BigDecimal.ZERO;
 
-            if (earning.getStatus() != EarningStatus.REFUNDED) {
-                totalGross = totalGross.add(gross);
-                totalCommission = totalCommission.add(comm);
+            if (cutoff == null || !created.isBefore(cutoff)) {
+                if (earning.getStatus() != EarningStatus.REFUNDED) {
+                    totalGross = totalGross.add(gross);
+                    totalCommission = totalCommission.add(comm);
+                }
             }
 
             if (earning.getStatus() == EarningStatus.AVAILABLE) {
@@ -131,6 +161,10 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
     @Override
     public Page<ProviderTransactionDto> getTransactions(String providerId, String search, String status,
                                                        Instant startDate, Instant endDate, Pageable pageable) {
+        if (startDate != null && endDate != null && endDate.isBefore(startDate)) {
+            throw new BadRequestException("Invalid date range: endDate cannot be earlier than startDate");
+        }
+
         seedInitialDataIfEmpty(providerId);
 
         List<ProviderEarning> allEarnings = earningRepository.findByProviderId(providerId);
@@ -153,11 +187,19 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
                         boolean matchCustomer = e.getCustomerName() != null && e.getCustomerName().toLowerCase().contains(s);
                         if (!matchId && !matchBooking && !matchService && !matchCustomer) return false;
                     }
-                    if (startDate != null && e.getCreatedAt().isBefore(startDate)) return false;
-                    if (endDate != null && e.getCreatedAt().isAfter(endDate)) return false;
+                    Instant created = e.getCreatedAt() != null ? e.getCreatedAt()
+                            : (e.getServiceCompletedAt() != null ? e.getServiceCompletedAt() : Instant.EPOCH);
+                    if (startDate != null && created.isBefore(startDate)) return false;
+                    if (endDate != null && created.isAfter(endDate)) return false;
                     return true;
                 })
-                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .sorted((a, b) -> {
+                    Instant aTime = a.getCreatedAt() != null ? a.getCreatedAt()
+                            : (a.getServiceCompletedAt() != null ? a.getServiceCompletedAt() : Instant.EPOCH);
+                    Instant bTime = b.getCreatedAt() != null ? b.getCreatedAt()
+                            : (b.getServiceCompletedAt() != null ? b.getServiceCompletedAt() : Instant.EPOCH);
+                    return bTime.compareTo(aTime);
+                })
                 .collect(Collectors.toList());
 
         int start = (int) pageable.getOffset();
@@ -177,7 +219,7 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found: " + transactionId));
 
         if (!earning.getProviderId().equals(providerId)) {
-            throw new BadRequestException("Unauthorized access to transaction data (BR-09)");
+            throw new ForbiddenException("Access denied: You cannot view transaction data for another provider (BR-09)");
         }
 
         return ProviderTransactionDto.fromEntity(earning);
@@ -221,6 +263,10 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
     @Override
     public PayoutResponse requestPayout(String providerId, PayoutRequest request) {
         log.info("Processing payout request of LKR {} for provider {}", request.getAmount(), providerId);
+
+        if (request.getAmount() == null || request.getAmount().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BadRequestException("Payout amount must be greater than zero");
+        }
 
         EarningsSummaryResponse summary = getEarningsSummary(providerId, "ALL");
         if (request.getAmount().compareTo(summary.getNetAvailableBalance()) > 0) {
