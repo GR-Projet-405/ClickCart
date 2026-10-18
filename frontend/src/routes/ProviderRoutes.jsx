@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 
 // Layout
 import ServiceProviderLayout from "../layouts/ServiceProviderLayout/ServiceProviderLayout";
@@ -24,6 +24,9 @@ import ProviderJobManagementDashboard from "../pages/provider/ProviderJobManagem
 import ProviderJobDetailsConsole from "../pages/provider/ProviderJobDetailsConsole";
 import AvailabilityPage from "../pages/provider/AvailabilityPage";
 
+// DEV-04: Provider Verification Form Component (ආපහු එකතු කළා)
+import ProviderVerification from "../components/provider/ProviderVerification";
+
 // Provider Profile & Earnings
 import ProviderProfileOverview from "../pages/Provider/profile/ProviderProfileOverview";
 import ProviderSetup from "../pages/Provider/profile/ProviderSetup";
@@ -32,105 +35,84 @@ import SettlementTrackingPage from "../pages/Provider/SettlementTrackingPage";
 import EarningsDashboardPage from "../pages/provider/earnings/EarningsDashboardPage";
 import TransactionHistoryPage from "../pages/provider/earnings/TransactionHistoryPage";
 
-// Reviews
+import ConversationsPage from "../pages/messaging/ConversationsPage";
+import MessagesPage from "../pages/Messages/MessagesPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
-// Messaging
-import MessagesPage from "../pages/Messages/MessagesPage";
-import ConversationsPage from "../pages/messaging/ConversationsPage";
-
-/**
- * ProviderRoutes — Group 2: Service Provider Dashboard & Routing
- *
- * Dedicated routing module for all /provider routes under ServiceProviderLayout.
- * Includes:
- *  - /provider & /provider/dashboard
- *  - /provider/services, /provider/services/:serviceId/pricing, /provider/services/:serviceId/media
- *  - /provider/bookings
- *  - /provider/service-areas, /provider/service-areas/new, /provider/service-areas/:id/edit
- *  - /provider/jobs, /provider/jobs/:jobId
- *  - /provider/profile, /provider/profile/setup, /provider/profile/edit, /provider/profile/public
- *  - /provider/reviews
- *  - /provider/availability
- *  - /provider/settlements
- *  - /provider/earnings, /provider/earnings/transactions
- *  - /provider/messages, /provider/messages/conversations, /provider/messages/:conversationId
- *  - Dynamic routes from providerNavigation (e.g. calendar, settings)
- */
 export default function ProviderRoutes() {
   return (
-    <Route path="/provider" element={<ServiceProviderLayout />}>
-      {/* Dashboard */}
-      <Route index element={<ProviderDashboard />} />
-      <Route path="dashboard" element={<ProviderDashboard />} />
+    <Routes>
+      <Route element={<ServiceProviderLayout />}>
+        <Route index element={<ProviderDashboard />} />
+        <Route path="dashboard" element={<ProviderDashboard />} />
+        <Route path="services" element={<ProviderServicesPage />} />
 
-      {/* Services, Pricing & Media */}
-      <Route path="services" element={<ProviderServicesPage />} />
-      <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
-      <Route path="services/:serviceId/media" element={<ServiceMedia />} />
 
-      {/* Bookings */}
-      <Route path="bookings" element={<BookingApprovalPage />} />
+        {/* DEV-04: Provider Verification Route */}
+        <Route path="verification" element={<ProviderVerification />} />
 
-      {/* Service Areas */}
-      <Route path="service-areas" element={<ServiceAreasPage />} />
-      <Route path="service-areas/new" element={<AddServiceAreaPage />} />
-      <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+        {/* DEV-07: Service Pricing & Packages Route */}
+        <Route path="services/:serviceId/pricing" element={<PricingSetupPage />} />
+        <Route path="services/:serviceId/media" element={<ServiceMedia />} />
 
-      {/* Job Management */}
-      <Route path="jobs" element={<ProviderJobManagementDashboard />} />
-      <Route path="jobs/:jobId" element={<ProviderJobDetailsConsole />} />
+        <Route path="bookings" element={<BookingApprovalPage />} />
+        <Route path="service-areas" element={<ServiceAreasPage />} />
+        <Route path="service-areas/new" element={<AddServiceAreaPage />} />
+        <Route path="service-areas/:id/edit" element={<EditServiceAreaPage />} />
+        <Route path="jobs" element={<ProviderJobManagementDashboard />} />
+        <Route path="jobs/:jobId" element={<ProviderJobDetailsConsole />} />
 
-      {/* Profile & Setup */}
-      <Route path="profile" element={<ProviderProfileOverview />} />
-      <Route path="profile/setup" element={<ProviderSetup />} />
-      <Route path="profile/edit" element={<EditProviderProfile />} />
-      <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        {/* DEV-03: Provider Registration & Profile Routes */}
+        <Route path="profile" element={<ProviderProfileOverview />} />
+        <Route path="profile/setup" element={<ProviderSetup />} />
+        <Route path="profile/edit" element={<EditProviderProfile />} />
+        <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
 
-      {/* Reviews & Availability */}
-      <Route path="reviews" element={<ProviderReviewsPage />} />
-      <Route path="availability" element={<AvailabilityPage />} />
+        {/* Provider Reviews & Availability */}
+        <Route path="reviews" element={<ProviderReviewsPage />} />
+        <Route path="availability" element={<AvailabilityPage />} />
 
-      {/* Settlements & Earnings (DEV-28) */}
-      <Route path="settlements" element={<SettlementTrackingPage />} />
-      <Route path="earnings" element={<EarningsDashboardPage />} />
-      <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
+        {/* Settlement Tracking & Earnings */}
+        <Route path="settlements" element={<SettlementTrackingPage />} />
+        <Route path="earnings" element={<EarningsDashboardPage />} />
+        <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
 
-      {/* Messages */}
-      <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
-      <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
-      <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
+        {/* DEV-25: Messages */}
+        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+        <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
+        <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
-      {/* Dynamic routes from providerNavigation (e.g. calendar, settings) */}
-      {providerNavigation
-        .filter(
-          ({ path }) =>
-            path !== "/provider/dashboard" &&
-            path !== "/provider/services" &&
-            path !== "/provider/bookings" &&
-            path !== "/provider/messages" &&
-            path !== "/provider/service-areas" &&
-            path !== "/provider/availability" &&
-            path !== "/provider/reviews" &&
-            path !== "/provider/profile" &&
-            path !== "/provider/earnings" &&
-            path !== "/provider/jobs" &&
-            path !== "/provider/settlements"
-        )
-        .map(({ path }) => (
-          <Route
-            key={path}
-            path={path.replace("/provider/", "")}
-            element={
-              <WorkspacePlaceholder
-                title="Service Provider Workspace"
-                description="This area is reserved for service provider feature pages."
-              />
-            }
-          />
-        ))}
-
-      <Route path="*" element={<NotFound />} />
-    </Route>
+        {/* Dynamic routing for remaining provider navigation */}
+        {providerNavigation
+          .filter(
+            ({ path }) =>
+              path !== "/provider/dashboard" &&
+              path !== "/provider/services" &&
+              path !== "/provider/bookings" &&
+              path !== "/provider/messages" &&
+              path !== "/provider/service-areas" &&
+              path !== "/provider/availability" &&
+              path !== "/provider/reviews" &&
+              path !== "/provider/profile" &&
+              path !== "/provider/earnings" &&
+              path !== "/provider/jobs" &&
+              path !== "/provider/settlements" &&
+              path !== "/provider/verification"
+          )
+          .map(({ path }) => (
+            <Route
+              key={path}
+              path={path.replace("/provider/", "")}
+              element={
+                <WorkspacePlaceholder
+                  title="Service Provider Workspace"
+                  description="This area is reserved for service provider feature pages."
+                />
+              }
+            />
+          ))}
+        <Route path="*" element={<NotFound />} />
+      </Route>
+    </Routes>
   );
 }

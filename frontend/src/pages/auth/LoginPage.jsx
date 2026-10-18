@@ -127,7 +127,6 @@ export default function LoginPage() {
       topBarLinks={
         <>
           <Link to="/register" state={{ role: "SERVICE_PROVIDER" }}>Become a Provider</Link>
-          <a href="#help-center">Help Center</a>
         </>
       }
       panel={
@@ -235,18 +234,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="auth-divider">or continue with</div>
-        <div className="auth-social">
-          <button type="button" className="auth-social__button" disabled aria-describedby="social-note">
-            Google <span className="auth-social__soon">Soon</span>
-          </button>
-          <button type="button" className="auth-social__button" disabled aria-describedby="social-note">
-            Facebook <span className="auth-social__soon">Soon</span>
-          </button>
-        </div>
-        <p id="social-note" className="auth-social__note">
-          Social sign-in is coming soon.
-        </p>
+
       </div>
     </AuthLayout>
   );

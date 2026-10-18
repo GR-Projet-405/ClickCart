@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { AlertCircle, ArrowRight, Search, Wrench, X } from "lucide-react";
-import { Link } from "react-router-dom";
+import { AlertCircle, ArrowRight, Search, Wrench, X, MapPin } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Spinner from "../../components/common/Spinner";
@@ -116,10 +116,15 @@ function mapSelectedAvailability(selectedAvailability) {
 }
 
 export default function MarketplaceServicesPage() {
+  const [searchParams] = useSearchParams();
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [category, setCategory] = useState("All categories");
+  const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [category, setCategory] = useState(
+    () => searchParams.get("category") || "All categories",
+  );
   const [location, setLocation] = useState("All locations");
   const [minPrice, setMinPrice] = useState(DEFAULT_MIN_PRICE);
   const [maxPrice, setMaxPrice] = useState(DEFAULT_MAX_PRICE);
@@ -130,7 +135,6 @@ export default function MarketplaceServicesPage() {
   const [selectedService, setSelectedService] = useState(null);
   const [totalElements, setTotalElements] = useState(0);
   const [catalogServices, setCatalogServices] = useState([]);
-  const [query, setQuery] = useState("");
 
   const loadCatalogServices = async () => {
     try {
@@ -169,8 +173,18 @@ export default function MarketplaceServicesPage() {
   }, []);
 
   useEffect(() => {
+    setQuery(searchParams.get("q") ?? "");
+    setCategory(searchParams.get("category") || "All categories");
+  }, [searchParams]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedQuery(query), 300);
+    return () => clearTimeout(handler);
+  }, [query]);
+
+  useEffect(() => {
     setCurrentPage(1);
-  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy]);
+  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy, debouncedQuery]);
 
   useEffect(() => {
     const supportedSortValues = new Set(["relevance", "price_asc", "price_desc", "rating"]);
@@ -186,10 +200,11 @@ export default function MarketplaceServicesPage() {
       sortBy: normalizedSortBy,
       page: Math.max(currentPage - 1, 0),
       size: PAGE_SIZE,
+      q: debouncedQuery ? debouncedQuery : undefined,
     };
 
     loadServices(params);
-  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy, currentPage]);
+  }, [category, location, maxPrice, minPrice, selectedAvailability, selectedRatings, sortBy, currentPage, debouncedQuery]);
 
   const categories = useMemo(
     () =>
@@ -331,6 +346,13 @@ export default function MarketplaceServicesPage() {
             className="cc-button cc-button--primary cc-button--md marketplace-ai-search-link"
           >
             Try AI-Powered Search
+          </Link>
+          <Link
+            to="/find-services/map"
+            className="cc-button cc-button--outline cc-button--md"
+            style={{ marginLeft: '1rem' }}
+          >
+            Discover by Map <MapPin size={16} style={{ marginLeft: '0.5rem' }} />
           </Link>
         </div>
 

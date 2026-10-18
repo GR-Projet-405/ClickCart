@@ -129,6 +129,20 @@
   color: var(--cc-text-primary);
 }
 
+.customer-account-sidebar__item--danger:hover {
+  background: var(--cc-danger-soft, #fee2e2);
+  color: var(--cc-danger, #ef4444);
+}
+
+.customer-account-sidebar__item--danger:hover .customer-account-sidebar__item-icon {
+  color: var(--cc-danger, #ef4444);
+}
+
+.customer-account-sidebar__item--danger:hover .customer-account-sidebar__item-desc {
+  color: var(--cc-danger, #ef4444);
+  opacity: 0.85;
+}
+
 .customer-account-sidebar__item--active {
   background: var(--cc-primary-soft);
   color: var(--cc-primary-dark);
