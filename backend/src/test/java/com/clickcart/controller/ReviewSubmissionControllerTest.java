@@ -9,7 +9,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Instant;
 
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
@@ -22,8 +25,12 @@ import com.clickcart.dto.ReviewResponse;
 import com.clickcart.service.ReviewEligibilityGateway;
 import com.clickcart.service.ReviewService;
 
+@WithMockUser
 @WebMvcTest(ReviewSubmissionController.class)
 class ReviewSubmissionControllerTest {
+
+    @MockitoBean(name = "mongoMappingContext")
+    private MongoMappingContext mongoMappingContext;
 
     @Autowired
     private MockMvc mockMvc;
@@ -80,7 +87,7 @@ class ReviewSubmissionControllerTest {
         ).thenReturn(created);
 
         mockMvc.perform(
-                        post("/api/reviews")
+                        post("/api/reviews").with(csrf())
                                 .header(
                                         "X-Customer-Id",
                                         "customer-1"
@@ -121,7 +128,7 @@ class ReviewSubmissionControllerTest {
             throws Exception {
 
         mockMvc.perform(
-                        post("/api/reviews")
+                        post("/api/reviews").with(csrf())
                                 .header(
                                         "X-Customer-Id",
                                         "customer-1"
