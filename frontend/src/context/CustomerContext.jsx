@@ -29,8 +29,11 @@ export function CustomerProvider({ children }) {
 
   // Re-fetch profile whenever the authenticated user or session status changes
   useEffect(() => {
-    if (status !== "loading") {
+    if (status === "authenticated") {
       fetchProfile();
+    } else if (status === "anonymous") {
+      setProfile(null);
+      setIsLoading(false);
     }
   }, [user?.id, status, fetchProfile]);
 

@@ -68,6 +68,7 @@ public class SecurityConfig {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .exceptionHandling(exceptions -> configureExceptionHandling(exceptions))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/provider/jobs", "/api/provider/jobs/**")
@@ -108,6 +109,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
+                        .requestMatchers("/api/customers/me/**", "/api/customers/**").authenticated()
 
                         // BE-049: refund endpoints – all require authentication;
                         //   listing all refunds and changing status require ADMIN

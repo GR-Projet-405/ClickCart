@@ -1,10 +1,8 @@
-import React from 'react';
-import { useEffect, useState } from "react";
-import { Bell, Heart, Menu, X } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Bell, Heart, Menu, X, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import BrandLogo from "../../common/BrandLogo";
-import Button from "../../common/Button";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import { customerNavigation } from "../../../config/customerNavigation";
@@ -21,19 +19,58 @@ export default function CustomerHeader() {
   const location = useLocation();
   const { pathname, search } = location;
 
-  const { profile, displayName, avatarFallback } = useCustomer();
+  const { profile, displayName } = useCustomer();
+  const { user, status, logout } = useAuth();
 
+  const isAuthenticated = status === "authenticated" || !!user;
+
+  const isProfileActive =
+    pathname === "/customer/profile" || pathname === "/profile";
   const isFavoritesActive =
-    pathname === "/customer/profile" &&
-    new URLSearchParams(search).get("tab") === "favorites";
+    pathname === "/favorites" ||
+    (pathname === "/customer/profile" &&
+      new URLSearchParams(search).get("tab") === "favorites");
 
-  useEffect(() => setMenuOpen(false), [pathname]);
   useEffect(() => {
-    const closeOnEscape = (event) =>
-      event.key === "Escape" && setMenuOpen(false);
+    setMenuOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    const closeOnEscape = (event) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
     document.addEventListener("keydown", closeOnEscape);
-    return () => document.removeEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("keydown", closeOnEscape);
+    };
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate("/");
+    } catch (err) {
+      console.error("Failed to log out:", err);
+      navigate("/");
+    }
+  };
+
+  const customerName =
+    profile?.preferredName ||
+    profile?.fullName?.split(" ")[0] ||
+    user?.fullName?.split(" ")[0] ||
+    "Customer";
+
+  const fallbackLetters = (
+    profile?.fullName ||
+    user?.fullName ||
+    displayName ||
+    "CP"
+  )
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <header className="customer-header">
@@ -52,8 +89,9 @@ export default function CustomerHeader() {
         </nav>
         <div className="customer-header__actions">
           <IconButton
-            className={`customer-header__desktop-action ${isFavoritesActive ? "customer-header__action--active" : ""
-              }`}
+            className={`customer-header__desktop-action ${
+              isFavoritesActive ? "customer-header__action--active" : ""
+            }`}
             icon={
               <Heart
                 size={18}
@@ -63,7 +101,7 @@ export default function CustomerHeader() {
             }
             label="Favorites & Saved"
             variant="ghost"
-            onClick={() => navigate("/customer/profile?tab=favorites")}
+            onClick={() => navigate("/favorites")}
           />
           <IconButton
             icon={<Bell size={18} />}
@@ -71,35 +109,58 @@ export default function CustomerHeader() {
             variant="ghost"
             onClick={() => navigate("/notifications")}
           />
-          {status === 'authenticated' && user ? (
+
+          {isAuthenticated ? (
             <>
+              {/* Clean profile icon button directly navigating to /customer/profile */}
               <Link
-                className="customer-header__account"
                 to="/customer/profile"
+                className={`customer-header__account ${
+                  isProfileActive ? "customer-header__account--active" : ""
+                }`}
+                title="Go to Customer Profile"
                 aria-label="View customer profile"
               >
                 <Avatar
                   src={profile?.avatarUrl}
-                  fallback={(user?.fullName || "CP").slice(0, 2).toUpperCase()}
+                  fallback={fallbackLetters}
                   size="sm"
                 />
-                <span>
+                <span className="customer-header__account-text">
                   <small>Hello,</small>
-                  <strong>{user?.fullName?.split(" ")[0] || "Customer"}</strong>
+                  <strong>{customerName}</strong>
                 </span>
               </Link>
-              <Button className="customer-header__cta">Post a Service</Button>
+
+              {/* Sign Out Button */}
+              <button
+                type="button"
+                className="customer-header__signout-btn"
+                onClick={handleLogout}
+                title="Sign Out"
+                aria-label="Sign Out"
+              >
+                <LogOut size={16} />
+                <span>Sign Out</span>
+              </button>
             </>
           ) : (
-            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-              <Link to="/login" style={{ textDecoration: 'none', color: 'var(--cc-text-secondary)', fontWeight: 500 }}>
+            <div className="customer-header__auth-buttons">
+              <Link
+                to="/login"
+                className="customer-header__login-link"
+              >
                 Log In
               </Link>
-              <Link to="/register" className="cc-button cc-button--primary cc-button--md">
+              <Link
+                to="/register"
+                className="cc-button cc-button--primary cc-button--md"
+              >
                 Sign Up
               </Link>
             </div>
           )}
+
           <IconButton
             className="customer-header__menu"
             icon={menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -115,6 +176,10 @@ export default function CustomerHeader() {
         open={menuOpen}
         pathname={pathname}
         onNavigate={() => setMenuOpen(false)}
+        isAuthenticated={isAuthenticated}
+        user={user}
+        profile={profile}
+        onLogout={handleLogout}
       />
     </header>
   );
