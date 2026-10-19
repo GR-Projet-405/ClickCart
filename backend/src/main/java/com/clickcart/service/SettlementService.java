@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -20,6 +21,7 @@ import com.clickcart.dto.SettlementPageResponse.CycleTracker;
 import com.clickcart.dto.SettlementPageResponse.FinanceAuthStates;
 import com.clickcart.dto.SettlementPageResponse.SettlementRow;
 import com.clickcart.dto.SettlementPageResponse.SummaryStats;
+import com.clickcart.exception.BadRequestException;
 import com.clickcart.model.Settlement;
 import com.clickcart.repository.SettlementRepository;
 
@@ -45,7 +47,10 @@ public class SettlementService {
                                                   String search, String dateFilter,
                                                   String stateFilter) {
 
-        Pageable pageable = PageRequest.of(page - 1, pageSize);
+        // BE-048: normalise page=0 (or any negative value) to page=1
+        int safePage = Math.max(1, page);
+
+        Pageable pageable = PageRequest.of(safePage - 1, pageSize);
         String q = (search == null) ? "" : search.trim();
         boolean hasState  = stateFilter != null && !stateFilter.isBlank()
                 && !"All Finance States".equalsIgnoreCase(stateFilter);
@@ -84,7 +89,7 @@ public class SettlementService {
         resp.setCycleTracker(cycle);
         resp.setSettlements(rows);
         resp.setTotal((int) dbPage.getTotalElements());
-        resp.setPage(page);
+        resp.setPage(safePage);
         resp.setPageSize(pageSize);
         return resp;
     }
@@ -100,6 +105,24 @@ public class SettlementService {
         BigDecimal fee    = amount.multiply(new BigDecimal("0.02")).setScale(2, RoundingMode.HALF_UP);
         BigDecimal net    = amount.subtract(fee);
 
+        // BE-047: validate date strings before parsing to avoid 500 on bad input
+        LocalDate captureDate;
+        LocalDate settlementDate;
+        try {
+            captureDate = LocalDate.parse(req.getCaptureDate());
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException(
+                    "Invalid captureDate '" + req.getCaptureDate()
+                    + "'. Expected ISO format yyyy-MM-dd.");
+        }
+        try {
+            settlementDate = LocalDate.parse(req.getSettlementDate());
+        } catch (DateTimeParseException e) {
+            throw new BadRequestException(
+                    "Invalid settlementDate '" + req.getSettlementDate()
+                    + "'. Expected ISO format yyyy-MM-dd.");
+        }
+
         Settlement s = new Settlement();
         s.setId(nextId);
         s.setProviderId(DEFAULT_PROVIDER_ID);
@@ -107,8 +130,8 @@ public class SettlementService {
         s.setAmount(amount);
         s.setFee(fee);
         s.setNetAmount(net);
-        s.setCaptureDate(LocalDate.parse(req.getCaptureDate()));
-        s.setSettlementDate(LocalDate.parse(req.getSettlementDate()));
+        s.setCaptureDate(captureDate);
+        s.setSettlementDate(settlementDate);
         s.setPayoutMethod(req.getPayoutMethod());
         s.setFinanceState(req.getFinanceState());
 

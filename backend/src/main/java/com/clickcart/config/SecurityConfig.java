@@ -1,5 +1,6 @@
 package com.clickcart.config;
 
+import java.io.IOException;
 import java.util.List;
 
 import com.clickcart.exception.ErrorResponse;
@@ -17,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -67,6 +69,14 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
+                .exceptionHandling(exceptions -> configureExceptionHandling(exceptions))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/provider/jobs", "/api/provider/jobs/**")
+                        .hasRole("SERVICE_PROVIDER")
+                        .anyRequest().permitAll())
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -83,27 +93,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling(exceptions -> exceptions
-                        .authenticationEntryPoint((request, response, authException) -> {
-                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            ErrorResponse err = new ErrorResponse(
-                                    HttpServletResponse.SC_UNAUTHORIZED,
-                                    "Unauthorized",
-                                    authException.getMessage() != null ? authException.getMessage()
-                                            : "Full authentication is required to access this resource");
-                            objectMapper.writeValue(response.getOutputStream(), err);
-                        })
-                        .accessDeniedHandler((request, response, accessDeniedException) -> {
-                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                            ErrorResponse err = new ErrorResponse(
-                                    HttpServletResponse.SC_FORBIDDEN,
-                                    "Forbidden",
-                                    accessDeniedException.getMessage() != null ? accessDeniedException.getMessage()
-                                            : "Access denied: insufficient permissions");
-                            objectMapper.writeValue(response.getOutputStream(), err);
-                        }))
+                .exceptionHandling(exceptions -> configureExceptionHandling(exceptions))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/health", "/api/public/**").permitAll()
                         // DEV-01: public authentication endpoints
@@ -121,6 +111,19 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
+                        .requestMatchers("/api/customers/me/**", "/api/customers/**").authenticated()
+
+                        // BE-049: refund endpoints – all require authentication;
+                        //   listing all refunds and changing status require ADMIN
+                        .requestMatchers(HttpMethod.POST,  "/api/refunds").authenticated()
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds/{id}").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/refunds/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH,  "/api/refunds/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET,   "/api/refunds").hasRole("ADMIN")
+
+                        // BE-049: settlement endpoints – all require at least authentication
+                        .requestMatchers("/api/settlements/**").authenticated()
 
                         //for ai service
                         .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()
@@ -134,6 +137,28 @@ public class SecurityConfig {
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter)));
 
         return http.build();
+    }
+
+    private void configureExceptionHandling(
+            ExceptionHandlingConfigurer<HttpSecurity> exceptions) {
+        exceptions
+                .authenticationEntryPoint((request, response, authException) -> writeSecurityError(
+                        response,
+                        HttpServletResponse.SC_UNAUTHORIZED,
+                        "Unauthorized",
+                        "Authentication is required"))
+                .accessDeniedHandler((request, response, accessDeniedException) -> writeSecurityError(
+                        response,
+                        HttpServletResponse.SC_FORBIDDEN,
+                        "Forbidden",
+                        "Access denied"));
+    }
+
+    private void writeSecurityError(HttpServletResponse response, int status, String error, String message)
+            throws IOException {
+        response.setStatus(status);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        objectMapper.writeValue(response.getOutputStream(), new ErrorResponse(status, error, message));
     }
 
     /**
