@@ -24,6 +24,7 @@ import java.time.Instant;
  * @param lastMessageText   truncated preview of the most recent message (≤ 120 chars); null if no messages yet
  * @param lastMessageAt     timestamp of the most recent message; null if no messages yet
  * @param unreadCount       number of messages in this conversation not yet read by the caller
+ * @param bookingStatus     status of the linked booking (e.g. Confirmed, Completed, Cancelled); null if none
  */
 public record ConversationSummaryResponse(
         String id,
@@ -34,5 +35,6 @@ public record ConversationSummaryResponse(
         String bookingId,
         String lastMessageText,
         Instant lastMessageAt,
-        int unreadCount
+        int unreadCount,
+        String bookingStatus
 ) {}

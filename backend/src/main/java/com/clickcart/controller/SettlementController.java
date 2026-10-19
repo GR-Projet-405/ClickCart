@@ -10,10 +10,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * REST controller for Settlement Tracking & Authorized Finance States.
+ * REST controller for Settlement Tracking &amp; Authorized Finance States.
+ *
+ * <p>Mapped at two base paths:
+ * <ul>
+ *   <li>{@code /api/provider/settlements} – the original provider-facing path</li>
+ *   <li>{@code /api/settlements}           – public alias referenced by DEV-29 tests</li>
+ * </ul>
  */
 @RestController
-@RequestMapping("/api/provider/settlements")
 @CrossOrigin(origins = "*")
 public class SettlementController {
 
@@ -25,8 +30,10 @@ public class SettlementController {
 
     /**
      * GET /api/provider/settlements
+     * GET /api/settlements
+     * GET /api/settlements/my  (BE-048 – page=0 is normalised to 1 in the service layer)
      */
-    @GetMapping
+    @GetMapping({"/api/provider/settlements", "/api/settlements", "/api/settlements/my"})
     public ResponseEntity<SettlementPageResponse> getSettlements(
             @RequestParam(defaultValue = "1")     int    page,
             @RequestParam(defaultValue = "10")    int    pageSize,
@@ -41,11 +48,13 @@ public class SettlementController {
 
     /**
      * POST /api/provider/settlements
+     * POST /api/settlements
      *
      * Creates a new settlement record. Fee is auto-calculated at 2% of amount.
      * Returns the newly created settlement row.
+     * Invalid date strings return 400 Bad Request (BE-047).
      */
-    @PostMapping
+    @PostMapping({"/api/provider/settlements", "/api/settlements"})
     public ResponseEntity<SettlementRow> createSettlement(
             @Valid @RequestBody SettlementCreateRequest request
     ) {

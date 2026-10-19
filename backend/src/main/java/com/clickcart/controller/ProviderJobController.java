@@ -4,8 +4,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -37,12 +37,17 @@ public class ProviderJobController {
         this.providerJobService = providerJobService;
     }
 
-    private String getCurrentProviderId(Jwt jwt) {
-        if (jwt != null) {
-            return jwt.getSubject();
+    private String getCurrentProviderId(Authentication authentication) {
+        if (authentication == null
+            || !authentication.isAuthenticated()
+            || authentication instanceof AnonymousAuthenticationToken) {
+            throw ApiException.unauthorized("Authentication is required");
         }
-        // Default for local development without authentication
-        return "provider-a";
+        String providerId = authentication.getName();
+        if (providerId == null || providerId.isBlank()) {
+            throw ApiException.unauthorized("Authentication is required");
+        }
+        return providerId;
     }
 
     @GetMapping
@@ -50,9 +55,9 @@ public class ProviderJobController {
         @RequestParam(required = false) String status,
         @RequestParam(required = false) Integer year,
         @RequestParam(required = false) Integer month,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         if (year != null && month != null) {
             return providerJobService.listJobsByMonth(providerId, parseStatus(status), year, month);
         }
@@ -62,36 +67,36 @@ public class ProviderJobController {
     @PostMapping
     public ProviderJobDetailDto createCustomJob(
         @RequestBody CreateCustomJobRequest request,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.createCustomJob(providerId, request);
     }
 
     @GetMapping("/{jobId}")
     public ProviderJobDetailDto get(
         @PathVariable String jobId,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.getJob(providerId, jobId);
     }
 
     @PutMapping("/{jobId}/accept")
     public ProviderJobDetailDto accept(
         @PathVariable String jobId,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.acceptJob(providerId, jobId);
     }
 
     @PutMapping("/{jobId}/start")
     public ProviderJobDetailDto start(
         @PathVariable String jobId,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.startJob(providerId, jobId);
     }
 
@@ -99,9 +104,9 @@ public class ProviderJobController {
     public ProviderJobDetailDto uploadProof(
         @PathVariable String jobId,
         @RequestParam("file") MultipartFile file,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.uploadProof(providerId, jobId, file);
     }
 
@@ -109,9 +114,9 @@ public class ProviderJobController {
     public ProviderJobDetailDto complete(
         @PathVariable String jobId,
         @RequestBody(required = false) CompleteJobRequest request,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         return providerJobService.completeJob(providerId, jobId, request);
     }
 
@@ -119,9 +124,9 @@ public class ProviderJobController {
     public ResponseEntity<Resource> proof(
         @PathVariable String jobId,
         @PathVariable String photoId,
-        @AuthenticationPrincipal Jwt jwt
+        Authentication authentication
     ) {
-        String providerId = getCurrentProviderId(jwt);
+        String providerId = getCurrentProviderId(authentication);
         Resource resource = providerJobService.loadProof(providerId, jobId, photoId);
         MediaType mediaType = providerJobService.mediaTypeFor(providerId, jobId, photoId);
         return ResponseEntity.ok()

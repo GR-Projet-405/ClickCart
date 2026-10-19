@@ -248,8 +248,11 @@ export default function ForgotPasswordPage() {
                 Enter verification code
               </h1>
               <p className="auth-page__subtitle">
-                If an account exists for <strong className="auth-strong">{email.trim()}</strong>, we sent it a 6-digit
+                If an account exists for <strong className="auth-strong">{email.trim()}</strong>, we emailed it a 6-digit
                 code. It is valid for 10 minutes.
+              </p>
+              <p className="auth-page__hint">
+                Didn&apos;t get it? Check your spam or junk folder for &ldquo;Your ClickCart password reset code&rdquo;.
               </p>
             </header>
             {failure && <AuthAlert title={failure.title}>{failure.detail}</AuthAlert>}

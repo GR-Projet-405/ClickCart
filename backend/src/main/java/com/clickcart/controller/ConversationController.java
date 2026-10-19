@@ -2,6 +2,7 @@ package com.clickcart.controller;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.validation.Valid;
 
@@ -9,6 +10,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,10 +38,16 @@ import com.clickcart.exception.AccessForbiddenException;
 
 /**
  * REST endpoints for messaging and booking-linked conversations.
+ *
+ * <p>The caller's identity is always taken from the authenticated principal.
+ * Legacy {@code userId}/{@code role} query parameters are no longer trusted.</p>
  */
 @RestController
 @RequestMapping("/api/conversations")
 public class ConversationController {
+
+    private static final int MAX_PAGE_SIZE = 100;
+    private static final String INVALID_ROLE_MESSAGE = "role must be CUSTOMER or PROVIDER";
 
     private final ConversationService conversationService;
     private final BookingEventService bookingEventService;
@@ -54,10 +62,34 @@ public class ConversationController {
     }
 
     private String getUserId(Principal principal) {
-        if (principal == null) {
+        if (principal == null || principal.getName() == null) {
             throw new AccessForbiddenException("Not authenticated");
         }
         return principal.getName();
+    }
+
+    /**
+     * Resolves the conversation-list role. An explicit {@code role} parameter wins;
+     * otherwise the role is derived from the caller's granted authorities.
+     */
+    private SenderRole resolveRole(String role, Principal principal) {
+        if (role == null || role.isBlank()) {
+            boolean isProvider = principal instanceof Authentication auth
+                    && auth.getAuthorities().stream()
+                            .anyMatch(a -> "ROLE_SERVICE_PROVIDER".equals(a.getAuthority()));
+            return isProvider ? SenderRole.PROVIDER : SenderRole.CUSTOMER;
+        }
+        return switch (role.trim().toUpperCase(Locale.ROOT)) {
+            case "CUSTOMER" -> SenderRole.CUSTOMER;
+            case "PROVIDER", "SERVICE_PROVIDER" -> SenderRole.PROVIDER;
+            default -> throw new IllegalArgumentException(INVALID_ROLE_MESSAGE);
+        };
+    }
+
+    private static Pageable pageOf(int page, int size) {
+        int safePage = Math.max(page, 0);
+        int safeSize = Math.min(Math.max(size, 1), MAX_PAGE_SIZE);
+        return PageRequest.of(safePage, safeSize);
     }
 
     // ==========================================
@@ -73,28 +105,35 @@ public class ConversationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/list")
+    /**
+     * Paginated conversation list. {@code /list} is kept as an alias for older callers.
+     */
+    @GetMapping({ "", "/list" })
     public ResponseEntity<List<ConversationSummaryResponse>> listConversations(
             Principal principal,
-            @RequestParam(name = "role", defaultValue = "CUSTOMER") SenderRole role,
+            @RequestParam(name = "role", required = false) String role,
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size) {
         String currentUserId = getUserId(principal);
-        Pageable pageable = PageRequest.of(page, size);
-        List<ConversationSummaryResponse> response = conversationService.listConversations(currentUserId, role,
-                pageable);
+        SenderRole senderRole = resolveRole(role, principal);
+        List<ConversationSummaryResponse> response = conversationService.listConversations(currentUserId,
+                senderRole, pageOf(page, size));
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/detail/{conversationId}")
+    /**
+     * Conversation detail with the first page of messages. {@code /detail/{id}} is kept as an alias.
+     */
+    @GetMapping({ "/{conversationId}", "/detail/{conversationId}" })
     public ResponseEntity<ConversationDetailResponse> getConversationDetail(
             Principal principal,
             @PathVariable("conversationId") String conversationId,
             @RequestParam(name = "page", defaultValue = "0") int messagePage,
             @RequestParam(name = "size", defaultValue = "20") int messageSize) {
         String currentUserId = getUserId(principal);
+        Pageable pageable = pageOf(messagePage, messageSize);
         ConversationDetailResponse response = conversationService.getConversationDetail(conversationId, currentUserId,
-                messagePage, messageSize);
+                pageable.getPageNumber(), pageable.getPageSize());
         return ResponseEntity.ok(response);
     }
 
@@ -105,8 +144,8 @@ public class ConversationController {
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "size", defaultValue = "20") int size) {
         String currentUserId = getUserId(principal);
-        Pageable pageable = PageRequest.of(page, size);
-        PagedMessagesResponse response = messageService.getMessages(conversationId, currentUserId, pageable);
+        PagedMessagesResponse response = messageService.getMessages(conversationId, currentUserId,
+                pageOf(page, size));
         return ResponseEntity.ok(response);
     }
 
@@ -146,43 +185,22 @@ public class ConversationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(conv);
     }
 
-    @GetMapping
-    public ResponseEntity<List<Conversation>> getConversations(
-            @RequestParam String userId,
-            @RequestParam String role) {
-        List<Conversation> result = "PROVIDER".equalsIgnoreCase(role)
-                ? conversationService.getConversationsForProvider(userId)
-                : conversationService.getConversationsForCustomer(userId);
-        return ResponseEntity.ok(result);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Conversation> getConversation(
-            @PathVariable String id,
-            @RequestParam String userId,
-            @RequestParam String role) {
-        Conversation conv = conversationService.getConversation(id, userId, role);
-        return ResponseEntity.ok(conv);
-    }
-
     @GetMapping("/{id}/events")
     public ResponseEntity<List<BookingEvent>> getEvents(
-            @PathVariable String id,
-            @RequestParam String userId,
-            @RequestParam String role) {
+            Principal principal,
+            @PathVariable String id) {
         // Verify access
-        conversationService.getConversation(id, userId, role);
+        conversationService.getParticipantConversation(id, getUserId(principal));
         List<BookingEvent> events = bookingEventService.getEventsForConversation(id);
         return ResponseEntity.ok(events);
     }
 
     @PostMapping("/{id}/events")
     public ResponseEntity<BookingEvent> publishEvent(
+            Principal principal,
             @PathVariable String id,
-            @RequestParam String userId,
-            @RequestParam String role,
             @RequestBody BookingEvent event) {
-        Conversation conv = conversationService.getConversation(id, userId, role);
+        Conversation conv = conversationService.getParticipantConversation(id, getUserId(principal));
         BookingEvent saved = bookingEventService.publishEvent(
                 conv.getBookingId(), id,
                 event.getEventType(), event.getLabel(),

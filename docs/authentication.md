@@ -26,6 +26,7 @@ Covers SRS **IAM-001 – IAM-012**, **SEC-002, SEC-003, SEC-007, SEC-014** and t
 | Lockout | 5 wrong passwords → account locked for 15 minutes (atomic counter). A password reset unlocks it. |
 | Rate limits (per IP) | login 10/min · register 10/15 min · email check 30/min · refresh 30/min · forgot-password 5/15 min · verify-code 10/15 min · reset-password 10/15 min. Response: `429` + `Retry-After`. |
 | Password reset | Email → **6-digit code** (10 min, 5 tries, resend after 60 s) → single-use reset token (10 min) → new password. Resetting signs the user out on every device. The forgot-password response is identical for unknown emails. |
+| Reset code delivery | **Emailed** through the project's mail server (`spring.mail.*`, Gmail SMTP) by `EmailPasswordResetCodeSender`, in the background so response time does not reveal whether an account exists. Without a mail server it falls back to the backend console (development only). See `AUTH_RESET_CODE_DELIVERY`. |
 | Audit | Security events are logged to the `clickcart.audit.auth` logger (ids and outcomes only, never passwords, codes or tokens). |
 
 ### Session flow (frontend)
@@ -239,12 +240,16 @@ All values are read from `backend/.env` (never committed). Defaults apply when a
 | `AUTH_RESET_RESEND_COOLDOWN_SECONDS` | `60` | Wait before a new code can be sent |
 | `AUTH_RESET_CODE_MAX_ATTEMPTS` | `5` | Wrong codes allowed per code |
 | `AUTH_RESET_TOKEN_TTL_MINUTES` | `10` | Reset token lifetime |
+| `AUTH_RESET_CODE_DELIVERY` | `auto` | `auto`: email when `spring.mail.*` is configured, otherwise print to the console (development). `email`: always email (never prints codes; use in shared/production environments). `console`: always print (local development only). |
+| `AUTH_RESET_MAIL_FROM` | `spring.mail.username` | Sender address for reset emails, shown as "ClickCart &lt;address&gt;" |
 | `AUTH_COOKIE_SECURE` | `false` | **Set `true` in production (HTTPS).** |
 | `AUTH_COOKIE_SAME_SITE` | `Lax` | Use `None` (with `Secure=true`) only if the frontend and API are on different sites |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated origins allowed to send the cookie |
 | `CLICKCART_DEV_AUTH_FALLBACK` | `true` | **Set `false` in any shared or production environment.** See [Moving off the development fallback](#moving-off-the-development-fallback). |
 
-`MONGODB_URI` must include the database name, e.g. `…mongodb.net/clickcart?appName=Cluster0`; without it the backend does not start.
+The database name comes from `DATABASE_NAME` (`clickcart`) in the team's `application.yml`; without a database name the backend does not start.
+
+Reset emails use the team's mail settings (`MAIL_USERNAME`, `MAIL_PASSWORD` → `spring.mail.*`). `MAIL_PASSWORD` must be the account's 16-letter Gmail **app password**; a wrong one shows `Could not email password reset code … Authentication failed` in the backend log.
 
 ---
 
@@ -264,7 +269,7 @@ Indexes are created on startup by `AuthIndexInitializer`. The user id (`users._i
 
 | Item | Status |
 |---|---|
-| Reset code delivery | **Development only:** printed in the backend console (`[DEV ONLY] Password reset code for …`). Replace `ConsolePasswordResetCodeSender` with an email/SMS sender (or DEV-33 notifications) before production. |
+| Reset code delivery | Emailed (fix for QA BE-001). Failed sends are logged without the code; the user sees the normal response and can resend after 60 s. Set `AUTH_RESET_CODE_DELIVERY=email` in shared/production environments so codes are never printed. Codes may land in spam until the sender domain is verified. |
 | Admin accounts | Cannot self-register by design. There is no admin creation screen yet; create admins directly in the database until an admin-provisioning flow is agreed. |
 | Access tokens after a password reset | Refresh tokens are revoked immediately; an already-issued access token remains valid until it expires (max 15 min). |
 | Rate limiter | In-memory, per backend instance. Needs a shared store (e.g. Redis) if the backend is scaled out; behind a proxy, configure forwarded headers so the real client IP is used. |
@@ -282,7 +287,7 @@ Backend unit tests (no database needed):
 
 ```bash
 cd backend
-./mvnw test -Dtest='AuthServiceTest,RefreshTokenServiceTest,PasswordResetServiceTest,JwtUtilTest,PasswordPolicyTest,FixedWindowRateLimiterTest'
+./mvnw test -Dtest='AuthServiceTest,RefreshTokenServiceTest,PasswordResetServiceTest,EmailPasswordResetCodeSenderTest,JwtUtilTest,PasswordPolicyTest,FixedWindowRateLimiterTest'
 ```
 
 | Test class | Covers |
@@ -290,6 +295,7 @@ cd backend
 | `AuthServiceTest` | registration rules, login, lockout, suspended accounts, refresh, email check |
 | `RefreshTokenServiceTest` | hashing, lifetimes, rotation, reuse detection, grace window |
 | `PasswordResetServiceTest` | code generation/hashing, cooldown, wrong codes, reset, reuse, expiry |
+| `EmailPasswordResetCodeSenderTest` | email content and recipient, delivery modes, console fallback, SMTP failure handling |
 | `JwtUtilTest` | claims, signature, expiry, tampering |
 | `PasswordPolicyTest` | password rules, BCrypt byte limit, phone normalization |
 | `FixedWindowRateLimiterTest` | limits, reset window, per-key counting |
@@ -298,5 +304,5 @@ Manual check (backend on `:8080`, frontend on `:5173`):
 
 1. `/register` → create a provider → lands on `/provider/profile/setup`.
 2. Log out (clear cookies) → `/login` → wrong password 5× → lockout banner with countdown.
-3. "Reset password" → send code → copy the code from the backend console → set a new password.
+3. "Reset password" → send code → open the email "Your ClickCart password reset code" (check spam) → enter the code → set a new password. A made-up code such as `123456` is correctly rejected.
 4. Log in with the new password → lands on the role's workspace; reload the page → still signed in.

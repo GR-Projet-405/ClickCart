@@ -3,9 +3,20 @@ import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { API_BASE_URL } from '../config/api';
 
+export const CONNECTION_STATE = {
+  CONNECTING: 'connecting',
+  CONNECTED: 'connected',
+  RECONNECTING: 'reconnecting',
+  OFFLINE: 'offline',
+};
+
+// After this many consecutive failed connection attempts we report "offline"
+const MAX_RECONNECT_ATTEMPTS_BEFORE_OFFLINE = 3;
+
 export const useStompClient = () => {
   const [client, setClient] = useState(null);
   const [connected, setConnected] = useState(false);
+  const [connectionState, setConnectionState] = useState(CONNECTION_STATE.CONNECTING);
 
   useEffect(() => {
     const token = localStorage.getItem('token') || '';
@@ -19,24 +30,57 @@ export const useStompClient = () => {
         Authorization: token ? `Bearer ${token}` : '',
       },
       debug: function (str) {
-        console.log(str);
+        if (import.meta.env.DEV) {
+          console.log(str);
+        }
       },
       reconnectDelay: 5000,
       heartbeatIncoming: 4000,
       heartbeatOutgoing: 4000,
     });
 
-    stompClient.onConnect = (frame) => {
-      console.log('STOMP connected');
+    let failedAttempts = 0;
+
+    stompClient.onConnect = () => {
+      if (import.meta.env.DEV) {
+        console.log('STOMP connected');
+      }
+      failedAttempts = 0;
       setConnected(true);
+      setConnectionState(CONNECTION_STATE.CONNECTED);
     };
 
     stompClient.onStompError = (frame) => {
-      console.error('STOMP error', frame.headers['message']);
+      if (import.meta.env.DEV) {
+        console.error('STOMP error', frame?.headers?.['message']);
+      }
+      failedAttempts += 1;
+      setConnected(false);
+      setConnectionState(
+        failedAttempts >= MAX_RECONNECT_ATTEMPTS_BEFORE_OFFLINE
+          ? CONNECTION_STATE.OFFLINE
+          : CONNECTION_STATE.RECONNECTING
+      );
+    };
+
+    stompClient.onWebSocketError = () => {
+      failedAttempts += 1;
+      setConnected(false);
+      setConnectionState(
+        failedAttempts >= MAX_RECONNECT_ATTEMPTS_BEFORE_OFFLINE
+          ? CONNECTION_STATE.OFFLINE
+          : CONNECTION_STATE.RECONNECTING
+      );
     };
     
     stompClient.onWebSocketClose = () => {
+      failedAttempts += 1;
       setConnected(false);
+      setConnectionState(
+        failedAttempts >= MAX_RECONNECT_ATTEMPTS_BEFORE_OFFLINE
+          ? CONNECTION_STATE.OFFLINE
+          : CONNECTION_STATE.RECONNECTING
+      );
     };
 
     stompClient.activate();
@@ -45,6 +89,7 @@ export const useStompClient = () => {
     return () => {
       stompClient.deactivate();
       setConnected(false);
+      setConnectionState(CONNECTION_STATE.OFFLINE);
     };
   }, []);
 
@@ -64,5 +109,5 @@ export const useStompClient = () => {
     return true;
   }, [client, connected]);
 
-  return { client, connected, subscribe, send };
+  return { client, connected, connectionState, subscribe, send };
 };

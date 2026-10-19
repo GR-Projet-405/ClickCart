@@ -290,6 +290,34 @@ public class BookingServiceImpl implements BookingService {
         return toResponse(bookingRepository.save(booking));
     }
 
+    @Override
+    public BookingResponse approve(String bookingId, String providerId) {
+        Booking booking = requireOwned(bookingId, providerId);
+        if (booking.getStatus() != BookingStatus.PENDING_APPROVAL) {
+            throw new BookingException(
+                    HttpStatus.CONFLICT,
+                    "Only a pending booking can be approved");
+        }
+        booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setUnread(false);
+        booking.setUpdatedAt(Instant.now());
+        return toResponse(bookingRepository.save(booking));
+    }
+
+    @Override
+    public BookingResponse reject(String bookingId, String providerId) {
+        Booking booking = requireOwned(bookingId, providerId);
+        if (booking.getStatus() != BookingStatus.PENDING_APPROVAL) {
+            throw new BookingException(
+                    HttpStatus.CONFLICT,
+                    "Only a pending booking can be rejected");
+        }
+        booking.setStatus(BookingStatus.DECLINED);
+        booking.setUnread(false);
+        booking.setUpdatedAt(Instant.now());
+        return toResponse(bookingRepository.save(booking));
+    }
+
     private Booking requireOwned(String bookingId, String providerId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new BookingException(HttpStatus.NOT_FOUND, "Booking not found"));
