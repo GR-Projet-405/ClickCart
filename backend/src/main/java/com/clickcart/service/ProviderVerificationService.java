@@ -2,6 +2,7 @@ package com.clickcart.service;
 
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -19,6 +20,8 @@ import com.clickcart.repository.ProviderVerificationRepository;
 
 @Service
 public class ProviderVerificationService {
+
+    private static final List<String> ALLOWED_STATUSES = Arrays.asList("PENDING", "APPROVED", "REJECTED", "DRAFT");
 
     private final ProviderRepository providerRepository;
     private final ProviderVerificationRepository verificationRepository;
@@ -67,6 +70,10 @@ public class ProviderVerificationService {
     }
 
     public void saveProviderDocuments(String userId, List<Map<String, String>> documentList) {
+        if (userId == null || userId.trim().isEmpty()) {
+            throw new IllegalArgumentException("Provider ID cannot be empty");
+        }
+
         boolean recordFound = false;
 
         Optional<ProviderVerification> verificationOpt = verificationRepository.findByUserId(userId);
@@ -168,19 +175,28 @@ public class ProviderVerificationService {
     }
 
     public ProviderResponseDto updateProviderStatus(String providerId, String newStatus) {
+        if (newStatus == null || newStatus.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status cannot be empty");
+        }
+
+        String formattedStatus = newStatus.trim().toUpperCase();
+        if (!ALLOWED_STATUSES.contains(formattedStatus)) {
+            throw new IllegalArgumentException("Invalid status value: '" + newStatus + "'. Allowed values are: " + ALLOWED_STATUSES);
+        }
+
         Optional<Provider> providerOpt = providerRepository.findById(providerId);
         ProviderResponseDto dto = null;
 
         if (providerOpt.isPresent()) {
             Provider provider = providerOpt.get();
-            provider.setStatus(newStatus.toUpperCase());
+            provider.setStatus(formattedStatus);
             dto = mapToDto(providerRepository.save(provider));
         }
 
         Optional<ProviderVerification> verificationOpt = verificationRepository.findByUserId(providerId);
         if (verificationOpt.isPresent()) {
             ProviderVerification v = verificationOpt.get();
-            v.setStatus(newStatus.toUpperCase());
+            v.setStatus(formattedStatus);
             v.setUpdatedAt(Instant.now());
             verificationRepository.save(v);
 
