@@ -6,7 +6,10 @@ import com.clickcart.exception.GlobalExceptionHandler;
 import com.clickcart.exception.ReviewNotFoundException;
 import com.clickcart.model.ModerationStatus;
 import com.clickcart.service.ReviewService;
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -23,9 +26,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@WithMockUser
 @WebMvcTest(ReviewController.class)
 @Import(GlobalExceptionHandler.class)
 class ReviewControllerTest {
+
+    @MockitoBean(name = "mongoMappingContext")
+    private MongoMappingContext mongoMappingContext;
 
     @Autowired
     private MockMvc mockMvc;
@@ -188,7 +195,7 @@ class ReviewControllerTest {
         mockMvc.perform(
                         post(
                                 "/api/reviews/review-1/helpful"
-                        )
+                        ).with(csrf())
                                 .contentType(
                                         MediaType.APPLICATION_JSON
                                 )
@@ -223,7 +230,7 @@ class ReviewControllerTest {
         ).thenReturn(response);
 
         mockMvc.perform(
-                        post("/api/reviews/review-1/helpful")
+                        post("/api/reviews/review-1/helpful").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -253,7 +260,7 @@ class ReviewControllerTest {
         ).thenReturn(response);
 
         mockMvc.perform(
-                        post("/api/reviews/review-1/report")
+                        post("/api/reviews/review-1/report").with(csrf())
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
@@ -290,7 +297,7 @@ class ReviewControllerTest {
         ).thenReturn(response);
 
         mockMvc.perform(
-                        post("/api/reviews/review-1/response")
+                        post("/api/reviews/review-1/response").with(csrf())
                                 .header(
                                         "X-Provider-Id",
                                         "provider-1"
@@ -327,7 +334,7 @@ class ReviewControllerTest {
             throws Exception {
 
         mockMvc.perform(
-                        post("/api/reviews/review-1/response")
+                        post("/api/reviews/review-1/response").with(csrf())
                                 .header(
                                         "X-Provider-Id",
                                         "provider-1"
@@ -344,16 +351,10 @@ class ReviewControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(
                         jsonPath("$.message")
-                                .value("Validation failed")
+                                .value("response: Provider response is required")
                 )
-                .andExpect(
-                        jsonPath(
-                                "$.validationErrors.response"
-                        )
-                                .value(
-                                        "Provider response is required"
-                                )
-                );
+                .andExpect(jsonPath("$.error").value("Validation Failed"));
+        org.mockito.Mockito.verifyNoInteractions(reviewService);
     }
 
     @Test
@@ -370,7 +371,7 @@ class ReviewControllerTest {
                 """.formatted(longResponse);
 
         mockMvc.perform(
-                        post("/api/reviews/review-1/response")
+                        post("/api/reviews/review-1/response").with(csrf())
                                 .header(
                                         "X-Provider-Id",
                                         "provider-1"
@@ -383,11 +384,12 @@ class ReviewControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(
                         jsonPath(
-                                "$.validationErrors.response"
+                                "$.message"
                         )
                                 .value(
-                                        "Provider response must not exceed 300 characters"
+                                        "response: Provider response must not exceed 300 characters"
                                 )
                 );
+        org.mockito.Mockito.verifyNoInteractions(reviewService);
     }
 }

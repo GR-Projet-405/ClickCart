@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
+import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -26,6 +27,9 @@ import com.clickcart.util.JwtUtil;
 @WebMvcTest(MarketplaceServiceController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class MarketplaceServiceControllerTest {
+
+    @MockitoBean(name = "mongoMappingContext")
+    private MongoMappingContext mongoMappingContext;
 
     @Autowired
     private MockMvc mockMvc;
