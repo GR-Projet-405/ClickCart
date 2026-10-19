@@ -30,8 +30,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * A valid token always wins. An invalid or expired token leaves the request unauthenticated
  * (protected endpoints return 401 so the client can refresh) and never falls back to the dev identity.
  *
- * Requests with no token use the development fallback only while CLICKCART_DEV_AUTH_FALLBACK=true,
- * so teammates' pages keep working until they send real tokens. It must be false in production.
+ * Requests with no token may use the development fallback only while CLICKCART_DEV_AUTH_FALLBACK=true.
+ * Provider job routes never use this fallback. It must be false in production.
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -71,7 +71,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 util.parseAccessToken(token).ifPresent(user -> setAuthentication(request, user,
                         List.of(new SimpleGrantedAuthority(user.role().authority()))));
             }
-        } else if (devAuthFallback) {
+        } else if (devAuthFallback && !isProviderJobsRequest(request)) {
             applyDevFallback(request);
         }
 
@@ -93,6 +93,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String providerId = StringUtils.hasText(devProviderHeader) ? devProviderHeader : "dev-provider-09";
 
         setAuthentication(request, providerId, Collections.singletonList(new SimpleGrantedAuthority(role)));
+    }
+
+    private static boolean isProviderJobsRequest(HttpServletRequest request) {
+        String path = request.getRequestURI().substring(request.getContextPath().length());
+        return "/api/provider/jobs".equals(path) || path.startsWith("/api/provider/jobs/");
     }
 
     private void setAuthentication(HttpServletRequest request, Object principal,

@@ -119,15 +119,12 @@ export default function BookingApprovalPage() {
     setDeciding(true);
     setError("");
     try {
+      const action = nextStatus === "ACCEPTED" ? "approve" : "reject";
       const response = await fetch(
-        `${API_BASE_URL}/provider/bookings/${requestId}`,
+        `${API_BASE_URL}/v1/bookings/${requestId}/${action}`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Provider-Id": PROVIDER_ID,
-          },
-          body: JSON.stringify({ status: nextStatus }),
+          headers: { "X-Provider-Id": PROVIDER_ID },
         },
       );
       if (!response.ok) {
