@@ -31,4 +31,8 @@ public interface BookingService {
     BookingResponse get(String bookingId, String providerId);
 
     BookingResponse decide(String bookingId, String providerId, BookingStatus nextStatus);
+
+    BookingResponse approve(String bookingId, String providerId);
+
+    BookingResponse reject(String bookingId, String providerId);
 }
