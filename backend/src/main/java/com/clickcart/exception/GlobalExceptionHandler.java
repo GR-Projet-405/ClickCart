@@ -28,6 +28,10 @@ import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.ConstraintViolationException;
 
+import com.clickcart.exception.AccessDeniedException;
+import com.clickcart.exception.AccessForbiddenException;
+import com.clickcart.exception.BadRequestException;
+
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class GlobalExceptionHandler {
@@ -170,11 +174,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             ForbiddenException.class,
-            AccessDeniedException.class
+            AccessDeniedException.class,
+            AccessForbiddenException.class,
+            org.springframework.security.access.AccessDeniedException.class
     })
-    public ResponseEntity<ErrorResponse> handleForbidden(
-            Exception ex) {
-
+    public ResponseEntity<ErrorResponse> handleForbidden(Exception ex) {
         ErrorResponse response = new ErrorResponse(
                 HttpStatus.FORBIDDEN.value(),
                 "Forbidden",
@@ -287,6 +291,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler({
+            BadRequestException.class,
+            MethodArgumentTypeMismatchException.class,
             MaxUploadSizeExceededException.class,
             MissingServletRequestPartException.class,
             IllegalArgumentException.class

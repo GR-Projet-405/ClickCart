@@ -255,7 +255,7 @@ export const providerEarningsService = {
     }
   },
 
-  async getTransactions({ providerId = "provider-101", search = "", status = "ALL", page = 0, size = 10 }) {
+  async getTransactions({ providerId = "provider-101", search = "", status = "ALL", startDate = null, endDate = null, page = 0, size = 10 } = {}) {
     try {
       const query = new URLSearchParams({
         providerId,
@@ -264,6 +264,8 @@ export const providerEarningsService = {
       });
       if (search) query.set("search", search);
       if (status && status !== "ALL") query.set("status", status);
+      if (startDate) query.set("startDate", startDate);
+      if (endDate) query.set("endDate", endDate);
 
       const res = await fetch(`${BASE_URL}/transactions?${query.toString()}`);
       if (!res.ok) throw new Error("Failed to fetch transactions from API");
