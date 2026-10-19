@@ -1,9 +1,10 @@
 package com.clickcart.controller;
 
 import java.util.List;
-import java.util.Map;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,7 +35,7 @@ public class RefundController {
 
     /*
       POST /api/refunds
-      Submit a new refund request.
+      Submit a new refund request (authenticated customers only).
      */
     @PostMapping
     public ResponseEntity<Refund> submit(@Valid @RequestBody RefundRequest req) {
@@ -43,7 +44,7 @@ public class RefundController {
 
     /*
       GET /api/refunds/customer/{customerId}
-      List all refunds for a specific customer.
+      List all refunds for a specific customer (owner or ADMIN).
      */
     @GetMapping("/customer/{customerId}")
     public ResponseEntity<List<Refund>> getByCustomer(@PathVariable String customerId) {
@@ -53,6 +54,7 @@ public class RefundController {
     /*
       GET /api/refunds/{id}
       Get a single refund by its MongoDB document ID.
+      Returns 404 Not Found when the id is unknown (BE-046).
      */
     @GetMapping("/{id}")
     public ResponseEntity<Refund> getById(@PathVariable String id) {
@@ -61,9 +63,11 @@ public class RefundController {
 
     /*
       PATCH /api/refunds/{id}/status
-      Update refund status (admin / internal).
+      Update refund status – ADMIN role required (BE-041).
+      Invalid status values are rejected with 400 (BE-044).
      */
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Refund> updateStatus(
             @PathVariable String id,
             @RequestBody StatusUpdateRequest req) {
@@ -73,10 +77,13 @@ public class RefundController {
     /*
       DELETE /api/refunds/{id}
       Cancel (delete) a PENDING refund.
+      Returns 204 No Content on success (BE-045).
+      Returns 404 if the refund does not exist.
+      Returns 400 if the refund is not in PENDING state.
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, String>> cancel(@PathVariable String id) {
+    public ResponseEntity<Void> cancel(@PathVariable String id) {
         service.cancel(id);
-        return ResponseEntity.ok(Map.of("message", "Refund cancelled successfully"));
+        return ResponseEntity.noContent().build();
     }
 }
