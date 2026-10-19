@@ -17,6 +17,30 @@
   border-bottom: 1px solid var(--primary-color, #00897b);
 }
 
+.trust-banner--warning {
+  background: #fffbeb;
+  color: #b45309;
+  border-bottom-color: #f59e0b;
+}
+
+.trust-banner--offline {
+  background: #fef2f2;
+  color: #b91c1c;
+  border-bottom-color: #ef4444;
+}
+
+.trust-banner__spin {
+  animation: chat-banner-spin 1.2s linear infinite;
+}
+
+@keyframes chat-banner-spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trust-banner__spin { animation: none; }
+}
+
 .chat-header {
   display: flex;
   justify-content: space-between;
@@ -261,4 +285,42 @@
   gap: 0.4rem;
   color: #10b981;
   font-size: 0.75rem;
+}
+
+.message-send-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: var(--radius-md, 10px);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
+
+.message-send-error__text {
+  flex: 1;
+}
+
+.message-send-error__action {
+  background: #b91c1c;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.3rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.message-send-error__action:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.message-send-error__action--ghost {
+  background: transparent;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
 }

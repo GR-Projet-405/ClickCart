@@ -1,7 +1,6 @@
 
 package com.clickcart.exception;
 
-import java.nio.file.AccessDeniedException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -15,14 +14,19 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.server.ResponseStatusException;
+
+import jakarta.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
@@ -316,6 +320,50 @@ public class GlobalExceptionHandler {
                 "Bad Request",
                 ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    // ==========================================
+    // Spring MVC binding / validation (400)
+    // ==========================================
+
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorResponse> handleMissingParam(MissingServletRequestParameterException ex) {
+        return badRequest("Required request parameter '" + ex.getParameterName() + "' is not present");
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        if ("role".equalsIgnoreCase(ex.getName())) {
+            return badRequest("role must be CUSTOMER or PROVIDER");
+        }
+        return badRequest("Invalid value for parameter '" + ex.getName() + "'");
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return badRequest("Request body is missing or malformed");
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponse> handleMethodValidation(HandlerMethodValidationException ex) {
+        String message = ex.getAllErrors().stream()
+                .map(error -> error.getDefaultMessage())
+                .collect(Collectors.joining(", "));
+        return badRequest(message.isBlank() ? "Validation failed" : message);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        String message = ex.getConstraintViolations().stream()
+                .map(violation -> violation.getMessage())
+                .collect(Collectors.joining(", "));
+        return badRequest(message.isBlank() ? "Validation failed" : message);
+    }
+
+    private ResponseEntity<ErrorResponse> badRequest(String message) {
+        HttpStatus status = HttpStatus.BAD_REQUEST;
+        return ResponseEntity.status(status)
+                .body(new ErrorResponse(status.value(), status.getReasonPhrase(), message));
     }
 
     @ExceptionHandler(IllegalStateException.class)

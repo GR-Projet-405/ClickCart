@@ -147,6 +147,56 @@
   padding: 2rem;
 }
 
+.conversations-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  margin: 0.25rem 0 0.5rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-md, 10px);
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+  max-width: 420px;
+}
+
+.conversations-error__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.conversations-error__title {
+  margin: 0 0 0.15rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.conversations-error__message {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #7f1d1d;
+}
+
+.conversations-error__retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: #b91c1c;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  padding: 0.35rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.conversations-error__retry:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ConversationListItem */
 .conversation-item {
   display: flex;
