@@ -66,16 +66,91 @@ public class CommissionRuleService {
                 .findFirst().orElseThrow(() -> new NotFoundException("No active commission rule matches the request"));
     }
 
+
+
     private void validate(RuleRequest request) {
-        if (request.rate() == null || request.rate().compareTo(BigDecimal.ZERO) < 0 || request.rate().compareTo(BigDecimal.valueOf(100)) > 0) throw new IllegalArgumentException("Rate must be between 0 and 100");
-        if (request.category() == null || request.category().isBlank()) throw new IllegalArgumentException("Category is required");
-        if (request.minimumFee() != null && request.minimumFee().signum() < 0) throw new IllegalArgumentException("Minimum fee must not be negative");
-        if (request.maximumFee() != null && request.maximumFee().signum() < 0) throw new IllegalArgumentException("Maximum fee must not be negative");
+        if (request == null) {
+            throw new IllegalArgumentException("Commission rule request is required");
+        }
+        if (request.ruleName() == null || request.ruleName().isBlank()) {
+            throw new IllegalArgumentException("Rule name is required");
+        }
+        if (request.commissionType() == null) {
+            throw new IllegalArgumentException("Commission type is required");
+        }
+        if (request.rate() == null
+                || request.rate().compareTo(BigDecimal.ZERO) < 0
+                || request.rate().compareTo(BigDecimal.valueOf(100)) > 0) {
+            throw new IllegalArgumentException("Rate must be between 0 and 100");
+        }
+        if (request.category() == null || request.category().isBlank()) {
+            throw new IllegalArgumentException("Category is required");
+        }
+        if (request.minimumFee() != null && request.minimumFee().signum() < 0) {
+            throw new IllegalArgumentException("Minimum fee must not be negative");
+        }
+        if (request.maximumFee() != null && request.maximumFee().signum() < 0) {
+            throw new IllegalArgumentException("Maximum fee must not be negative");
+        }
+        if (request.minimumFee() != null && request.maximumFee() != null
+                && request.minimumFee().compareTo(request.maximumFee()) > 0) {
+            throw new IllegalArgumentException("Minimum fee must not exceed maximum fee");
+        }
+        if (request.fixedFee() != null && request.fixedFee().signum() < 0) {
+            throw new IllegalArgumentException("Fixed fee must not be negative");
+        }
+        if (request.effectiveStartDate() != null && request.expiryDate() != null
+                && !request.expiryDate().isAfter(request.effectiveStartDate())) {
+            throw new IllegalArgumentException("Expiry date must be after the effective start date");
+        }
+        if (request.priority() < 0) {
+            throw new IllegalArgumentException("Priority must not be negative");
+        }
     }
 
-    public record RuleRequest(String ruleName, String description, String category, CommissionRule.CommissionType commissionType, BigDecimal rate, BigDecimal minimumFee, BigDecimal maximumFee, BigDecimal fixedFee, ProviderTier providerTier, int priority, Instant effectiveStartDate, Instant expiryDate) {
-        public CommissionRule toEntity(String actor) { return new CommissionRule(ruleName, description, category, commissionType, rate, minimumFee, maximumFee, fixedFee, providerTier, 0, CommissionRule.RuleStatus.ACTIVE, effectiveStartDate == null ? Instant.now() : effectiveStartDate, expiryDate, actor); }
+    public record RuleRequest(
+            String ruleName,
+            String description,
+            String category,
+            CommissionRule.CommissionType commissionType,
+            BigDecimal rate,
+            BigDecimal minimumFee,
+            BigDecimal maximumFee,
+            BigDecimal fixedFee,
+            ProviderTier providerTier,
+            int priority,
+            Instant effectiveStartDate,
+            Instant expiryDate
+    ) {
+        public CommissionRule toEntity(String actor) {
+            return new CommissionRule(
+                    ruleName,
+                    description,
+                    category == null ? null : category.trim(),
+                    commissionType,
+                    rate,
+                    minimumFee,
+                    maximumFee,
+                    fixedFee,
+                    providerTier,
+                    priority,
+                    CommissionRule.RuleStatus.ACTIVE,
+                    effectiveStartDate == null ? Instant.now() : effectiveStartDate,
+                    expiryDate,
+                    actor
+            );
+        }
     }
-    public static class NotFoundException extends RuntimeException { public NotFoundException(String message) { super(message); } }
-    public static class ConflictException extends RuntimeException { public ConflictException(String message) { super(message); } }
+
+    public static class NotFoundException extends RuntimeException {
+        public NotFoundException(String message) {
+            super(message);
+        }
+    }
+
+    public static class ConflictException extends RuntimeException {
+        public ConflictException(String message) {
+            super(message);
+        }
+    }
 }
