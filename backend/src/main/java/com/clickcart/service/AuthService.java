@@ -101,7 +101,9 @@ public class AuthService {
         return startSession(user, false);
     }
 
-    public AuthSession login(LoginRequest request) {
+    public AuthSession login(LoginRequest request) { return login(request, false); }
+    public AuthSession adminLogin(LoginRequest request) { return login(request, true); }
+    private AuthSession login(LoginRequest request, boolean adminPortal) {
         String email = normalizeEmail(request.email());
         User user = users.findByEmail(email).orElse(null);
 
@@ -134,6 +136,11 @@ public class AuthService {
             throw AuthException.accountSuspended();
         }
 
+        if (adminPortal != (user.getRole() == Role.PLATFORM_ADMIN)) {
+            throw new com.clickcart.exception.ForbiddenException(adminPortal
+                ? "This portal is for administrator accounts only."
+                : "Please use the administrator sign-in page at /admin/login.");
+        }
         user.setFailedLoginAttempts(0);
         user.setLockedUntil(null);
         user.setLastLoginAt(now);

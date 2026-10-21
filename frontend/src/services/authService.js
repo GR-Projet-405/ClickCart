@@ -80,8 +80,8 @@ export function onSessionChange(listener) {
   return () => sessionListeners.delete(listener);
 }
 
-export async function login({ email, password, rememberMe }) {
-  const session = await request("/login", {
+export async function login({ email, password, rememberMe, adminPortal = false }) {
+  const session = await request(adminPortal ? "/admin/login" : "/login", {
     method: "POST",
     body: { email: email.trim(), password, rememberMe: Boolean(rememberMe) },
   });

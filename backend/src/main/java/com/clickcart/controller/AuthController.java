@@ -68,6 +68,11 @@ public class AuthController {
         return withSessionCookie(ResponseEntity.ok(), session, "Logged in successfully");
     }
 
+    @PostMapping("/admin/login")
+    public ResponseEntity<ApiResponse<AuthResponse>> adminLogin(@Valid @RequestBody LoginRequest request) {
+        return withSessionCookie(ResponseEntity.ok(), authService.adminLogin(request), "Administrator logged in successfully");
+    }
+
     @PostMapping("/refresh")
     public ResponseEntity<ApiResponse<AuthResponse>> refresh(
             @CookieValue(name = AuthCookies.REFRESH_COOKIE, required = false) String refreshToken) {

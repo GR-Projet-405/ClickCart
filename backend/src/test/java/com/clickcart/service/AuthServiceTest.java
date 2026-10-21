@@ -71,6 +71,24 @@ class AuthServiceTest {
     }
 
     @Test
+    void administratorsUseOnlyDedicatedPortal() {
+        User admin = new User(); admin.setId("admin-1"); admin.setEmail("admin@example.com"); admin.setRole(Role.PLATFORM_ADMIN); admin.setStatus(AccountStatus.ACTIVE); admin.setPasswordHash(passwordEncoder.encode(PASSWORD));
+        when(users.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
+        var request = new LoginRequest("admin@example.com", PASSWORD, false);
+        assertThrows(com.clickcart.exception.ForbiddenException.class, () -> service.login(request));
+        verify(refreshTokens, never()).issue(anyString(), anyBoolean());
+        assertEquals(Role.PLATFORM_ADMIN, service.adminLogin(request).response().user().role());
+    }
+
+    @Test
+    void customerCannotEnterAdminPortal() {
+        User customer = new User(); customer.setId("customer-1"); customer.setEmail("customer@example.com"); customer.setRole(Role.CUSTOMER); customer.setStatus(AccountStatus.ACTIVE); customer.setPasswordHash(passwordEncoder.encode(PASSWORD));
+        when(users.findByEmail("customer@example.com")).thenReturn(Optional.of(customer));
+        assertThrows(com.clickcart.exception.ForbiddenException.class, () -> service.adminLogin(new LoginRequest("customer@example.com", PASSWORD, false)));
+        verify(refreshTokens, never()).issue(anyString(), anyBoolean());
+    }
+
+    @Test
     void registerCustomerHashesPasswordNormalizesInputAndStartsSession() {
         when(users.existsByEmail("kamal@example.com")).thenReturn(false);
         when(users.save(any(User.class))).thenAnswer(inv -> withId(inv.getArgument(0), "u-1"));

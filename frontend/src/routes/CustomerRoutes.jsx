@@ -1,9 +1,9 @@
+import CustomerGuard from "../context/CustomerGuard";
 import React from "react";
 import { Route, Routes } from "react-router-dom";
 import CustomerLayout from "../layouts/CustomerLayout/CustomerLayout";
 import CustomerWorkspace from "../pages/placeholders/CustomerWorkspace";
 import NotFound from "../pages/placeholders/NotFound";
-import { customerNavigation } from "../config/customerNavigation";
 
 // Customer Pages
 import CustomerExplorePage from "../pages/CustomerExplorePage";
@@ -29,7 +29,6 @@ import LandingPage from "../pages/customer/LandingPage";
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ConversationsPage from "../pages/messaging/ConversationsPage";
-import MessagesPage from "../pages/Messages/MessagesPage";
 import NotificationsPage from "../pages/provider/NotificationsPage";
 
 export default function CustomerRoutes() {
@@ -37,53 +36,37 @@ export default function CustomerRoutes() {
     <Routes>
       <Route element={<CustomerLayout />}>
         <Route index element={<LandingPage />} />
-        <Route path="workspace" element={<CustomerWorkspace />} />
+        <Route path="workspace" element={<CustomerGuard><CustomerWorkspace /></CustomerGuard>} />
 
-        <Route path="notifications" element={<NotificationsPage />} />
-        <Route path="recommendations" element={<RecommendationsPage />} />
+        <Route path="notifications" element={<CustomerGuard><NotificationsPage /></CustomerGuard>} />
+        <Route path="recommendations" element={<CustomerGuard><RecommendationsPage /></CustomerGuard>} />
         <Route path="explore" element={<CustomerExplorePage />} />
 
-        <Route path="messages" element={<MessagesPage role="CUSTOMER" />} />
-        <Route path="messages/conversations" element={<ConversationsPage role="CUSTOMER" />} />
-        <Route path="messages/:conversationId" element={<ConversationsPage role="CUSTOMER" />} />
+        <Route path="messages" element={<CustomerGuard><ConversationsPage role="CUSTOMER" /></CustomerGuard>} />
+        <Route path="messages/conversations" element={<CustomerGuard><ConversationsPage role="CUSTOMER" /></CustomerGuard>} />
+        <Route path="messages/:conversationId" element={<CustomerGuard><ConversationsPage role="CUSTOMER" /></CustomerGuard>} />
 
-        <Route path="checkout" element={<CheckoutPage />} />
-        <Route path="checkout/result" element={<PaymentResultPage />} />
-        <Route path="receipt/:id" element={<ReceiptPage />} />
-        <Route path="customer/payments" element={<PaymentHistoryPage />} />
+        <Route path="checkout" element={<CustomerGuard><CheckoutPage /></CustomerGuard>} />
+        <Route path="checkout/result" element={<CustomerGuard><PaymentResultPage /></CustomerGuard>} />
+        <Route path="receipt/:id" element={<CustomerGuard><ReceiptPage /></CustomerGuard>} />
+        <Route path="customer/payments" element={<CustomerGuard><PaymentHistoryPage /></CustomerGuard>} />
 
         <Route path="location-permission" element={<LocationPermission />} />
         <Route path="find-services/map" element={<FindServices />} />
-        <Route path="booking/create" element={<BookingCreation />} />
+        <Route path="booking/create" element={<CustomerGuard><BookingCreation /></CustomerGuard>} />
 
-        <Route path="my-bookings" element={<MyBookingsPage />} />
-        <Route path="bookings" element={<MyBookingsPage />} />
-        <Route path="favorites" element={<MyFavorites />} />
-        <Route path="reviews" element={<CustomerReviewsPage />} />
-        <Route path="customer/refunds" element={<CustomerRefunds />} />
-        <Route path="customer/profile" element={<CustomerProfilePage />} />
-        <Route path="profile" element={<CustomerProfilePage />} />
+        <Route path="my-bookings" element={<CustomerGuard><MyBookingsPage /></CustomerGuard>} />
+        <Route path="bookings" element={<CustomerGuard><MyBookingsPage /></CustomerGuard>} />
+        <Route path="favorites" element={<CustomerGuard><MyFavorites /></CustomerGuard>} />
+        <Route path="reviews" element={<CustomerGuard><CustomerReviewsPage /></CustomerGuard>} />
+        <Route path="customer/refunds" element={<CustomerGuard><CustomerRefunds /></CustomerGuard>} />
+        <Route path="customer/profile" element={<CustomerGuard><CustomerProfilePage /></CustomerGuard>} />
+        <Route path="profile" element={<CustomerGuard><CustomerProfilePage /></CustomerGuard>} />
         <Route path="providers/:providerId" element={<PublicProviderProfile />} />
 
         <Route path="find-services" element={<MarketplaceServicesPage />} />
         <Route path="find-services/ai-search" element={<AiServiceSearchPage />} />
         <Route path="ai-service-search" element={<AiServiceSearchPage />} />
-
-        {customerNavigation
-          .slice(1)
-          .filter(
-            ({ to }) =>
-              to !== "/find-services" &&
-              to !== "/ai-service-search" &&
-              to !== "/explore" &&
-              to !== "/checkout" &&
-              to !== "/customer/payments" &&
-              to !== "/messages" &&
-              to !== "/notifications"
-          )
-          .map(({ to }) => (
-            <Route key={to} path={to.slice(1)} element={<CustomerWorkspace />} />
-          ))}
 
         <Route path="*" element={<NotFound />} />
       </Route>

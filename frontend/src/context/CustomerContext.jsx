@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "./AuthContext";
 import {
   getCustomerProfile,
@@ -12,30 +12,36 @@ export function CustomerProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const requestVersion = useRef(0);
 
   const fetchProfile = useCallback(async () => {
+    if (status !== "authenticated" || user?.role !== "CUSTOMER") return;
+    const version = ++requestVersion.current;
     setIsLoading(true);
     setError(null);
     try {
       const data = await getCustomerProfile();
-      setProfile(data);
+      if (version === requestVersion.current) setProfile(data);
     } catch (err) {
       console.warn("CustomerContext: Failed to fetch profile from API:", err);
-      setError(err.message || "Failed to load customer profile from database.");
+      if (version === requestVersion.current) setError(err.message || "Failed to load customer profile from database.");
     } finally {
-      setIsLoading(false);
+      if (version === requestVersion.current) setIsLoading(false);
     }
-  }, []);
+  }, [status, user?.id, user?.role]);
 
   // Re-fetch profile whenever the authenticated user or session status changes
   useEffect(() => {
-    if (status === "authenticated") {
+    setProfile(null);
+    setError(null);
+    if (status === "authenticated" && user?.role === "CUSTOMER") {
       fetchProfile();
-    } else if (status === "anonymous") {
+    } else if (status !== "loading") {
       setProfile(null);
       setIsLoading(false);
     }
-  }, [user?.id, status, fetchProfile]);
+    return () => { requestVersion.current += 1; };
+  }, [fetchProfile, status, user?.role]);
 
   const saveProfile = useCallback(async (updatedFields) => {
     const payload = {

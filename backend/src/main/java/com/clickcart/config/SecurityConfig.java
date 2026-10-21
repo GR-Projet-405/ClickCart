@@ -72,6 +72,7 @@ public class SecurityConfig {
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/provider/profile/*").permitAll()
+                        .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**").hasRole("PLATFORM_ADMIN")
                         .requestMatchers("/api/provider/**")
                         .hasRole("SERVICE_PROVIDER")
@@ -109,6 +110,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/providers/services/*/pricing/**").permitAll()
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
+                        .requestMatchers("/api/customers/**").hasRole("CUSTOMER")
                         .requestMatchers("/api/admin/**").hasRole("PLATFORM_ADMIN")
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
                         .requestMatchers("/api/customers/me/**", "/api/customers/**").authenticated()

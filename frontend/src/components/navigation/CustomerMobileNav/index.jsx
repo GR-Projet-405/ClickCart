@@ -1,3 +1,4 @@
+import { homePathForRole } from "../../../context/AuthContext";
 import React from 'react';
 import { Link } from "react-router-dom";
 import { User, LogOut } from "lucide-react";
@@ -42,7 +43,7 @@ export default function CustomerMobileNav({
             <strong>{profile?.fullName || user?.fullName || "Customer"}</strong>
             <small>{profile?.email || user?.email || ""}</small>
             <Link
-              to="/customer/profile"
+              to={user?.role === "CUSTOMER" ? "/customer/profile" : homePathForRole(user?.role)}
               className="customer-mobile-nav__profile-link"
               onClick={onNavigate}
             >
@@ -53,7 +54,7 @@ export default function CustomerMobileNav({
         </div>
       )}
 
-      {customerNavigation.map((item) => (
+      {customerNavigation.filter(item => !item.customerOnly || user?.role === "CUSTOMER").map((item) => (
         <NavItem
           key={item.label}
           {...item}

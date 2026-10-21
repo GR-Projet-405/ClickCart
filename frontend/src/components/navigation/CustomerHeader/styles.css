@@ -188,3 +188,5 @@
     display: none;
   }
 }
+
+.customer-header a, .customer-header a:hover { text-decoration: none; }

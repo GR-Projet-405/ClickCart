@@ -28,7 +28,7 @@ const ROLE_HINTS = {
  * The Customer / Service Provider tab only changes the copy: where the user lands after login is
  * decided by the role in the verified token, never by the client.
  */
-export default function LoginPage() {
+export default function LoginPage({ adminPortal = false }) {
   const { login, status, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,6 +56,7 @@ export default function LoginPage() {
   }, [failure, isLocked]);
 
   // Already signed in (e.g. session restored from the cookie): go straight to the workspace.
+  if (status === "loading") return <div className="auth-page" role="status">Restoring your session…</div>;
   if (status === "authenticated" && user && !submitting) {
     return <Navigate to={landingPath(user.role, location.state?.from)} replace />;
   }
@@ -86,7 +87,7 @@ export default function LoginPage() {
     setSubmitting(true);
     setFailure(null);
     try {
-      const signedIn = await login(values);
+      const signedIn = await login({ ...values, adminPortal });
       navigate(landingPath(signedIn.role, location.state?.from), { replace: true });
     } catch (error) {
       handleError(error);
@@ -120,24 +121,24 @@ export default function LoginPage() {
     }
   };
 
-  const goToReset = () => navigate("/forgot-password", { state: { email: values.email } });
+  const goToReset = () => navigate("/forgot-password", { state: { email: values.email, adminPortal } });
 
   return (
     <AuthLayout
       topBarLinks={
         <>
-          <Link to="/register" state={{ role: "SERVICE_PROVIDER" }}>Become a Provider</Link>
+          {adminPortal ? <Link to="/login">Customer & provider sign in</Link> : <Link to="/register" state={{ role: "SERVICE_PROVIDER" }}>Become a Provider</Link>}
         </>
       }
       panel={
         <>
-          <h2 className="auth-panel__headline">Welcome back to your workspace.</h2>
+          <h2 className="auth-panel__headline">{adminPortal ? "A dedicated space to manage ClickCart." : "Welcome back to your workspace."}</h2>
           <p className="auth-panel__lead">
             Sign in to manage bookings, track earnings and reply to customers — all in one secure place.
           </p>
           <p className="auth-panel__trust">
             <ShieldCheck size={20} aria-hidden="true" />
-            Protected by encrypted connections and short-lived, token-based sessions.
+            Your account and workspace stay connected through a secure sign-in.
           </p>
         </>
       }
@@ -145,17 +146,18 @@ export default function LoginPage() {
       <div className="auth-page">
         <header className="auth-page__header">
           <p className="auth-page__eyebrow">Sign in</p>
-          <h1 className="auth-page__title">Log in to ClickCart</h1>
-          <p className="auth-page__subtitle">
+          <h1 className="auth-page__title">{adminPortal ? "Administrator sign in" : "Log in to ClickCart"}</h1>
+          {!adminPortal && <p className="auth-page__subtitle">
             New here?{" "}
-            <Link className="auth-link" to="/register" state={{ role: portal }}>
+            <Link className="auth-link" to="/register" state={{ role: portal, from: location.state?.from }}>
               Create an account
             </Link>
-          </p>
+          </p>}
+          {adminPortal && <p className="auth-page__subtitle">Use your administrator email and password.</p>}
         </header>
 
-        <RoleToggle label="I am signing in as" options={ROLE_OPTIONS} value={portal} onChange={setPortal} />
-        <p className="auth-role-toggle__hint">{ROLE_HINTS[portal]}</p>
+        {!adminPortal && <><RoleToggle label="I am signing in as" options={ROLE_OPTIONS} value={portal} onChange={setPortal} />
+        <p className="auth-role-toggle__hint">{ROLE_HINTS[portal]}</p></>}
 
         <div ref={alertRef} tabIndex={-1} className="auth-page__alerts">
           {isLocked && (
@@ -211,7 +213,7 @@ export default function LoginPage() {
             error={errors.password}
             aria-required="true"
             labelAction={
-              <Link className="auth-link" to="/forgot-password" state={{ email: values.email }}>
+              <Link className="auth-link" to="/forgot-password" state={{ email: values.email, adminPortal }}>
                 Forgot password?
               </Link>
             }
@@ -242,5 +244,5 @@ export default function LoginPage() {
 
 function landingPath(role, from) {
   const requested = from?.pathname;
-  return canReturnTo(role, requested) ? requested : homePathForRole(role);
+  return canReturnTo(role, requested) ? requested + (from?.search || "") + (from?.hash || "") : homePathForRole(role);
 }

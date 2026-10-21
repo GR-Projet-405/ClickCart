@@ -4,7 +4,7 @@ import { ArrowRight, BadgeCheck, Briefcase, Check, Loader2, ReceiptText, ShieldC
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import Button from "../../components/common/Button";
 import AuthLayout from "../../layouts/AuthLayout/AuthLayout";
-import { homePathForRole, useAuth } from "../../context/AuthContext";
+import { canReturnTo, homePathForRole, useAuth } from "../../context/AuthContext";
 import { checkEmailAvailability } from "../../services/authService";
 import AuthAlert from "./components/AuthAlert";
 import AuthField from "./components/AuthField";
@@ -38,7 +38,7 @@ const PANEL = {
   SERVICE_PROVIDER: {
     title: "Why providers choose ClickCart",
     items: [
-      { icon: BadgeCheck, title: "Verified badge", text: "ID and skill checks build instant trust with customers." },
+      { icon: BadgeCheck, title: "Verified badge", text: "Submit your identity documents for administrator review." },
       { icon: ReceiptText, title: "Clear earnings", text: "See gross, commission and net earnings for every job." },
       { icon: ShieldCheck, title: "Secure by default", text: "Sessions expire automatically and every login is logged." },
     ],
@@ -46,7 +46,7 @@ const PANEL = {
   CUSTOMER: {
     title: "Why customers choose ClickCart",
     items: [
-      { icon: BadgeCheck, title: "Verified providers", text: "Providers are checked before they can take bookings." },
+      { icon: BadgeCheck, title: "Verified providers", text: "Check provider profiles and verification details before booking." },
       { icon: ReceiptText, title: "Clear pricing", text: "Compare prices, availability and reviews before you book." },
       { icon: ShieldCheck, title: "Secure by default", text: "Sessions expire automatically and every login is logged." },
     ],
@@ -113,6 +113,7 @@ export default function RegisterPage() {
     if (failure) alertRef.current?.focus();
   }, [failure]);
 
+  if (status === "loading") return <div className="auth-page" role="status">Restoring your session…</div>;
   if (status === "authenticated" && user && !submitting) {
     return <Navigate to={homePathForRole(user.role)} replace />;
   }
@@ -179,7 +180,10 @@ export default function RegisterPage() {
         acceptedTerms: values.acceptedTerms,
       });
       // New providers continue to profile setup (DEV-03); customers go to the marketplace.
-      const next = created.role === "SERVICE_PROVIDER" ? "/provider/profile/setup" : homePathForRole(created.role);
+      const from = location.state?.from;
+      const returnPath = from?.pathname && canReturnTo(created.role, from.pathname)
+        ? `${from.pathname}${from.search || ""}${from.hash || ""}` : homePathForRole(created.role);
+      const next = created.role === "SERVICE_PROVIDER" ? "/provider/profile/setup" : returnPath;
       navigate(next, { replace: true });
     } catch (error) {
       setSubmitting(false);
