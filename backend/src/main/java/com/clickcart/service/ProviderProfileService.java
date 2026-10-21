@@ -65,19 +65,28 @@ public class ProviderProfileService {
     }
 
     public ProviderProfileResponse getOrCreateDefaultProfile() {
-        Optional<ProviderProfile> firstProfile = repository.findAll().stream().findFirst();
-        if (firstProfile.isPresent()) {
-            return toResponse(firstProfile.get());
-        }
+        return getOrCreateProfile(com.clickcart.security.CurrentProvider.id());
+    }
 
-        ProviderProfile defaultProfile = new ProviderProfile();
-        defaultProfile.setProviderType("individual");
-        LocalDateTime now = LocalDateTime.now();
-        defaultProfile.setCreatedAt(now);
-        defaultProfile.setUpdatedAt(now);
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.UserRepository users;
 
-        ProviderProfile saved = repository.save(defaultProfile);
-        return toResponse(saved);
+    public ProviderProfileResponse getOrCreateProfile(String providerId) {
+        return repository.findById(providerId).map(this::toResponse).orElseGet(() -> {
+            ProviderProfile profile = new ProviderProfile();
+            profile.setId(providerId);
+            profile.setProviderType("individual");
+            users.findById(providerId).ifPresent(user -> {
+                boolean business = user.getProviderType() == com.clickcart.model.ProviderType.BUSINESS;
+                profile.setProviderType(business ? "business" : "individual");
+                profile.setFullName(user.getFullName());
+                if (business) profile.setContactPerson(user.getFullName());
+                profile.setEmail(user.getEmail());
+                profile.setPhone(user.getPhone());
+            });
+            // An unsaved onboarding profile avoids writes/races from GET requests.
+            return toResponse(profile);
+        });
     }
 
     public String calculateProfileStatus(ProviderProfile profile) {

@@ -36,11 +36,8 @@ public class ProviderProfileController {
             @RequestParam(required = false) String id,
             @RequestBody ProviderProfileRequest request) {
 
-        String profileId = id;
-        if (profileId == null || profileId.isBlank()) {
-            ProviderProfileResponse defaultProfile = providerProfileService.getOrCreateDefaultProfile();
-            profileId = defaultProfile.getId();
-        }
+        String profileId = com.clickcart.security.CurrentProvider.id();
+        if (id != null && !id.isBlank()) com.clickcart.security.CurrentProvider.requireOwner(id);
 
         ProviderProfileResponse response = providerProfileService.saveProfile(profileId, request);
         return ResponseEntity.ok(response);

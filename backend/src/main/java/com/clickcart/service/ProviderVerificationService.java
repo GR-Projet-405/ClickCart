@@ -26,6 +26,7 @@ public class ProviderVerificationService {
     private final ProviderRepository providerRepository;
     private final ProviderVerificationRepository verificationRepository;
     private final EmailService emailService;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.UserRepository users;
 
     public ProviderVerificationService(
             ProviderRepository providerRepository,
@@ -40,6 +41,11 @@ public class ProviderVerificationService {
         ProviderVerification verification = verificationRepository.findByUserId(userId)
                 .orElseGet(ProviderVerification::new);
 
+        if ("PENDING".equals(verification.getStatus()) || "APPROVED".equals(verification.getStatus())) throw new IllegalArgumentException("Your documents are under review. Wait for the review before editing.");
+        if (!java.util.Set.of("INDIVIDUAL", "BUSINESS").contains(request.accountType() == null ? "" : request.accountType())) throw new IllegalArgumentException("Select Individual or Business");
+        if (java.util.stream.Stream.of(request.fullName(), request.nicNumber(), request.personalAddress(), request.contactNumber()).anyMatch(v -> v == null || v.isBlank())) throw new IllegalArgumentException("Name, NIC number, address and contact number are required");
+        if ("BUSINESS".equals(request.accountType()) && java.util.stream.Stream.of(request.businessName(), request.brnNumber(), request.businessAddress(), request.businessContactNumber()).anyMatch(v -> v == null || v.isBlank())) throw new IllegalArgumentException("Complete all business registration details");
+        verification.setStatus("DRAFT");
         verification.setUserId(userId);
         verification.setAccountType(request.accountType() != null ? request.accountType() : "INDIVIDUAL");
         verification.setFullName(request.fullName());
@@ -171,6 +177,7 @@ public class ProviderVerificationService {
             }
         }
 
+        if (users != null) list.forEach(dto -> users.findById(dto.getId()).ifPresent(user -> dto.setEmail(user.getEmail())));
         return list;
     }
 
@@ -184,6 +191,11 @@ public class ProviderVerificationService {
             throw new IllegalArgumentException("Invalid status value: '" + newStatus + "'. Allowed values are: " + ALLOWED_STATUSES);
         }
 
+        Optional<ProviderVerification> submitted = verificationRepository.findByUserId(providerId);
+        if ("APPROVED".equals(formattedStatus)) {
+            ProviderVerification record = submitted.orElseThrow(() -> new IllegalArgumentException("Verification must be submitted first"));
+            if (!"PENDING".equals(record.getStatus()) || !hasRequiredDocuments(record)) throw new IllegalArgumentException("Only a complete pending submission can be approved");
+        }
         Optional<Provider> providerOpt = providerRepository.findById(providerId);
         ProviderResponseDto dto = null;
 
@@ -220,8 +232,14 @@ public class ProviderVerificationService {
     }
 
     public ProviderResponseDto rejectProvider(String providerId, RejectionRequestDto rejectDto) {
+        if (rejectDto == null || ((rejectDto.getReasons() == null || rejectDto.getReasons().isEmpty()) && (rejectDto.getComments() == null || rejectDto.getComments().isBlank()))) throw new IllegalArgumentException("Provide a reason for rejection");
         ProviderResponseDto dto = updateProviderStatus(providerId, "REJECTED");
+        verificationRepository.findByUserId(providerId).ifPresent(v -> {
+            v.setRejectionReasons(rejectDto.getReasons()); v.setRejectionComments(rejectDto.getComments());
+            verificationRepository.save(v);
+        });
 
+        if (users != null) users.findById(providerId).ifPresent(user -> dto.setEmail(user.getEmail()));
         boolean sendEmailFlag = (rejectDto != null && rejectDto.isSendEmail());
         if (sendEmailFlag && dto.getEmail() != null && !dto.getEmail().trim().isEmpty()) {
             try {
@@ -238,6 +256,12 @@ public class ProviderVerificationService {
         }
 
         return dto;
+    }
+
+    public boolean hasRequiredDocuments(ProviderVerification verification) {
+        java.util.Set<String> types = verification.getDocuments() == null ? java.util.Set.of()
+            : verification.getDocuments().stream().filter(d -> d.getUrl() != null && !d.getUrl().isBlank()).map(ProviderVerification.DocumentItem::getType).collect(java.util.stream.Collectors.toSet());
+        return types.contains("NIC_FRONT") && types.contains("NIC_BACK") && (!"BUSINESS".equals(verification.getAccountType()) || types.contains("BUSINESS_CERTIFICATE"));
     }
 
     private ProviderResponseDto mapToDto(Provider provider) {

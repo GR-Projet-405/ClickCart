@@ -1,3 +1,4 @@
+import { getAccessToken, refreshSession } from "../services/authService";
 import { useEffect, useState, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -19,7 +20,7 @@ export const useStompClient = () => {
   const [connectionState, setConnectionState] = useState(CONNECTION_STATE.CONNECTING);
 
   useEffect(() => {
-    const token = localStorage.getItem('token') || '';
+    const token = getAccessToken();
     
     // Convert API_BASE_URL to WS endpoint for SockJS
     const socketUrl = API_BASE_URL.replace('/api', '/ws');
@@ -28,6 +29,10 @@ export const useStompClient = () => {
       webSocketFactory: () => new SockJS(socketUrl),
       connectHeaders: {
         Authorization: token ? `Bearer ${token}` : '',
+      },
+      beforeConnect: async () => {
+        await refreshSession();
+        stompClient.connectHeaders = { Authorization: `Bearer ${getAccessToken()}` };
       },
       debug: function (str) {
         if (import.meta.env.DEV) {

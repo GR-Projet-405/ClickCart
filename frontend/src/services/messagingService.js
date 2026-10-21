@@ -1,12 +1,7 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from '../config/api';
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-  };
-};
+const getAuthHeaders = () => ({ "Content-Type": "application/json" });
 
 /**
  * Throws an Error with a user-friendly message (and the HTTP status) when the
@@ -37,7 +32,7 @@ const ensureOk = async (response, fallbackMessage) => {
 const request = async (url, options, fallbackMessage) => {
   let response;
   try {
-    response = await fetch(url, options);
+    response = await authFetch(url, options);
   } catch {
     throw new Error(`${fallbackMessage} Please check your connection.`);
   }

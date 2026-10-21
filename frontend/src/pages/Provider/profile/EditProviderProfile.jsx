@@ -38,6 +38,7 @@ export default function EditProviderProfile() {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
@@ -63,7 +64,8 @@ export default function EditProviderProfile() {
           }
         }
       } catch (err) {
-        console.error("Error loading profile for edit:", err);
+        setLoadError(true);
+        setSubmitError("Unable to load your profile. Reload the page to try again.");
       } finally {
         setLoading(false);
       }
@@ -93,7 +95,10 @@ export default function EditProviderProfile() {
         return;
       }
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.onerror = () => setErrors(prev => ({ ...prev, image: "Unable to read image. Please try again." }));
+      reader.readAsDataURL(file);
       setErrors((prev) => {
         const updated = { ...prev };
         delete updated.image;

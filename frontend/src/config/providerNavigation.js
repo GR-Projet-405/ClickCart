@@ -19,7 +19,7 @@ export const providerNavigation = [
   { label: "My Jobs", path: "/provider/jobs", icon: Briefcase },
   { label: "My Services", path: "/provider/services", icon: Wrench },
   { label: "Bookings", path: "/provider/bookings", icon: CalendarCheck },
-  { label: "Messages", path: "/provider/messages", icon: Mail, demoCount: 3 },
+  { label: "Messages", path: "/provider/messages", icon: Mail },
   { label: "Calendar", path: "/provider/calendar", icon: CalendarDays },
   { label: "Availability", path: "/provider/availability", icon: Clock },
   { label: "Service Areas", path: "/provider/service-areas", icon: MapPin },

@@ -11,6 +11,14 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @CompoundIndex(name = "provider_updated_idx", def = "{ 'providerId': 1, 'updatedAt': -1 }")
 public class ServiceListing {
 
+    public record MediaItem(String id, String type, String url, boolean isCover, String label) {}
+    private java.util.List<MediaItem> media = new java.util.ArrayList<>();
+    public java.util.List<MediaItem> getMedia() {
+        if (media == null) media = new java.util.ArrayList<>();
+        return media;
+    }
+    public void setMedia(java.util.List<MediaItem> media) { this.media = new java.util.ArrayList<>(media); }
+
     @Id
     private String id;
     private String providerId;

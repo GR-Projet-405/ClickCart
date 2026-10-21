@@ -1,3 +1,4 @@
+import { authFetch, getAccessToken } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
 // Temporary local-development provider identity.
@@ -7,7 +8,7 @@ export const DEV_PROVIDER_ID = "provider-1";
 export const DEV_CUSTOMER_ID = "mock-customer-001";
 
 function getToken() {
-  return localStorage.getItem("token") || sessionStorage.getItem("token");
+  return getAccessToken();
 }
 
 function getProviderHeaders(providerId, includeContentType = false) {
@@ -67,7 +68,7 @@ async function parseResponse(response) {
 }
 
 export async function fetchProviderReviews(providerId = DEV_PROVIDER_ID) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/provider/${encodeURIComponent(providerId)}`,
     {
       method: "GET",
@@ -79,7 +80,7 @@ export async function fetchProviderReviews(providerId = DEV_PROVIDER_ID) {
 }
 
 export async function fetchProviderRatingSummary(providerId = DEV_PROVIDER_ID) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/provider/${encodeURIComponent(
       providerId,
     )}/summary`,
@@ -97,7 +98,7 @@ export async function publishProviderResponse(
   responseText,
   providerId = DEV_PROVIDER_ID,
 ) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/${encodeURIComponent(reviewId)}/response`,
     {
       method: "POST",
@@ -113,7 +114,7 @@ export async function publishProviderResponse(
 export async function fetchPublishedProviderReviews(
   providerId = DEV_PROVIDER_ID,
 ) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/provider/${encodeURIComponent(
       providerId,
     )}/published`,
@@ -127,7 +128,7 @@ export async function fetchPublishedProviderReviews(
 }
 
 export async function markReviewHelpful(reviewId) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/${encodeURIComponent(reviewId)}/helpful`,
     {
       method: "POST",
@@ -139,7 +140,7 @@ export async function markReviewHelpful(reviewId) {
 }
 
 export async function reportReview(reviewId) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/reviews/${encodeURIComponent(reviewId)}/report`,
     {
       method: "POST",
@@ -151,7 +152,7 @@ export async function reportReview(reviewId) {
 }
 
 export async function fetchReviewEligibility(customerId = DEV_CUSTOMER_ID) {
-  const response = await fetch(`${API_BASE_URL}/reviews/me/eligibility`, {
+  const response = await authFetch(`${API_BASE_URL}/reviews/me/eligibility`, {
     method: "GET",
     headers: {
       "X-Customer-Id": customerId,
@@ -169,7 +170,7 @@ export async function createVerifiedReview(
   reviewData,
   customerId = DEV_CUSTOMER_ID,
 ) {
-  const response = await fetch(`${API_BASE_URL}/reviews`, {
+  const response = await authFetch(`${API_BASE_URL}/reviews`, {
     method: "POST",
     headers: getCustomerHeaders(customerId, true),
     body: JSON.stringify({

@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/providers/services/{serviceId}/pricing")
 public class PricingController {
+    @Autowired
+    private com.clickcart.service.ServiceListingService listings;
 
     @Autowired
     private PricingService pricingService;
@@ -22,6 +24,7 @@ public class PricingController {
         @PathVariable String serviceId,
         @Valid @RequestBody PricingRequestDTO requestDTO) {
 
+        listings.requireOwnedService(serviceId);
         PricingResponseDTO response = pricingService.saveOrUpdatePricing(serviceId, requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -31,6 +34,7 @@ public class PricingController {
     public ResponseEntity<PricingResponseDTO> getPricingByServiceId(
         @PathVariable String serviceId) {
 
+        listings.requireOwnedService(serviceId);
         PricingResponseDTO response = pricingService.getPricingByServiceId(serviceId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }

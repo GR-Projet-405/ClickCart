@@ -12,6 +12,9 @@ import { API_BASE_URL } from "../config/api";
 const AUTH_URL = `${API_BASE_URL.replace(/\/$/, "")}/auth`;
 
 let accessToken = null;
+let sessionUser = null;
+
+export function getSessionUser() { return sessionUser; }
 let refreshInFlight = null;
 const sessionListeners = new Set();
 
@@ -60,6 +63,7 @@ async function request(path, { method = "GET", body, signal, auth = false } = {}
 function setSession(session) {
   accessToken = session?.accessToken ?? null;
   const user = session?.user ?? null;
+  sessionUser = user;
   sessionListeners.forEach((listener) => listener(user));
 }
 

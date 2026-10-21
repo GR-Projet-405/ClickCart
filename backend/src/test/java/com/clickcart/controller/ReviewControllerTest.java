@@ -279,6 +279,7 @@ class ReviewControllerTest {
     }
 
     @Test
+    @WithMockUser(username = "provider-1", roles = "SERVICE_PROVIDER")
     void shouldAddProviderResponse() throws Exception {
 
         ReviewResponse response = new ReviewResponse();

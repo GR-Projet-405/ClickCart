@@ -26,24 +26,8 @@ public class ProviderDashboardController {
             @RequestParam(name = "range", required = false, defaultValue = "7d") String range,
             @org.springframework.security.core.annotation.AuthenticationPrincipal Jwt jwt
     ) {
-        String providerId;
-        String displayName;
-
-        if (securityEnabled && jwt != null) {
-            // Production mode: use authenticated provider
-            providerId = jwt.getSubject();
-            displayName = jwt.getClaimAsString("name");
-            if (displayName == null || displayName.isBlank()) {
-                displayName = providerId;
-            }
-        } else if (!securityEnabled) {
-            // Development mode: use default provider for testing
-            providerId = "provider-b";
-            displayName = "QuickFix Electrical Services";
-        } else {
-            // Security enabled but no JWT
-            throw new IllegalArgumentException("Authentication required: JWT token missing");
-        }
+        String providerId = com.clickcart.security.CurrentProvider.id();
+        String displayName = "Service Provider";
 
         ProviderDashboardResponse response = dashboardService.getDashboardData(
                 providerId,

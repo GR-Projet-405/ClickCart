@@ -22,6 +22,8 @@ export default function EarningsDashboardPage() {
   const [categories, setCategories] = useState([]);
   const [recentJobs, setRecentJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
 
   // Modal States
   const [showExportModal, setShowExportModal] = useState(false);
@@ -31,8 +33,8 @@ export default function EarningsDashboardPage() {
   // Form States
   const [exportFormat, setExportFormat] = useState("pdf");
   const [exportType, setExportType] = useState("summary");
-  const [payoutAmount, setPayoutAmount] = useState("86250.00");
-  const [bankAccount, setBankAccount] = useState("boc");
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
   const [submittingPayout, setSubmittingPayout] = useState(false);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export default function EarningsDashboardPage() {
         setCategories(catRes);
         setRecentJobs(jobsRes.content || []);
       } catch (err) {
-        console.error("Failed to load earnings data:", err);
+        setError(err.message);
       } finally {
         setLoading(false);
       }
@@ -61,12 +63,13 @@ export default function EarningsDashboardPage() {
     e.preventDefault();
     setSubmittingPayout(true);
     try {
-      const res = await providerEarningsService.requestPayout("provider-101", {
+      const res = await providerEarningsService.requestPayout(undefined, {
         amount: parseFloat(payoutAmount),
-        bankName: bankAccount === "boc" ? "Bank of Ceylon" : "Commercial Bank of Ceylon",
-        accountNumber: bankAccount === "boc" ? "8821941203" : "1049281744"
+        bankName: bankAccount.trim(),
+        accountNumber: accountNumber.trim()
       });
       setPayoutSuccess(res);
+      setSummary(await providerEarningsService.getSummary());
     } catch (err) {
       alert("Error: " + err.message);
     } finally {
@@ -75,14 +78,18 @@ export default function EarningsDashboardPage() {
   };
 
   const handleExportDownload = () => {
-    alert(`Exporting ${exportType.toUpperCase()} report in ${exportFormat.toUpperCase()} format... Download started!`);
-    setShowExportModal(false);
+    const rows = [["Metric", "LKR"], ["Gross revenue", summary?.totalGrossRevenue ?? 0], ["Commission", summary?.totalCommissionDeducted ?? 0], ["Available", summary?.netAvailableBalance ?? 0], ["Pending", summary?.pendingClearance ?? 0]];
+    const url = URL.createObjectURL(new Blob([rows.map(row => row.join(",")).join(String.fromCharCode(10))], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = url; link.download = "my-earnings-summary.csv"; link.click(); URL.revokeObjectURL(url);
   };
 
   const formatCurrency = (val) => {
     const num = Number(val || 0);
     return `LKR ${num.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
+
+  if (loading) return <div className="earnings-page" role="status">Loading your earnings…</div>;
+  if (error) return <div className="earnings-page"><div role="alert" className="provider-data-error">{error}<button onClick={() => window.location.reload()}>Try again</button></div></div>;
 
   return (
     <div className="earnings-page">
@@ -97,7 +104,7 @@ export default function EarningsDashboardPage() {
             <span>Last 30 Days</span>
             <ChevronDown size={16} />
           </div>
-          <button className="btn-export-report" onClick={() => setShowExportModal(true)}>
+          <button className="btn-export-report" onClick={handleExportDownload} disabled={!summary}>
             <Download size={16} />
             <span>Export Report</span>
           </button>
@@ -112,11 +119,11 @@ export default function EarningsDashboardPage() {
             <div className="kpi-icon-box icon-gross">
               <TrendingUp size={20} />
             </div>
-            <span className="kpi-badge badge-positive">+14.2%</span>
+
           </div>
           <div className="kpi-title">Total Gross Revenue</div>
-          <div className="kpi-value">{formatCurrency(summary?.totalGrossRevenue || 284500)}</div>
-          <div className="kpi-subtitle">vs last month revenue</div>
+          <div className="kpi-value">{formatCurrency(summary?.totalGrossRevenue ?? 0)}</div>
+          <div className="kpi-subtitle">Revenue for the selected period</div>
         </div>
 
         {/* Marketplace Commission */}
@@ -127,8 +134,8 @@ export default function EarningsDashboardPage() {
             </div>
           </div>
           <div className="kpi-title">Marketplace Commission</div>
-          <div className="kpi-value">{formatCurrency(summary?.totalCommissionDeducted || 28450)}</div>
-          <div className="kpi-subtitle">Platform fee rate: 10% snapshot</div>
+          <div className="kpi-value">{formatCurrency(summary?.totalCommissionDeducted ?? 0)}</div>
+          <div className="kpi-subtitle">Actual commission deducted</div>
         </div>
 
         {/* Net Available Balance */}
@@ -139,8 +146,8 @@ export default function EarningsDashboardPage() {
             </div>
           </div>
           <div className="kpi-title">Net Available Balance</div>
-          <div className="kpi-value highlight-net">{formatCurrency(summary?.netAvailableBalance || 86250)}</div>
-          <button className="btn-request-payout" onClick={() => { setPayoutSuccess(null); setShowPayoutModal(true); }}>
+          <div className="kpi-value highlight-net">{formatCurrency(summary?.netAvailableBalance ?? 0)}</div>
+          <button className="btn-request-payout" disabled={!summary || Number(summary.netAvailableBalance) < 1000} onClick={() => { setPayoutSuccess(null); setShowPayoutModal(true); }}>
             Request Payout
           </button>
         </div>
@@ -153,141 +160,26 @@ export default function EarningsDashboardPage() {
             </div>
           </div>
           <div className="kpi-title">Pending Clearance</div>
-          <div className="kpi-value">{formatCurrency(summary?.pendingClearance || 18500)}</div>
-          <div className="kpi-subtitle">{summary?.activePendingBookingsCount || 2} active bookings in progress</div>
+          <div className="kpi-value">{formatCurrency(summary?.pendingClearance ?? 0)}</div>
+          <div className="kpi-subtitle">{summary?.activePendingBookingsCount ?? 0} active bookings in progress</div>
         </div>
       </div>
 
-      {/* Row 2: Charts Section */}
       <div className="earnings-charts-grid">
-        {/* Left: Monthly Revenue vs Commission SVG Chart */}
         <div className="chart-card">
-          <div className="chart-card-header">
-            <h3>Monthly Revenue vs Commission</h3>
-            <div className="chart-legends">
-              <span className="legend-item">
-                <span className="legend-dot dot-gross"></span>
-                <span>Gross Revenue</span>
-              </span>
-              <span className="legend-item">
-                <span className="legend-dot dot-net"></span>
-                <span>Net Earning</span>
-              </span>
-            </div>
-          </div>
-          <div style={{ height: "220px", width: "100%", position: "relative" }}>
-            <svg viewBox="0 0 540 200" style={{ width: "100%", height: "100%", overflow: "visible" }}>
-              <defs>
-                <linearGradient id="grossGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#10b926" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="#10b926" stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              {/* Grid Lines */}
-              <line x1="40" y1="30" x2="520" y2="30" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="70" x2="520" y2="70" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="110" x2="520" y2="110" stroke="#f1f5f9" strokeWidth="1" />
-              <line x1="40" y1="150" x2="520" y2="150" stroke="#f1f5f9" strokeWidth="1" />
-
-              {/* Y Axis Labels */}
-              <text x="5" y="34" fontSize="10" fill="#94a3b8">LKR 250k</text>
-              <text x="5" y="74" fontSize="10" fill="#94a3b8">LKR 200k</text>
-              <text x="5" y="114" fontSize="10" fill="#94a3b8">LKR 150k</text>
-              <text x="5" y="154" fontSize="10" fill="#94a3b8">LKR 50k</text>
-
-              {/* Smooth Area & Path for Gross */}
-              <path
-                d="M 50 140 C 130 90, 200 130, 280 80 C 340 70, 420 90, 510 35 L 510 160 L 50 160 Z"
-                fill="url(#grossGradient)"
-              />
-              <path
-                d="M 50 140 C 130 90, 200 130, 280 80 C 340 70, 420 90, 510 35"
-                fill="none"
-                stroke="#10b926"
-                strokeWidth="2.5"
-              />
-
-              {/* Smooth Path for Net Earning */}
-              <path
-                d="M 50 148 C 130 102, 200 138, 280 92 C 340 82, 420 100, 510 48"
-                fill="none"
-                stroke="#f97316"
-                strokeWidth="2"
-                strokeDasharray="4 3"
-              />
-
-              {/* X Axis Labels */}
-              <text x="50" y="175" fontSize="11" fill="#64748b" textAnchor="middle">Jan</text>
-              <text x="142" y="175" fontSize="11" fill="#64748b" textAnchor="middle">Feb</text>
-              <text x="234" y="175" fontSize="11" fill="#64748b" textAnchor="middle">Mar</text>
-              <text x="326" y="175" fontSize="11" fill="#64748b" textAnchor="middle">Apr</text>
-              <text x="418" y="175" fontSize="11" fill="#64748b" textAnchor="middle">May</text>
-              <text x="510" y="175" fontSize="11" fill="#64748b" textAnchor="middle">Jun</text>
-            </svg>
-          </div>
+          <div className="chart-card-header"><h3>Monthly Revenue & Net Earnings</h3></div>
+          {trends.length ? <div className="provider-real-trends">{trends.map(item => {
+            const maximum = Math.max(1, ...trends.map(row => Number(row.grossRevenue || 0)));
+            return <div key={item.month} className="provider-trend-row"><strong>{item.month}</strong>
+              <div><div className="provider-trend-track"><span style={{ width: `${Number(item.grossRevenue || 0) / maximum * 100}%` }} /></div>
+              <small>Gross {formatCurrency(item.grossRevenue)} · Net {formatCurrency(item.netEarning)}</small></div></div>;
+          })}</div> : <p className="provider-empty-data">Your earnings trend will appear after completed jobs.</p>}
         </div>
-
-        {/* Right: Category Donut Chart */}
         <div className="chart-card">
-          <div className="chart-card-header">
-            <h3>Earnings by Service Category</h3>
-          </div>
-          <div className="donut-container">
-            <svg width="130" height="130" viewBox="0 0 42 42">
-              <circle cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#e2e8f0" strokeWidth="6" />
-              {/* Plumbing 45% */}
-              <circle
-                cx="21" cy="21" r="15.91549430918954" fill="transparent"
-                stroke="#10b926" strokeWidth="6" strokeDasharray="45 55" strokeDashoffset="25"
-              />
-              {/* Electrical 25% */}
-              <circle
-                cx="21" cy="21" r="15.91549430918954" fill="transparent"
-                stroke="#0284c7" strokeWidth="6" strokeDasharray="25 75" strokeDashoffset="80"
-              />
-              {/* Painting 20% */}
-              <circle
-                cx="21" cy="21" r="15.91549430918954" fill="transparent"
-                stroke="#f59e0b" strokeWidth="6" strokeDasharray="20 80" strokeDashoffset="55"
-              />
-              {/* Other 10% */}
-              <circle
-                cx="21" cy="21" r="15.91549430918954" fill="transparent"
-                stroke="#94a3b8" strokeWidth="6" strokeDasharray="10 90" strokeDashoffset="35"
-              />
-            </svg>
-
-            <div className="donut-legend-list">
-              <div className="donut-legend-row">
-                <span className="donut-legend-info">
-                  <span className="legend-dot" style={{ background: "#10b926" }}></span>
-                  <span>Plumbing</span>
-                </span>
-                <strong>45%</strong>
-              </div>
-              <div className="donut-legend-row">
-                <span className="donut-legend-info">
-                  <span className="legend-dot" style={{ background: "#0284c7" }}></span>
-                  <span>Electrical</span>
-                </span>
-                <strong>25%</strong>
-              </div>
-              <div className="donut-legend-row">
-                <span className="donut-legend-info">
-                  <span className="legend-dot" style={{ background: "#f59e0b" }}></span>
-                  <span>Painting</span>
-                </span>
-                <strong>20%</strong>
-              </div>
-              <div className="donut-legend-row">
-                <span className="donut-legend-info">
-                  <span className="legend-dot" style={{ background: "#94a3b8" }}></span>
-                  <span>Maintenance</span>
-                </span>
-                <strong>10%</strong>
-              </div>
-            </div>
-          </div>
+          <div className="chart-card-header"><h3>Revenue by Category</h3></div>
+          {categories.length ? categories.map(item => <div key={item.category} className="provider-category-row">
+            <span>{item.category}</span><strong>{formatCurrency(item.amount)}</strong><small>{Number(item.percentage || 0).toFixed(1)}%</small>
+          </div>) : <p className="provider-empty-data">No category earnings yet.</p>}
         </div>
       </div>
 
@@ -313,6 +205,7 @@ export default function EarningsDashboardPage() {
               </tr>
             </thead>
             <tbody>
+              {!recentJobs.length && <tr><td colSpan={7}>No transactions yet. Earnings will appear here as your jobs are completed.</td></tr>}
               {recentJobs.map((job) => (
                 <tr key={job.id}>
                   <td>{job.date}</td>
@@ -322,7 +215,7 @@ export default function EarningsDashboardPage() {
                   <td className="commission-cell">-{formatCurrency(job.commissionAmount)}</td>
                   <td className="net-payout-cell">{formatCurrency(job.netAmount)}</td>
                   <td>
-                    <span className="status-badge status-completed">COMPLETED</span>
+                    <span className="status-badge status-completed">{job.status}</span>
                   </td>
                 </tr>
               ))}
@@ -443,7 +336,7 @@ export default function EarningsDashboardPage() {
                 <CheckCircle2 size={54} color="#10b926" style={{ margin: "0 auto 1rem auto" }} />
                 <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.25rem", color: "#0f172a" }}>Payout Request Received!</h4>
                 <p style={{ margin: "0 0 1.5rem 0", fontSize: "0.875rem", color: "#64748b" }}>
-                  Your payout of <strong>{formatCurrency(payoutSuccess.amount)}</strong> is being processed. Reference: <strong>{payoutSuccess.payoutId}</strong>.
+                  Your payout of <strong>{formatCurrency(payoutSuccess.amount)}</strong> is saved and awaiting finance review. Reference: <strong>{payoutSuccess.payoutId}</strong>.
                 </p>
                 <button className="btn-modal-confirm" style={{ margin: "0 auto" }} onClick={() => setShowPayoutModal(false)}>
                   Done
@@ -457,7 +350,7 @@ export default function EarningsDashboardPage() {
                       Available for Withdrawal
                     </div>
                     <div style={{ fontSize: "1.5rem", fontWeight: "700", color: "#15803d" }}>
-                      {formatCurrency(summary?.netAvailableBalance || 86250)}
+                      {formatCurrency(summary?.netAvailableBalance ?? 0)}
                     </div>
                   </div>
 
@@ -470,7 +363,8 @@ export default function EarningsDashboardPage() {
                       value={payoutAmount}
                       onChange={(e) => setPayoutAmount(e.target.value)}
                       min="1000"
-                      step="100"
+                      max={summary?.netAvailableBalance ?? 0}
+                      step="0.01"
                       required
                       style={{
                         width: "100%",
@@ -486,33 +380,9 @@ export default function EarningsDashboardPage() {
                     <label style={{ display: "block", fontSize: "0.8125rem", fontWeight: "600", marginBottom: "0.35rem" }}>
                       Transfer Destination
                     </label>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
-                      <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem", border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer" }}>
-                        <input
-                          type="radio"
-                          name="bank"
-                          checked={bankAccount === "boc"}
-                          onChange={() => setBankAccount("boc")}
-                        />
-                        <Building2 size={20} color="#10b926" />
-                        <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>Bank of Ceylon (BOC)</div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Acc: **** 1203 • Verified</div>
-                        </div>
-                      </label>
-                      <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.6rem", border: "1px solid #e2e8f0", borderRadius: "8px", cursor: "pointer" }}>
-                        <input
-                          type="radio"
-                          name="bank"
-                          checked={bankAccount === "comb"}
-                          onChange={() => setBankAccount("comb")}
-                        />
-                        <Building2 size={20} color="#0284c7" />
-                        <div>
-                          <div style={{ fontSize: "0.875rem", fontWeight: "600" }}>Commercial Bank of Ceylon</div>
-                          <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Acc: **** 1744 • Verified</div>
-                        </div>
-                      </label>
+                    <div className="provider-bank-fields">
+                      <label>Bank name<input aria-label="Bank name" value={bankAccount} onChange={e => setBankAccount(e.target.value)} required /></label>
+                      <label>Account number<input aria-label="Account number" value={accountNumber} onChange={e => setAccountNumber(e.target.value)} required autoComplete="off" /></label>
                     </div>
                   </div>
                 </div>

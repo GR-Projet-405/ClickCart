@@ -76,6 +76,11 @@ public class CommissionDashboardController {
                 "totalSettlements", ledger.stream().map(CommissionTransaction::providerEarning).reduce(BigDecimal.ZERO, BigDecimal::add), "revenueTrend", revenueTrend, "categoryDistribution", categoryDistribution, "recentHistory", ledger.stream().limit(10).toList(), "snapshotCount", snapshots.count());
     }
 
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.UserRepository users;
+    @GetMapping("/providers") public Object providers() {
+        return users.findAll().stream().filter(user -> user.getRole() == com.clickcart.model.Role.SERVICE_PROVIDER)
+            .map(user -> Map.of("id", user.getId(), "name", user.getFullName() == null ? user.getEmail() : user.getFullName())).toList();
+    }
     @GetMapping("/transactions") public List<CommissionTransaction> transactions() { return transactionService.listWithPublicIds(); }
     @PostMapping("/transactions") public CommissionTransaction createTransaction(@RequestBody TransactionRequest request) { return transactionService.create(request); }
     @PutMapping("/transactions/{id}") public CommissionTransaction updateTransaction(@PathVariable String id, @RequestBody CommissionTransactionService.SplitUpdateRequest request, @RequestHeader("X-Split-Confirmation") String confirmationId) { return transactionService.update(id, request, confirmationId); }

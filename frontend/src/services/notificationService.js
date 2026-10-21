@@ -34,3 +34,6 @@ export function saveNotificationPreferences(enabled) {
     body: JSON.stringify({ enabled }),
   }).then(readJson);
 }
+
+export const fetchNotifications = () => authFetch(`${API_BASE_URL}/notifications`).then(readJson);
+export const markNotificationRead = id => authFetch(`${API_BASE_URL}/notifications/${encodeURIComponent(id)}/read`, { method: "PATCH" }).then(readJson);

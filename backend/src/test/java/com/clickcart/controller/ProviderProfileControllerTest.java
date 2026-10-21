@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(controllers = {HealthController.class, ProviderProfileController.class})
 @AutoConfigureMockMvc(addFilters = false)
+@org.springframework.security.test.context.support.WithMockUser(username = "12345abc", roles = "SERVICE_PROVIDER")
 class ProviderProfileControllerTest {
 
     @Autowired
@@ -96,7 +97,7 @@ class ProviderProfileControllerTest {
     @DisplayName("STEP 4: PUT /api/provider/profile should create/update and return COMPLETED status (100%)")
     void testCreateCompletedProfile() throws Exception {
         Mockito.when(providerProfileService.getOrCreateDefaultProfile()).thenReturn(defaultResponse);
-        Mockito.when(providerProfileService.saveProfile(eq("67890def"), any(ProviderProfileRequest.class)))
+        Mockito.when(providerProfileService.saveProfile(eq("12345abc"), any(ProviderProfileRequest.class)))
                 .thenReturn(completedResponse);
 
         ProviderProfileRequest request = new ProviderProfileRequest(

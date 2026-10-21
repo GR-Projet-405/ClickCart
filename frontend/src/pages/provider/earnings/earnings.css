@@ -802,3 +802,15 @@
   background: var(--cc-primary-hover, #0da321);
 }
 
+
+.provider-data-error { padding: 20px; border-radius: 12px; background: #fff1f2; color: #9f1239; margin-bottom: 20px; }
+.provider-data-error button { margin-left: 16px; }
+.provider-empty-data { padding: 24px; color: #64748b; text-align: center; }
+.provider-trend-row { display: grid; grid-template-columns: 72px 1fr; gap: 12px; margin: 16px 0; align-items: center; }
+.provider-trend-track { background: #f1f5f9; border-radius: 6px; height: 12px; overflow: hidden; }
+.provider-trend-track span { display: block; height: 100%; background: #10b926; }
+.provider-trend-row small { color: #64748b; }
+.provider-category-row { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; padding: 16px 0; border-bottom: 1px solid #f1f5f9; }
+.provider-bank-fields { display: grid; gap: 12px; }
+.provider-bank-fields label { display: grid; gap: 6px; }
+.provider-bank-fields input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; width: 100%; }

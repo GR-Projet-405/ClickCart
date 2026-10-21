@@ -28,6 +28,9 @@ public class ProviderJobService {
 
     private final ProviderJobRepository repository;
     private final JobProofStorageService storageService;
+    @org.springframework.beans.factory.annotation.Autowired private CommissionTransactionService commissions;
+    @org.springframework.beans.factory.annotation.Autowired private CommissionRuleService commissionRules;
+    @org.springframework.beans.factory.annotation.Autowired private CommissionCalculatorService calculator;
 
     public ProviderJobService(ProviderJobRepository repository, JobProofStorageService storageService) {
         this.repository = repository;
@@ -93,16 +96,12 @@ public class ProviderJobService {
         job.setServiceBaseFee(request.serviceBaseFee());
         job.setPartsTopUp(request.partsTopUp());
 
-        double platformCommission = (request.serviceBaseFee() != null ? request.serviceBaseFee() : 0.0) * 0.15;
-        if (request.partsTopUp() != null) {
-            platformCommission += request.partsTopUp() * 0.10;
-        }
-        job.setPlatformCommission(platformCommission);
-
-        double netPayout = (request.serviceBaseFee() != null ? request.serviceBaseFee() : 0.0)
-            + (request.partsTopUp() != null ? request.partsTopUp() : 0.0)
-            - platformCommission;
-        job.setNetPayout(netPayout);
+        double gross = (request.serviceBaseFee() == null ? 0 : request.serviceBaseFee()) + (request.partsTopUp() == null ? 0 : request.partsTopUp());
+        if (gross <= 0) throw ApiException.badRequest("Enter a positive service amount");
+        var rule = commissionRules.match(request.serviceCategory(), com.clickcart.model.CommissionRule.ProviderTier.ALL, now);
+        var split = calculator.calculate(java.math.BigDecimal.valueOf(gross), rule);
+        job.setPlatformCommission(split.commissionAmount().doubleValue());
+        job.setNetPayout(split.providerPayout().doubleValue());
 
         job.setPaymentHold("ESCROW");
         job.setProgressLabel("Custom job awaiting confirmation");
@@ -174,6 +173,9 @@ public class ProviderJobService {
             throw ApiException.badRequest("Upload at least one photographic proof before completing the job");
         }
         Instant now = Instant.now();
+        var transaction = commissions.create(new CommissionTransactionService.TransactionRequest("JOB-" + job.getId(), job.getCustomerName(), providerId, job.getServiceTitle(), java.math.BigDecimal.valueOf((job.getServiceBaseFee() == null ? 0 : job.getServiceBaseFee()) + (job.getPartsTopUp() == null ? 0 : job.getPartsTopUp())), job.getServiceCategory(), com.clickcart.model.CommissionRule.ProviderTier.ALL));
+        job.setPlatformCommission(transaction.commissionAmount().doubleValue());
+        job.setNetPayout(transaction.providerEarning().doubleValue());
         job.setStatus(JobStatus.COMPLETED);
         job.setCompletedAt(now);
         job.setProgressLabel("Completed");

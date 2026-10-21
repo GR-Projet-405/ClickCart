@@ -28,6 +28,7 @@ export default function ProviderSetup() {
   const [imagePreview, setImagePreview] = useState(null);
   const [errors, setErrors] = useState({});
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [submitError, setSubmitError] = useState(null);
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
 
@@ -51,12 +52,11 @@ export default function ProviderSetup() {
           if (existing.imagePreview) {
             setImagePreview(existing.imagePreview);
           }
-          if (existing.profileStatus === "PARTIALLY_COMPLETED") {
-            setCurrentStep(2);
-          }
+
         }
       } catch (err) {
-        console.error("Error initializing setup profile data:", err);
+        setLoadError(true);
+        setSubmitError("Unable to load your profile. Reload the page to try again.");
       }
     }
     loadProfile();
@@ -89,7 +89,10 @@ export default function ProviderSetup() {
         return;
       }
       setImageFile(file);
-      setImagePreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = () => setImagePreview(reader.result);
+      reader.onerror = () => setErrors(prev => ({ ...prev, image: "Unable to read image. Please try again." }));
+      reader.readAsDataURL(file);
       setErrors((prev) => {
         const updated = { ...prev };
         delete updated.image;
@@ -151,6 +154,7 @@ export default function ProviderSetup() {
   };
 
   const handleNextFromStep1 = async () => {
+    if (loadError) return;
     if (validateStep1()) {
       try {
         setSaving(true);
@@ -190,13 +194,14 @@ export default function ProviderSetup() {
   };
 
   const handleSubmit = async (e) => {
+    if (loadError) { e.preventDefault(); return; }
     e.preventDefault();
     if (currentStep === 1) {
       await handleNextFromStep1();
       return;
     }
 
-    if (validateStep2()) {
+    if (validateStep1() && validateStep2()) {
       try {
         setSaving(true);
         setSubmitError(null);

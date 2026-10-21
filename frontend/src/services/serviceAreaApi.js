@@ -1,19 +1,7 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-  const headers = {
-    "Content-Type": "application/json",
-  };
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  } else {
-    // Development fallback provider context for local testing
-    headers["X-Provider-Id"] = "dev-provider-09";
-    headers["X-Dev-Role"] = "SERVICE_PROVIDER";
-  }
-  return headers;
-};
+const getAuthHeaders = () => ({ "Content-Type": "application/json" });
 
 export async function fetchServiceAreas({
   page = 0,
@@ -29,7 +17,7 @@ export async function fetchServiceAreas({
   if (status && status !== "ALL") params.set("status", status);
   if (district.trim()) params.set("district", district.trim());
 
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas?${params.toString()}`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas?${params.toString()}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -42,7 +30,7 @@ export async function fetchServiceAreas({
 }
 
 export async function fetchSummary() {
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas/summary`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas/summary`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -55,7 +43,7 @@ export async function fetchSummary() {
 }
 
 export async function fetchServiceAreaById(id) {
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
     method: "GET",
     headers: getAuthHeaders(),
   });
@@ -68,7 +56,7 @@ export async function fetchServiceAreaById(id) {
 }
 
 export async function createServiceArea(payload) {
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas`, {
     method: "POST",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
@@ -85,7 +73,7 @@ export async function createServiceArea(payload) {
 }
 
 export async function updateServiceArea(id, payload) {
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
     method: "PUT",
     headers: getAuthHeaders(),
     body: JSON.stringify(payload),
@@ -106,7 +94,7 @@ export async function updateServiceAreaStatus(id, activeOrStatus) {
     ? { active: activeOrStatus } 
     : { status: activeOrStatus };
 
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas/${id}/status`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas/${id}/status`, {
     method: "PATCH",
     headers: getAuthHeaders(),
     body: JSON.stringify(body),
@@ -120,7 +108,7 @@ export async function updateServiceAreaStatus(id, activeOrStatus) {
 }
 
 export async function deleteServiceArea(id) {
-  const response = await fetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
+  const response = await authFetch(`${API_BASE_URL}/provider/service-areas/${id}`, {
     method: "DELETE",
     headers: getAuthHeaders(),
   });
@@ -134,7 +122,7 @@ export async function deleteServiceArea(id) {
 
 export async function fetchDistricts() {
   try {
-    const response = await fetch(`${API_BASE_URL}/public/locations/districts`);
+    const response = await authFetch(`${API_BASE_URL}/public/locations/districts`);
     const json = await response.json();
     return json.data || [];
   } catch (e) {
@@ -164,10 +152,16 @@ export async function fetchDistricts() {
 
 export async function fetchLocationPresets() {
   try {
-    const response = await fetch(`${API_BASE_URL}/public/locations/presets`);
+    const response = await authFetch(`${API_BASE_URL}/public/locations/presets`);
     const json = await response.json();
     return json.data || {};
   } catch (e) {
     return {};
   }
+}
+
+export async function fetchPublicServiceAreas(providerId) {
+  const response = await fetch(`${API_BASE_URL}/public/providers/${encodeURIComponent(providerId)}/service-areas`);
+  if (!response.ok) throw new Error("Unable to load service coverage.");
+  return response.json();
 }

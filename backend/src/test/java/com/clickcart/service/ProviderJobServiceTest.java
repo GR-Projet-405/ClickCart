@@ -32,6 +32,7 @@ class ProviderJobServiceTest {
     @Mock
     private JobProofStorageService storageService;
 
+    @Mock private CommissionTransactionService commissions;
     private ProviderJobService service;
 
     private static final String TEST_PROVIDER_ID = "provider-a";
@@ -40,6 +41,7 @@ class ProviderJobServiceTest {
     @BeforeEach
     void setUp() {
         service = new ProviderJobService(repository, storageService);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "commissions", commissions);
     }
 
     @Test
@@ -58,6 +60,7 @@ class ProviderJobServiceTest {
         job.getPhotos().add(photo);
         when(repository.findById(TEST_JOB_ID)).thenReturn(Optional.of(job));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
+        when(commissions.create(any())).thenReturn(new com.clickcart.model.CommissionTransaction("job-1", "Customer", TEST_PROVIDER_ID, "Service", java.math.BigDecimal.TEN, "General", java.math.BigDecimal.ONE, new java.math.BigDecimal("9"), java.time.Instant.now(), com.clickcart.model.CommissionTransaction.TransactionStatus.PENDING, null));
         assertEquals(JobStatus.COMPLETED, service.completeJob(TEST_PROVIDER_ID, TEST_JOB_ID, null).status());
         verify(repository).save(any());
     }
@@ -71,6 +74,7 @@ class ProviderJobServiceTest {
         when(repository.findById(TEST_JOB_ID)).thenReturn(Optional.of(job));
         when(repository.save(any())).thenAnswer(invocation -> invocation.getArgument(0));
         CompleteJobRequest request = new CompleteJobRequest("Job completed successfully");
+        when(commissions.create(any())).thenReturn(new com.clickcart.model.CommissionTransaction("job-1", "Customer", TEST_PROVIDER_ID, "Service", java.math.BigDecimal.TEN, "General", java.math.BigDecimal.ONE, new java.math.BigDecimal("9"), java.time.Instant.now(), com.clickcart.model.CommissionTransaction.TransactionStatus.PENDING, null));
         assertEquals(JobStatus.COMPLETED, service.completeJob(TEST_PROVIDER_ID, TEST_JOB_ID, request).status());
         verify(repository).save(any());
     }

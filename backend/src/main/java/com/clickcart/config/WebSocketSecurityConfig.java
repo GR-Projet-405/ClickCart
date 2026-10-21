@@ -18,6 +18,12 @@ import java.security.Principal;
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final com.clickcart.util.JwtUtil jwtUtil;
+
+    public WebSocketSecurityConfig(com.clickcart.util.JwtUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
@@ -31,11 +37,8 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                     
                     if (authHeader != null && authHeader.startsWith("Bearer ")) {
                         String token = authHeader.substring(7);
-                        // TODO(DEV-auth): Replace with actual JWT parsing from the shared Auth utility
-                        // For now we assume token contains the userId directly for testing
-                        String userId = token; // Placeholder
-                        
-                        Principal principal = () -> userId;
+                        Principal principal = jwtUtil.parseAccessToken(token)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired session"));
                         accessor.setUser(principal);
                     } else {
                         // Reject unauthenticated connection

@@ -21,16 +21,6 @@ export default function ProviderSidebar({ onNavigate }) {
               pathname.startsWith(`${path}/`) ||
               (path.endsWith("dashboard") && pathname === "/provider")
             }
-            badge={
-              demoCount ? (
-                <span
-                  className="dashboard-sidebar__badge"
-                  aria-label={`${demoCount} demo items`}
-                >
-                  {demoCount}
-                </span>
-              ) : undefined
-            }
             onClick={onNavigate}
           />
         ))}

@@ -4,19 +4,20 @@ import { providerVerificationService } from "../../services/providerVerification
 import { useAuth } from "../../context/AuthContext";
 import "./ProviderVerificationForm.css";
 
-export default function ProviderVerificationStep1({ onNext }) {
+export default function ProviderVerificationStep1({ onNext, initialData }) {
   const { user } = useAuth();
 
   const [formData, setFormData] = useState({
-    accountType: "INDIVIDUAL",
-    fullName: "",
+    accountType: (user?.providerType || "INDIVIDUAL").toUpperCase(),
+    fullName: user?.fullName || "",
     nicNumber: "",
     personalAddress: "",
-    contactNumber: "",
+    contactNumber: user?.phone || "",
     businessName: "",
     brnNumber: "",
     businessAddress: "",
     businessContactNumber: "",
+    ...initialData,
   });
 
   const [loading, setLoading] = useState(false);
@@ -36,14 +37,8 @@ export default function ProviderVerificationStep1({ onNext }) {
     setError("");
 
     try {
-      let userId = "12345";
-      if (user) {
-        if (typeof user === "string") {
-          userId = user;
-        } else if (typeof user === "object") {
-          userId = user.id || user._id || user.userId || "12345";
-        }
-      }
+      const userId = user?.id;
+      if (!userId) throw new Error("Sign in to your provider account to continue.");
 
       const responseData = await providerVerificationService.saveStepOne(userId, formData);
       const savedUserId = responseData?.userId || responseData?.id || userId;
@@ -51,7 +46,7 @@ export default function ProviderVerificationStep1({ onNext }) {
       if (onNext) onNext(savedUserId, formData.accountType);
     } catch (err) {
       console.error("Save step 1 error:", err);
-      setError("Failed to save Step 1 details. Please check the backend server.");
+      setError(err.message || "Unable to save your details. Please try again.");
     } finally {
       setLoading(false);
     }

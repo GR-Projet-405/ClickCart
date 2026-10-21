@@ -35,7 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(ProviderEarningController.class)
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
+@WithMockUser(username = "provider-101", roles = "SERVICE_PROVIDER")
 @Import(GlobalExceptionHandler.class)
 class ProviderEarningControllerTest {
 
@@ -100,7 +101,7 @@ class ProviderEarningControllerTest {
         request.setBankName("BOC");
         request.setAccountNumber("12345678");
 
-        mockMvc.perform(post("/api/provider/earnings/payout")
+        mockMvc.perform(post("/api/provider/earnings/payout").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())

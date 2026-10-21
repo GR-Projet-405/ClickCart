@@ -102,13 +102,13 @@ public class ReviewController {
     @PostMapping("/{reviewId}/response")
     public ResponseEntity<ReviewResponse> addProviderResponse(
             @PathVariable String reviewId,
-            @RequestHeader("X-Provider-Id") String providerId,
+            @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @Valid @RequestBody ProviderReplyRequest request
     ) {
         return ResponseEntity.ok(
                 reviewService.addProviderResponse(
                         reviewId,
-                        providerId,
+                        com.clickcart.security.CurrentProvider.id(),
                         request.getResponse()
                 )
         );

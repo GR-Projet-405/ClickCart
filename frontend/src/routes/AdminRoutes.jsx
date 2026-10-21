@@ -1,5 +1,6 @@
+import { useAuth, homePathForRole } from "../context/AuthContext";
 import React from "react";
-import { Route, Routes } from "react-router-dom";
+import { Navigate, useLocation, Route, Routes } from "react-router-dom";
 import AdminLayout from "../layouts/AdminLayout/AdminLayout";
 import WorkspacePlaceholder from "../pages/placeholders/WorkspacePlaceholder";
 import NotFound from "../pages/placeholders/NotFound";
@@ -19,6 +20,11 @@ const implementedAdminPaths = new Set([
 ]);
 
 export default function AdminRoutes({ isCommission }) {
+  const { user, status } = useAuth();
+  const location = useLocation();
+  if (status === "loading") return <p role="status">Restoring your account…</p>;
+  if (!user) return <Navigate to="/login" replace state={{ from: location }} />;
+  if (user.role !== "PLATFORM_ADMIN") return <Navigate to={homePathForRole(user.role)} replace />;
   if (isCommission) {
     return (
       <Routes>

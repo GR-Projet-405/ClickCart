@@ -20,6 +20,7 @@ import com.clickcart.util.CurrentCustomerResolver;
  * so that the Customer Profile section can be developed and tested independently
  * before the full authentication system is ready.
  */
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 public class CustomerDataSeeder implements CommandLineRunner {
 

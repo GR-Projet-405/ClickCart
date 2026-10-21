@@ -30,8 +30,8 @@ import jakarta.servlet.http.HttpServletResponse;
  * A valid token always wins. An invalid or expired token leaves the request unauthenticated
  * (protected endpoints return 401 so the client can refresh) and never falls back to the dev identity.
  *
- * Requests with no token may use the development fallback only while CLICKCART_DEV_AUTH_FALLBACK=true.
- * Provider job routes never use this fallback. It must be false in production.
+ * Requests without a valid token remain unauthenticated.
+
  */
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -44,17 +44,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * If JwtUtil is absent, bearer tokens are simply not accepted.
      */
     private final ObjectProvider<JwtUtil> jwtUtil;
-    private final boolean devAuthFallback;
 
     public JwtAuthenticationFilter(
-            ObjectProvider<JwtUtil> jwtUtil,
-            @Value("${CLICKCART_DEV_AUTH_FALLBACK:true}") boolean devAuthFallback) {
+            ObjectProvider<JwtUtil> jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.devAuthFallback = devAuthFallback;
-        if (devAuthFallback) {
-            log.warn("DEV AUTH FALLBACK IS ENABLED: requests without a token are treated as a development user. "
-                    + "Set CLICKCART_DEV_AUTH_FALLBACK=false in any shared or production environment.");
-        }
+
     }
 
     @Override
@@ -71,39 +65,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 util.parseAccessToken(token).ifPresent(user -> setAuthentication(request, user,
                         List.of(new SimpleGrantedAuthority(user.role().authority()))));
             }
-        } else if (devAuthFallback && authHeader == null && !isCustomerPath(request)) {
-        } else if (devAuthFallback && !isProviderJobsRequest(request)) {
-            applyDevFallback(request);
         }
 
         filterChain.doFilter(request, response);
-    }
-
-    private boolean isCustomerPath(HttpServletRequest request) {
-        String uri = request.getRequestURI();
-        return uri != null && uri.startsWith("/api/customers");
-    }
-
-    /**
-     * Development-only identity, unchanged from the behaviour teammates built against:
-     * X-Dev-Role / X-Provider-Id headers if present, otherwise provider "dev-provider-09".
-     */
-    private void applyDevFallback(HttpServletRequest request) {
-        String devRoleHeader = request.getHeader("X-Dev-Role");
-        String devProviderHeader = request.getHeader("X-Provider-Id");
-
-        String role = StringUtils.hasText(devRoleHeader) ? devRoleHeader : "ROLE_SERVICE_PROVIDER";
-        if (!role.startsWith("ROLE_")) {
-            role = "ROLE_" + role;
-        }
-        String providerId = StringUtils.hasText(devProviderHeader) ? devProviderHeader : "dev-provider-09";
-
-        setAuthentication(request, providerId, Collections.singletonList(new SimpleGrantedAuthority(role)));
-    }
-
-    private static boolean isProviderJobsRequest(HttpServletRequest request) {
-        String path = request.getRequestURI().substring(request.getContextPath().length());
-        return "/api/provider/jobs".equals(path) || path.startsWith("/api/provider/jobs/");
     }
 
     private void setAuthentication(HttpServletRequest request, Object principal,

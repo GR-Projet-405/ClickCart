@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { CURRENT_PROVIDER_ID } from "../config/provider";
+import { getCurrentProviderId } from "../config/provider";
 import {
   getAvailabilityRules,
   getActiveAvailabilityRules,
@@ -18,7 +18,7 @@ export default function useAvailability() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getAvailabilityRules(CURRENT_PROVIDER_ID);
+      const data = await getAvailabilityRules(getCurrentProviderId());
       setRules(data);
     } catch (err) {
       setError(err);
@@ -34,7 +34,7 @@ export default function useAvailability() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getAvailabilityRules(CURRENT_PROVIDER_ID);
+        const data = await getAvailabilityRules(getCurrentProviderId());
         if (!controller.signal.aborted) {
           setRules(data);
         }
@@ -63,7 +63,7 @@ export default function useAvailability() {
       setError(null);
       try {
         const created = await createAvailabilityRule(
-          CURRENT_PROVIDER_ID,
+          getCurrentProviderId(),
           rule
         );
         await fetchRules();
@@ -84,7 +84,7 @@ export default function useAvailability() {
       setError(null);
       try {
         const updated = await updateAvailabilityRule(
-          CURRENT_PROVIDER_ID,
+          getCurrentProviderId(),
           id,
           rule
         );
@@ -105,7 +105,7 @@ export default function useAvailability() {
       setMutating(true);
       setError(null);
       try {
-        await deleteAvailabilityRule(CURRENT_PROVIDER_ID, id);
+        await deleteAvailabilityRule(getCurrentProviderId(), id);
         await fetchRules();
       } catch (err) {
         setError(err);

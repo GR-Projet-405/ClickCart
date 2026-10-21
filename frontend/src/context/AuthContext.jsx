@@ -31,7 +31,7 @@ export function homePathForRole(role) {
 export function canReturnTo(role, path) {
   if (!path || path === "/" || path.startsWith("/login") || path.startsWith("/register")) return false;
   if (path.startsWith("/provider")) return role === "SERVICE_PROVIDER";
-  if (path.startsWith("/admin")) return role === "PLATFORM_ADMIN";
+  if (path.startsWith("/admin") || path.startsWith("/commission_management")) return role === "PLATFORM_ADMIN";
   return role === "CUSTOMER";
 }
 

@@ -1,3 +1,4 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
 /**
@@ -21,7 +22,7 @@ export async function fetchSettlements({
     stateFilter,
   });
 
-  const res = await fetch(`${API_BASE_URL}/provider/settlements?${params}`, {
+  const res = await authFetch(`${API_BASE_URL}/provider/settlements?${params}`, {
     headers: { Accept: "application/json" },
   });
 
@@ -49,7 +50,7 @@ export async function fetchSettlements({
  * @returns {Promise<SettlementRow>} the newly created row
  */
 export async function createSettlement(payload) {
-  const res = await fetch(`${API_BASE_URL}/provider/settlements`, {
+  const res = await authFetch(`${API_BASE_URL}/provider/settlements`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

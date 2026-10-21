@@ -25,6 +25,7 @@ export default function TransactionHistoryPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Filters
   const [search, setSearch] = useState("");
@@ -37,6 +38,7 @@ export default function TransactionHistoryPage() {
   useEffect(() => {
     async function fetchTx() {
       setLoading(true);
+      setError("");
       try {
         const res = await providerEarningsService.getTransactions({
           search,
@@ -48,7 +50,8 @@ export default function TransactionHistoryPage() {
         setTotalElements(res.totalElements || 0);
         setTotalPages(res.totalPages || 1);
       } catch (err) {
-        console.error("Failed to load transactions:", err);
+        setError(err.message);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -108,6 +111,7 @@ export default function TransactionHistoryPage() {
 
   return (
     <div className="earnings-page">
+      {error && <div role="alert" className="provider-data-error">{error}</div>}
       {/* Top Header */}
       <div className="tx-page-header">
         <Link to="/provider/earnings" className="back-link">

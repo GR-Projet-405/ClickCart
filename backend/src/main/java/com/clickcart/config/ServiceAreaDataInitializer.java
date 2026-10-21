@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 public class ServiceAreaDataInitializer implements CommandLineRunner {
 

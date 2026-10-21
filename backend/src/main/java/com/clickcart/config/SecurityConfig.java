@@ -67,16 +67,15 @@ public class SecurityConfig {
     SecurityFilterChain localSecurityFilterChain(HttpSecurity http) throws Exception {
         http.cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
                 .exceptionHandling(exceptions -> configureExceptionHandling(exceptions))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/provider/jobs", "/api/provider/jobs/**")
+                        .requestMatchers(HttpMethod.GET, "/api/provider/profile/*").permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("PLATFORM_ADMIN")
+                        .requestMatchers("/api/provider/**")
                         .hasRole("SERVICE_PROVIDER")
-                        .anyRequest().permitAll())
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().permitAll());
         return http.build();
     }
 
@@ -103,29 +102,30 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/auth/email-availability").permitAll()
                         .requestMatchers("/api/services", "/api/services/**").permitAll()
-                        .requestMatchers("/api/provider/service-areas", "/api/provider/service-areas/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/provider/profile/*").permitAll()
                         .requestMatchers("/api/service-areas/**").permitAll()
 
                         // DEV-07: Service Pricing & Packages - temporarily permit for testing
                         .requestMatchers("/api/providers/services/*/pricing/**").permitAll()
                         .requestMatchers("/api/providers/services/*/packages/**").permitAll()
 
+                        .requestMatchers("/api/admin/**").hasRole("PLATFORM_ADMIN")
                         .requestMatchers("/api/provider/**").hasRole("SERVICE_PROVIDER")
                         .requestMatchers("/api/customers/me/**", "/api/customers/**").authenticated()
 
                         // BE-049: refund endpoints – all require authentication;
-                        //   listing all refunds and changing status require ADMIN
-                        .requestMatchers(HttpMethod.POST,  "/api/refunds").authenticated()
-                        .requestMatchers(HttpMethod.GET,   "/api/refunds/customer/**").authenticated()
-                        .requestMatchers(HttpMethod.GET,   "/api/refunds/{id}").authenticated()
+                        // listing all refunds and changing status require ADMIN
+                        .requestMatchers(HttpMethod.POST, "/api/refunds").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/refunds/customer/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/refunds/{id}").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/refunds/**").authenticated()
-                        .requestMatchers(HttpMethod.PATCH,  "/api/refunds/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.GET,   "/api/refunds").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/refunds/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/api/refunds").hasRole("ADMIN")
 
                         // BE-049: settlement endpoints – all require at least authentication
                         .requestMatchers("/api/settlements/**").authenticated()
 
-                        //for ai service
+                        // for ai service
                         .requestMatchers("/api/auth/**", "/api/public/**", "/api/ai/**").permitAll()
                         .anyRequest().authenticated())
 

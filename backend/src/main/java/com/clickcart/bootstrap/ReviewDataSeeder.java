@@ -13,6 +13,7 @@ import com.clickcart.model.ModerationStatus;
 import com.clickcart.model.Review;
 import com.clickcart.repository.ReviewRepository;
 
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 public class ReviewDataSeeder implements CommandLineRunner {
 

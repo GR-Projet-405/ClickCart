@@ -43,8 +43,12 @@ public class BookingServiceImpl implements BookingService {
         this.bookingRepository = bookingRepository;
     }
 
+    @org.springframework.beans.factory.annotation.Value("${clickcart.demo-data.enabled:false}")
+    private boolean demoDataEnabled;
+
     @PostConstruct
     public void initSeedData() {
+        if (!demoDataEnabled) return;
         try {
             if (bookingRepository.count() == 0) {
                 seedInitialData();

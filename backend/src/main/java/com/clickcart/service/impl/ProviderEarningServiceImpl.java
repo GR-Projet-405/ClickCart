@@ -28,6 +28,33 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
     private static final Logger log = LoggerFactory.getLogger(ProviderEarningServiceImpl.class);
 
     private final ProviderEarningRepository earningRepository;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.ProviderPayoutLedgerRepository payouts;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.CommissionTransactionRepository commissionTransactions;
+
+    @Override public List<ProviderEarning> getRecordedEarnings(String providerId) { return earningsFor(providerId); }
+
+    private List<ProviderEarning> earningsFor(String providerId) {
+        // Combine persisted commission snapshots with legacy earnings without duplicating ledger entries.
+        Map<String, ProviderEarning> combined = new LinkedHashMap<>();
+        earningRepository.findByProviderId(providerId).forEach(earning -> combined.put(earning.getTransactionId(), earning));
+        if (commissionTransactions != null) {
+            for (var tx : commissionTransactions.findByProvider(providerId)) {
+                if (!providerId.equals(tx.provider())) continue;
+                ProviderEarning earning = combined.getOrDefault(tx.transactionId(), new ProviderEarning());
+                if (earning.getId() == null) earning.setId("commission-" + tx.transactionId());
+                earning.setProviderId(providerId); earning.setTransactionId(tx.transactionId()); earning.setBookingId(tx.transactionId());
+                earning.setServiceTitle(tx.service()); earning.setCategory(tx.category()); earning.setCustomerName(tx.customer());
+                earning.setGrossAmount(tx.bookingAmount()); earning.setCommissionAmount(tx.commissionAmount()); earning.setNetAmount(tx.providerEarning());
+                earning.setCommissionRate(tx.bookingAmount().signum() == 0 ? BigDecimal.ZERO : tx.commissionAmount().divide(tx.bookingAmount(), 6, RoundingMode.HALF_UP));
+                earning.setStatus(tx.status() == com.clickcart.model.CommissionTransaction.TransactionStatus.SETTLED ? EarningStatus.AVAILABLE : EarningStatus.PENDING);
+                earning.setCreatedAt(tx.date()); earning.setServiceCompletedAt(tx.date()); combined.put(tx.transactionId(), earning);
+            }
+        }
+        return new ArrayList<>(combined.values());
+    }
+
 
     public ProviderEarningServiceImpl(ProviderEarningRepository earningRepository) {
         this.earningRepository = earningRepository;
@@ -48,9 +75,8 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
             throw new BadRequestException("Unsupported earnings period: '" + period + "'. Supported periods are: 7days, 30days, 90days, 365days, all.");
         }
 
-        seedInitialDataIfEmpty(providerId);
 
-        List<ProviderEarning> earnings = earningRepository.findByProviderId(providerId);
+        List<ProviderEarning> earnings = earningsFor(providerId);
 
         Instant cutoff = null;
         if (normPeriod.equals("7days") || normPeriod.equals("7d") || normPeriod.equals("week")) {
@@ -92,7 +118,8 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
             }
         }
 
-        Double growthPct = 14.2; // Baseline month-over-month growth rate
+        if (payouts != null) netAvailable = netAvailable.subtract(payouts.findById(providerId).map(com.clickcart.model.ProviderPayoutLedger::reserved).orElse(BigDecimal.ZERO)).max(BigDecimal.ZERO);
+        Double growthPct = 0.0;
 
         return new EarningsSummaryResponse(
                 totalGross.setScale(2, RoundingMode.HALF_UP),
@@ -107,43 +134,41 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
 
     @Override
     public List<MonthlyTrendDto> getMonthlyTrends(String providerId) {
-        seedInitialDataIfEmpty(providerId);
 
-        // Standard 6-month progression matching ClickCart business baseline
-        return List.of(
-                new MonthlyTrendDto("Jan", new BigDecimal("185000.00"), new BigDecimal("166500.00"), new BigDecimal("18500.00")),
-                new MonthlyTrendDto("Feb", new BigDecimal("210000.00"), new BigDecimal("189000.00"), new BigDecimal("21000.00")),
-                new MonthlyTrendDto("Mar", new BigDecimal("195000.00"), new BigDecimal("175500.00"), new BigDecimal("19500.00")),
-                new MonthlyTrendDto("Apr", new BigDecimal("240000.00"), new BigDecimal("216000.00"), new BigDecimal("24000.00")),
-                new MonthlyTrendDto("May", new BigDecimal("260000.00"), new BigDecimal("234000.00"), new BigDecimal("26000.00")),
-                new MonthlyTrendDto("Jun", new BigDecimal("284500.00"), new BigDecimal("256050.00"), new BigDecimal("28450.00"))
-        );
+        var earnings = earningsFor(providerId);
+        var now = java.time.YearMonth.now(java.time.ZoneOffset.UTC);
+        List<MonthlyTrendDto> trends = new ArrayList<>();
+        for (int offset = 5; offset >= 0; offset--) {
+            var month = now.minusMonths(offset);
+            BigDecimal gross = BigDecimal.ZERO, net = BigDecimal.ZERO, commission = BigDecimal.ZERO;
+            for (var earning : earnings) {
+                if (earning.getCreatedAt() == null || earning.getStatus() == EarningStatus.REFUNDED || !java.time.YearMonth.from(earning.getCreatedAt().atZone(java.time.ZoneOffset.UTC)).equals(month)) continue;
+                gross = gross.add(Optional.ofNullable(earning.getGrossAmount()).orElse(BigDecimal.ZERO));
+                net = net.add(Optional.ofNullable(earning.getNetAmount()).orElse(BigDecimal.ZERO));
+                commission = commission.add(Optional.ofNullable(earning.getCommissionAmount()).orElse(BigDecimal.ZERO));
+            }
+            trends.add(new MonthlyTrendDto(month.toString(), gross, net, commission));
+        }
+        return trends;
     }
 
     @Override
     public List<CategoryBreakdownDto> getCategoryBreakdown(String providerId) {
-        seedInitialDataIfEmpty(providerId);
 
-        List<ProviderEarning> earnings = earningRepository.findByProviderId(providerId);
+        List<ProviderEarning> earnings = earningsFor(providerId);
 
         Map<String, BigDecimal> categorySums = new HashMap<>();
         BigDecimal total = BigDecimal.ZERO;
 
         for (ProviderEarning earning : earnings) {
+            if (earning.getStatus() == EarningStatus.REFUNDED) continue;
             String cat = earning.getCategory() != null ? earning.getCategory() : "General";
             BigDecimal net = earning.getNetAmount() != null ? earning.getNetAmount() : BigDecimal.ZERO;
             categorySums.merge(cat, net, BigDecimal::add);
             total = total.add(net);
         }
 
-        if (total.compareTo(BigDecimal.ZERO) == 0) {
-            return List.of(
-                    new CategoryBreakdownDto("Plumbing", new BigDecimal("115200.00"), 45.0),
-                    new CategoryBreakdownDto("Electrical", new BigDecimal("64000.00"), 25.0),
-                    new CategoryBreakdownDto("Painting", new BigDecimal("51200.00"), 20.0),
-                    new CategoryBreakdownDto("Maintenance", new BigDecimal("25600.00"), 10.0)
-            );
-        }
+        if (total.signum() == 0) return List.of();
 
         final BigDecimal grandTotal = total;
         return categorySums.entrySet().stream()
@@ -165,9 +190,8 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
             throw new BadRequestException("Invalid date range: endDate cannot be earlier than startDate");
         }
 
-        seedInitialDataIfEmpty(providerId);
 
-        List<ProviderEarning> allEarnings = earningRepository.findByProviderId(providerId);
+        List<ProviderEarning> allEarnings = earningsFor(providerId);
 
         // In-memory filter stream for flexible multi-condition criteria
         List<ProviderEarning> filtered = allEarnings.stream()
@@ -214,7 +238,8 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
 
     @Override
     public ProviderTransactionDto getTransactionById(String providerId, String transactionId) {
-        ProviderEarning earning = earningRepository.findByTransactionId(transactionId)
+        var projected = earningsFor(providerId).stream().filter(e -> transactionId.equals(e.getTransactionId()) || transactionId.equals(e.getId())).findFirst();
+        ProviderEarning earning = projected.or(() -> earningRepository.findByTransactionId(transactionId))
                 .or(() -> earningRepository.findByIdAndProviderId(transactionId, providerId))
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found: " + transactionId));
 
@@ -273,67 +298,23 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
             throw new BadRequestException("Requested amount exceeds net available balance of LKR " + summary.getNetAvailableBalance());
         }
 
-        String payoutId = "PO-" + System.currentTimeMillis() % 1000000;
-        String rawAccount = request.getAccountNumber();
-        String masked = rawAccount.length() > 4
-                ? "**** " + rawAccount.substring(rawAccount.length() - 4)
-                : rawAccount;
-
-        return new PayoutResponse(
-                payoutId,
-                providerId,
-                request.getAmount(),
-                "LKR",
-                "PROCESSING",
-                request.getBankName(),
-                masked,
-                "1 - 2 Business Days",
-                Instant.now()
-        );
+        if (request.getAccountNumber() == null || request.getAccountNumber().isBlank() || request.getBankName() == null || request.getBankName().isBlank()) throw new BadRequestException("Bank name and account number are required");
+        var ledger = payouts.findById(providerId).orElseGet(com.clickcart.model.ProviderPayoutLedger::new);
+        ledger.providerId = providerId;
+        // Recheck using the same ledger version that will be atomically saved.
+        BigDecimal cleared = earningsFor(providerId).stream().filter(e -> e.getStatus() == EarningStatus.AVAILABLE).map(ProviderEarning::getNetAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
+        if (request.getAmount().compareTo(cleared.subtract(ledger.reserved())) > 0) throw new BadRequestException("Requested amount exceeds the available balance");
+        String payoutId = "PO-" + UUID.randomUUID();
+        Instant requestedAt = Instant.now();
+        ledger.requests.add(new com.clickcart.model.ProviderPayoutLedger.Request(payoutId, request.getAmount(), request.getBankName(), request.getAccountNumber(), request.getBranch(), "REQUESTED", requestedAt));
+        try { payouts.save(ledger); }
+        catch (org.springframework.dao.OptimisticLockingFailureException | org.springframework.dao.DuplicateKeyException ex) { throw new BadRequestException("Your balance changed. Refresh and try again."); }
+        String raw = request.getAccountNumber();
+        return new PayoutResponse(payoutId, providerId, request.getAmount(), "LKR", "REQUESTED", request.getBankName(), "**** " + raw.substring(Math.max(0, raw.length() - 4)), "Awaiting finance review", requestedAt);
     }
 
     @Override
-    public synchronized void seedInitialDataIfEmpty(String providerId) {
-        long count = earningRepository.countByProviderIdAndStatus(providerId, EarningStatus.AVAILABLE)
-                + earningRepository.countByProviderIdAndStatus(providerId, EarningStatus.SETTLED)
-                + earningRepository.countByProviderIdAndStatus(providerId, EarningStatus.PENDING);
-
-        if (count > 0) {
-            return;
-        }
-
-        log.info("Seeding realistic demo transaction data for provider: {}", providerId);
-
-        List<ProviderEarning> demoList = List.of(
-                new ProviderEarning(providerId, "#BK-89021", "CC-24052801", "Full House Deep Cleaning", "Cleaning",
-                        "Sarah J.", new BigDecimal("12500.00"), new BigDecimal("0.10"), new BigDecimal("1250.00"),
-                        new BigDecimal("11250.00"), "LKR", EarningStatus.AVAILABLE, Instant.now().minus(1, ChronoUnit.DAYS)),
-
-                new ProviderEarning(providerId, "#BK-88945", "CC-24052703", "Kitchen Sink Pipe Repair", "Plumbing",
-                        "Nimal Perera", new BigDecimal("4200.00"), new BigDecimal("0.10"), new BigDecimal("420.00"),
-                        new BigDecimal("3780.00"), "LKR", EarningStatus.AVAILABLE, Instant.now().minus(3, ChronoUnit.DAYS)),
-
-                new ProviderEarning(providerId, "#BK-88712", "CC-24052501", "Wall Painting - Living Area", "Painting",
-                        "Kavinda Silva", new BigDecimal("28000.00"), new BigDecimal("0.10"), new BigDecimal("2800.00"),
-                        new BigDecimal("25200.00"), "LKR", EarningStatus.SETTLED, Instant.now().minus(5, ChronoUnit.DAYS)),
-
-                new ProviderEarning(providerId, "#BK-88604", "CC-24052210", "AC Filter Cleaning & Gas Check", "Electrical",
-                        "Dilshan Fernando", new BigDecimal("8500.00"), new BigDecimal("0.10"), new BigDecimal("850.00"),
-                        new BigDecimal("7650.00"), "LKR", EarningStatus.SETTLED, Instant.now().minus(8, ChronoUnit.DAYS)),
-
-                new ProviderEarning(providerId, "#BK-88419", "CC-24051804", "Bathroom Waterproofing & Tile Fix", "Plumbing",
-                        "Malsha Gunasekara", new BigDecimal("18500.00"), new BigDecimal("0.10"), new BigDecimal("1850.00"),
-                        new BigDecimal("16650.00"), "LKR", EarningStatus.PENDING, Instant.now().minus(2, ChronoUnit.HOURS)),
-
-                new ProviderEarning(providerId, "#BK-88310", "CC-24051508", "Roof Leak Inspection", "Plumbing",
-                        "Amila Bandara", new BigDecimal("6500.00"), new BigDecimal("0.10"), new BigDecimal("650.00"),
-                        new BigDecimal("5850.00"), "LKR", EarningStatus.SETTLED, Instant.now().minus(12, ChronoUnit.DAYS)),
-
-                new ProviderEarning(providerId, "#BK-88102", "CC-24051011", "Main Electrical Distribution Board Fix", "Electrical",
-                        "Tharindu Jayaweera", new BigDecimal("15000.00"), new BigDecimal("0.10"), new BigDecimal("1500.00"),
-                        new BigDecimal("13500.00"), "LKR", EarningStatus.SETTLED, Instant.now().minus(16, ChronoUnit.DAYS))
-        );
-
-        earningRepository.saveAll(demoList);
+    public void seedInitialDataIfEmpty(String providerId) {
+        // Real accounts start with no earnings. Demo data is never created on reads.
     }
 }

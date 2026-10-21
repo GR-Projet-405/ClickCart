@@ -83,7 +83,6 @@ public class ProviderEarningServiceTest {
                 new BigDecimal("4500.00"), "LKR", EarningStatus.PENDING, Instant.now()
         );
 
-        when(earningRepository.countByProviderIdAndStatus(eq(providerId), any(EarningStatus.class))).thenReturn(2L);
         when(earningRepository.findByProviderId(providerId)).thenReturn(List.of(availableEarning, pendingEarning));
 
         EarningsSummaryResponse summary = earningService.getEarningsSummary(providerId, "30days");
@@ -121,7 +120,6 @@ public class ProviderEarningServiceTest {
         );
         old.setCreatedAt(now.minus(40, ChronoUnit.DAYS));
 
-        when(earningRepository.countByProviderIdAndStatus(eq(providerId), any(EarningStatus.class))).thenReturn(2L);
         when(earningRepository.findByProviderId(providerId)).thenReturn(List.of(recent, old));
 
         Instant start = now.minus(5, ChronoUnit.DAYS);
@@ -148,7 +146,6 @@ public class ProviderEarningServiceTest {
     @Test
     @DisplayName("BE-038: Should throw BadRequestException if payout request exceeds net available balance")
     void shouldRejectPayoutIfExceedsBalance() {
-        when(earningRepository.countByProviderIdAndStatus(eq(providerId), any(EarningStatus.class))).thenReturn(1L);
         when(earningRepository.findByProviderId(providerId)).thenReturn(List.of());
 
         PayoutRequest request = new PayoutRequest();

@@ -11,7 +11,10 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
 
   const handleFileChange = (e, setFile) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
+      const file = e.target.files[0];
+      if (file.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp", "application/pdf"].includes(file.type)) { setError("Choose a JPG, PNG, WebP or PDF file up to 5 MB."); e.target.value = ""; return; }
+      setError("");
+      setFile(file);
     }
   };
 
@@ -37,7 +40,7 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
         onSuccess();
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to upload documents. Please try again.');
+      setError(err.message || 'Failed to upload documents. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -84,12 +87,12 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
             <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
-                accept="image/*,application/pdf"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
                 onChange={(e) => handleFileChange(e, setNicFront)}
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
               />
               <FiUploadCloud size={28} color="#6b7280" />
-              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '12px' }}>Drag and Drop files here or click to browse</p>
+              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '12px' }}>Choose a file (JPG, PNG, WebP or PDF, up to 5 MB)</p>
             </div>
             {nicFront && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#159c2b', marginTop: '6px', fontSize: '12px' }}>
@@ -103,12 +106,12 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
             <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
-                accept="image/*,application/pdf"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
                 onChange={(e) => handleFileChange(e, setNicBack)}
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
               />
               <FiUploadCloud size={28} color="#6b7280" />
-              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '12px' }}>Drag and Drop files here or click to browse</p>
+              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '12px' }}>Choose a file (JPG, PNG, WebP or PDF, up to 5 MB)</p>
             </div>
             {nicBack && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#159c2b', marginTop: '6px', fontSize: '12px' }}>
@@ -125,12 +128,12 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
             <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '24px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
-                accept="image/*,application/pdf"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
                 onChange={(e) => handleFileChange(e, setBusinessCert)}
                 style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
               />
               <FiUploadCloud size={32} color="#6b7280" />
-              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '14px' }}>Drag and Drop files here or click to browse</p>
+              <p style={{ margin: '8px 0 0', color: '#4b5563', fontSize: '14px' }}>Choose a file (JPG, PNG, WebP or PDF, up to 5 MB)</p>
             </div>
             {businessCert && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#159c2b', marginTop: '6px', fontSize: '13px' }}>

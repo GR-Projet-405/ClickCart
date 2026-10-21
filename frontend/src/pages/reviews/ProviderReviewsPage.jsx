@@ -1,3 +1,4 @@
+import { getCurrentProviderId } from "../../config/provider";
 import { useEffect, useState } from "react";
 import {
   CheckCircle2,
@@ -9,7 +10,6 @@ import Card from "../../components/common/Card";
 import PageContainer from "../../components/common/PageContainer";
 
 import {
-  DEV_PROVIDER_ID,
   fetchProviderRatingSummary,
   fetchProviderReviews,
   publishProviderResponse,
@@ -64,8 +64,8 @@ export default function ProviderReviewsPage() {
 
       try {
         const [reviewData, summaryData] = await Promise.all([
-          fetchProviderReviews(DEV_PROVIDER_ID),
-          fetchProviderRatingSummary(DEV_PROVIDER_ID),
+          fetchProviderReviews(getCurrentProviderId()),
+          fetchProviderRatingSummary(getCurrentProviderId()),
         ]);
 
         if (ignore) {
@@ -135,7 +135,7 @@ export default function ProviderReviewsPage() {
         await publishProviderResponse(
           reviewId,
           responseText,
-          DEV_PROVIDER_ID
+          getCurrentProviderId()
         );
 
       setReviews((current) =>

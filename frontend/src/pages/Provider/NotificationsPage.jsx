@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import {
-  fetchNotificationPreferences,
+  fetchNotificationPreferences, fetchNotifications, markNotificationRead,
   fetchUnreadCount,
   saveNotificationPreferences,
 } from "../../services/notificationService";
@@ -22,6 +22,7 @@ function unreadLabel(count) {
 }
 
 export default function NotificationsPage() {
+  const [notifications, setNotifications] = useState([]);
   const [groups, setGroups] = useState([]);
   const [enabled, setEnabled] = useState({});
   const [unreadCount, setUnreadCount] = useState(0);
@@ -32,10 +33,11 @@ export default function NotificationsPage() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([fetchNotificationPreferences(), fetchUnreadCount()])
-      .then(([preferences, unread]) => {
+    Promise.all([fetchNotificationPreferences(), fetchUnreadCount(), fetchNotifications()])
+      .then(([preferences, unread, items]) => {
         if (!active) return;
         const nextGroups = preferences?.groups || [];
+        setNotifications(items || []);
         setGroups(nextGroups);
         setEnabled(enabledMap(nextGroups));
         setUnreadCount(Number(unread?.count) || 0);
@@ -113,6 +115,7 @@ export default function NotificationsPage() {
         </p>
       ) : null}
 
+      <div className="notification-center__card"><h2>Your notifications</h2>{!loading && !notifications.length && <p>No notifications yet.</p>}{notifications.map(item => <article key={item.id} style={{padding:"16px 0",borderBottom:"1px solid #e5e7eb"}}><h3>{item.title}</h3><p>{item.body}</p><small>{new Date(item.createdAt).toLocaleString()}</small>{!item.read && <button onClick={async () => { try { const updated = await markNotificationRead(item.id); setNotifications(current => current.map(row => row.id === item.id ? updated : row)); setUnreadCount(current => Math.max(0,current-1)); } catch(err) { setError(err.message); } }}>Mark as read</button>}</article>)}</div>
       <div className="notification-center__card" id="notification-preferences">
         <div className="notification-center__card-heading">
           <h2>Notification Preferences</h2>

@@ -25,6 +25,7 @@ public class AvailabilityController {
             @PathVariable String providerId,
             @Valid @RequestBody AvailabilityRuleRequest request
     ) {
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         request.setProviderId(providerId);
 
         AvailabilityRuleResponse response =
@@ -39,6 +40,7 @@ public class AvailabilityController {
     public ResponseEntity<List<AvailabilityRuleResponse>> getRules(
             @PathVariable String providerId
     ) {
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         return ResponseEntity.ok(
                 availabilityService.getRulesByProvider(providerId)
         );
@@ -59,6 +61,7 @@ public class AvailabilityController {
             @PathVariable String id,
             @Valid @RequestBody AvailabilityRuleRequest request
     ) {
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         request.setProviderId(providerId);
 
         AvailabilityRuleResponse response =
@@ -72,6 +75,7 @@ public class AvailabilityController {
             @PathVariable String providerId,
             @PathVariable String id
     ) {
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         availabilityService.deleteRule(id);
 
         return ResponseEntity.noContent().build();

@@ -1,3 +1,5 @@
+import { authFetch } from "../../services/authService";
+import { API_BASE_URL } from "../../config/api";
 import React, { useState, useEffect } from 'react';
 import {
   Search, Clock, CheckCircle2, XCircle, FileText,
@@ -8,6 +10,7 @@ import {
 const VerificationQueue = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Modals State
   const [selectedProvider, setSelectedProvider] = useState(null); // Details Modal
@@ -30,13 +33,13 @@ const VerificationQueue = () => {
     setLoading(true);
     try {
       // LocalStorage 
-      const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+      setError("");
 
-      const response = await fetch('http://localhost:8080/api/admin/providers/verifications', {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/verifications`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+
         }
       });
 
@@ -48,10 +51,10 @@ const VerificationQueue = () => {
           setProviders([]);
         }
       } else {
-        console.error(`Backend returned status code: ${response.status}`);
+        throw new Error("Unable to load verification submissions. Check your administrator access.");
       }
     } catch (err) {
-      console.error('Failed to fetch backend data:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -95,12 +98,17 @@ const VerificationQueue = () => {
     return idx === 0 ? 'NIC / Identity' : 'Business Registration';
   };
 
-  const handleDownload = (docUrl, fileName = 'document') => {
+  const handleDownload = async (docUrl) => {
     if (!docUrl) return;
-    const fetchUrl = docUrl.includes('cloudinary.com')
-      ? docUrl.replace('/upload/', '/upload/fl_attachment/')
-      : docUrl;
-    window.open(fetchUrl, '_blank');
+    const preview = window.open("", "_blank");
+    try {
+      if (!docUrl.startsWith("/api/provider-verification/documents/")) { if (preview) preview.location.href = docUrl; return; }
+      const response = await authFetch(`${API_BASE_URL}${docUrl.slice(4)}`);
+      if (!response.ok) throw new Error("Unable to open this document. Please sign in again and retry.");
+      const url = URL.createObjectURL(await response.blob());
+      if (preview) preview.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) { preview?.close(); setError(err.message); }
   };
 
   const handleRefresh = () => {
@@ -114,12 +122,13 @@ const VerificationQueue = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/providers/${id}/status`, {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
 
+      if (!response.ok) { const detail = await response.json(); throw new Error(detail.message || "Unable to update verification"); }
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
@@ -129,7 +138,7 @@ const VerificationQueue = () => {
         );
       }
     } catch (err) {
-      console.error('Failed to update status:', err);
+      setError(err.message);
     }
   };
 
@@ -155,7 +164,7 @@ const VerificationQueue = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/providers/${pId}/reject`, {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/${pId}/reject`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -165,6 +174,7 @@ const VerificationQueue = () => {
         }),
       });
 
+      if (!response.ok) { const detail = await response.json(); throw new Error(detail.message || "Unable to update verification"); }
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
@@ -263,6 +273,7 @@ const VerificationQueue = () => {
 
   return (
     <div style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {error && <p role="alert" style={{color:"#b91c1c",padding:16}}>{error}</p>}
 
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
@@ -668,7 +679,7 @@ const VerificationQueue = () => {
                           </div>
                           <div style={{ height: '140px', background: '#ffffff', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
                             {docUrl ? (
-                              <img src={docUrl} alt={docType} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', cursor: 'pointer' }} onClick={() => window.open(docUrl, '_blank')} />
+                              <button onClick={() => handleDownload(docUrl)}><FileText size={32} /> Open submitted document</button>
                             ) : (
                               <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>No Document Link</div>
                             )}
@@ -677,7 +688,7 @@ const VerificationQueue = () => {
                           {/* Document Action Buttons (View Full & Download) */}
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
-                              onClick={() => docUrl && window.open(docUrl, '_blank')}
+                              onClick={() => handleDownload(docUrl)}
                               style={{
                                 flex: 1,
                                 display: 'flex',

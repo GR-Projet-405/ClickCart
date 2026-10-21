@@ -33,12 +33,14 @@ import static org.mockito.Mockito.verify;
 
 @WebMvcTest(ProviderDashboardController.class)
 @Import(ProviderDashboardService.class)
-@WithMockUser(roles = "SERVICE_PROVIDER")
+@WithMockUser(username = "provider-b", roles = "SERVICE_PROVIDER")
 class ProviderDashboardControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
+    @MockitoBean private com.clickcart.service.ProviderEarningService earningService;
+    @MockitoBean private com.clickcart.service.ProviderVerificationService verificationService;
     @MockitoBean private ProviderJobRepository jobRepository;
     @MockitoBean private ReviewRepository reviewRepository;
     @MockitoBean private ProviderProfileRepository profileRepository;
@@ -64,6 +66,8 @@ class ProviderDashboardControllerTest {
             if (i < 24) job.setCompletedAt(today);
             jobs.add(job);
         }
+        var earning = new com.clickcart.model.ProviderEarning(); earning.setNetAmount(new java.math.BigDecimal("125680")); earning.setCreatedAt(today);
+        when(earningService.getRecordedEarnings(providerId)).thenReturn(List.of(earning));
         List<Review> reviews = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             Review review = new Review();
@@ -76,7 +80,8 @@ class ProviderDashboardControllerTest {
         when(jobRepository.findByProviderIdOrderByScheduledStartAsc(providerId)).thenReturn(jobs);
         when(reviewRepository.findByProviderIdOrderByCreatedAtDesc(providerId)).thenReturn(reviews);
         when(profileRepository.findById(providerId)).thenReturn(Optional.of(profile));
-        when(profileService.calculateCompletionPercentage(profile)).thenReturn(92);
+        when(profileService.getOrCreateProfile(providerId)).thenReturn(new com.clickcart.dto.ProviderProfileResponse(
+            providerId, "business", "", "QuickFix Electrical Services", "", "", "", "", "", "", "PARTIALLY_COMPLETED", 92, null, null));
     }
 
     @Test

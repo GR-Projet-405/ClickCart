@@ -1,13 +1,11 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
-// Authentication is not part of the current foundation, so listings are scoped
-// to one local provider until the provider session supplies its real identity.
-export const LOCAL_PROVIDER_ID = "local-provider";
 
 const endpoint = `${API_BASE_URL.replace(/\/$/, "")}/provider/services`;
 
 async function request(path, options = {}) {
-  const response = await fetch(`${endpoint}${path}`, {
+  const response = await authFetch(`${endpoint}${path}`, {
     ...options,
     headers: {
       ...(options.body ? { "Content-Type": "application/json" } : {}),
@@ -26,11 +24,16 @@ async function request(path, options = {}) {
 }
 
 function providerQuery() {
-  return `?providerId=${encodeURIComponent(LOCAL_PROVIDER_ID)}`;
+  return "";
 }
 
 export const providerServicesApi = {
   list: () => request(providerQuery()),
+  listPublic: async (providerId) => {
+    const response = await fetch(`${API_BASE_URL}/public/providers/${encodeURIComponent(providerId)}/services`);
+    if (!response.ok) throw new Error("Unable to load this provider's services.");
+    return response.json();
+  },
   create: (service) =>
     request(providerQuery(), { method: "POST", body: JSON.stringify(service) }),
   update: (id, service) =>

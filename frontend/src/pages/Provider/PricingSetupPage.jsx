@@ -48,17 +48,17 @@ export default function PricingSetupPage() {
     try {
       setIsLoading(true);
       const [pricingRes, packagesRes] = await Promise.all([
-        pricingService.getPricing(serviceId).catch(() => null),
-        pricingService.getPackages(serviceId).catch(() => []),
+        pricingService.getPricing(serviceId),
+        pricingService.getPackages(serviceId),
       ]);
 
       if (pricingRes) {
         setPricingModel(pricingRes.pricingModel || "FIXED");
-        setBasePrice(pricingRes.basePrice || "");
+        setBasePrice(pricingRes.basePrice ?? "");
       }
       if (packagesRes) setPackages(packagesRes);
     } catch (err) {
-      console.error("Failed to load data", err);
+      setError(err.message || "Unable to load pricing. Please try again.");
     } finally {
       setIsLoading(false);
     }
