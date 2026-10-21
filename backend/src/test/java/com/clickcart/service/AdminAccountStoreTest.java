@@ -23,6 +23,14 @@ class AdminAccountStoreTest {
   var admin=new User();admin.setRole(Role.PLATFORM_ADMIN);store.save(admin);
   assertTrue(admin.getId().startsWith("admin_"));verify(mongo).save(admin,"admins");verifyNoInteractions(users);
  }
+ @Test void customerAndProviderPasswordVersionsInvalidateOldTokens() {
+  for(var role:new Role[]{Role.CUSTOMER,Role.SERVICE_PROVIDER}) {
+   var accounts=mock(AccountStore.class);var factory=new StaticListableBeanFactory();factory.addBean("accounts",accounts);
+   var jwt=new JwtUtil("test-user-secret-that-is-long-enough-for-hs256-signing",15);jwt.setAccounts(factory.getBeanProvider(AccountStore.class));
+   var user=new User();user.setId("user_one");user.setRole(role);user.setEmail("user@example.test");when(accounts.findById("user_one")).thenReturn(Optional.of(user));
+   var token=jwt.generateAccessToken(user);assertTrue(jwt.parseAccessToken(token).isPresent());user.setTokenVersion(1);assertTrue(jwt.parseAccessToken(token).isEmpty());
+  }
+ }
  @Test void adminTokenChecksCurrentDatabaseStatusAndPasswordVersion() {
   var accounts=mock(AccountStore.class);var factory=new StaticListableBeanFactory();factory.addBean("accounts",accounts);
   var jwt=new JwtUtil("test-admin-secret-that-is-long-enough-for-hs256-signing",15);jwt.setAccounts(factory.getBeanProvider(AccountStore.class));

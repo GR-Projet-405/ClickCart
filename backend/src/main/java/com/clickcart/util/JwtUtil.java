@@ -92,12 +92,12 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            if (Role.PLATFORM_ADMIN.name().equals(claims.get("role", String.class)) && accounts != null) {
+            if (accounts != null) {
                 var store = accounts.getIfAvailable();
                 if (store == null) return Optional.empty();
                 var admin = store.findById(claims.getSubject()).orElse(null);
                 Integer version = claims.get("ver", Integer.class);
-                if (admin == null || admin.getRole() != Role.PLATFORM_ADMIN || admin.getStatus() != com.clickcart.model.AccountStatus.ACTIVE
+                if (admin == null || !admin.getRole().name().equals(claims.get("role", String.class)) || admin.getStatus() != com.clickcart.model.AccountStatus.ACTIVE
                         || version == null || admin.getTokenVersion() != version) return Optional.empty();
             }
             String providerType = claims.get("providerType", String.class);

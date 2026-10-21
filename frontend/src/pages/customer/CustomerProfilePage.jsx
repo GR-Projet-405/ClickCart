@@ -1,3 +1,4 @@
+import ChangePassword from "../../components/account/ChangePassword";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -382,6 +383,7 @@ export default function CustomerProfilePage() {
             </Button>
           </div>
         )}
+        <ChangePassword />
       </PageContainer>
 
       {/* Modals */}

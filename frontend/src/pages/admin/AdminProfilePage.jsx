@@ -1,3 +1,4 @@
+import ChangePassword from "../../components/account/ChangePassword";
 import { useEffect, useState } from "react";
 import { useAdminProfile } from "../../context/AdminProfileContext";
 import { adminRequest } from "../../services/adminWorkspaceService";
@@ -23,5 +24,5 @@ export default function AdminProfilePage() {
       <label>Email address<input value={profile.email} disabled/><small>Account email is managed in the database.</small></label>
       <label>Phone number<input type="tel" maxLength={20} value={form.phone} disabled={busy} onChange={e=>setForm({...form,phone:e.target.value})}/></label>
       {error && <p role="alert">{error}</p>}{notice && <p role="status">{notice}</p>}<Button type="submit" loading={busy}>Save profile</Button>
-    </form>}</Card></PageContainer>;
+    </form>}</Card><ChangePassword /></PageContainer>;
 }

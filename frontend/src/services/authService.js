@@ -175,3 +175,8 @@ export async function authFetch(url, options = {}) {
   }
   return response;
 }
+
+export async function changePassword(details) {
+  await request("/change-password", { method: "POST", auth: true, body: details });
+  setSession(null);
+}

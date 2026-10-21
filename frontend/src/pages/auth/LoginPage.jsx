@@ -159,6 +159,7 @@ export default function LoginPage({ adminPortal = false }) {
         {!adminPortal && <><RoleToggle label="I am signing in as" options={ROLE_OPTIONS} value={portal} onChange={setPortal} />
         <p className="auth-role-toggle__hint">{ROLE_HINTS[portal]}</p></>}
 
+        {location.state?.passwordChanged && <p role="status">Password changed successfully. Sign in with your new password.</p>}
         <div ref={alertRef} tabIndex={-1} className="auth-page__alerts">
           {isLocked && (
             <AuthAlert

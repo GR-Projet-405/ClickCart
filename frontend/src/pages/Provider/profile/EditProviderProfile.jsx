@@ -1,3 +1,4 @@
+import ChangePassword from "../../../components/account/ChangePassword";
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -419,6 +420,7 @@ export default function EditProviderProfile() {
           </Button>
         </div>
       </form>
+      <ChangePassword />
     </div>
   );
 }

@@ -45,12 +45,14 @@ import jakarta.validation.constraints.Size;
 @RequestMapping("/api/auth")
 public class AuthController {
 
+    private final com.clickcart.service.ChangePasswordService changePasswords;
     private final AuthService authService;
     private final PasswordResetService passwordResetService;
     private final AuthCookies authCookies;
 
     public AuthController(AuthService authService, PasswordResetService passwordResetService,
-                          AuthCookies authCookies) {
+                          AuthCookies authCookies, com.clickcart.service.ChangePasswordService changePasswords) {
+        this.changePasswords = changePasswords;
         this.authService = authService;
         this.passwordResetService = passwordResetService;
         this.authCookies = authCookies;
@@ -122,6 +124,15 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, authCookies.clearedRefreshCookie().toString())
                 .body(ApiResponse.ok("Password updated. Other devices have been signed out.", response));
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(Authentication authentication,
+            @Valid @RequestBody com.clickcart.dto.auth.ChangePasswordRequest request) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthenticatedUser user)) throw new UnauthorizedException("Please sign in to continue.");
+        changePasswords.change(user.id(), request);
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, authCookies.clearedRefreshCookie().toString())
+                .body(ApiResponse.ok("Password changed. Sign in again with your new password.", null));
     }
 
     @GetMapping("/me")
