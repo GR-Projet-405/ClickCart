@@ -37,7 +37,7 @@ import com.clickcart.model.AccountStatus;
 import com.clickcart.model.ProviderType;
 import com.clickcart.model.Role;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+import com.clickcart.service.AccountStore;
 import com.clickcart.service.AuthService.AuthSession;
 import com.clickcart.service.LoginAttemptService.FailureOutcome;
 import com.clickcart.service.RefreshTokenService.IssuedRefreshToken;
@@ -49,7 +49,7 @@ class AuthServiceTest {
     private static final String PASSWORD = "Secret123";
 
     @Mock
-    private UserRepository users;
+    private AccountStore users;
 
     @Mock
     private RefreshTokenService refreshTokens;
@@ -73,7 +73,8 @@ class AuthServiceTest {
     @Test
     void administratorsUseOnlyDedicatedPortal() {
         User admin = new User(); admin.setId("admin-1"); admin.setEmail("admin@example.com"); admin.setRole(Role.PLATFORM_ADMIN); admin.setStatus(AccountStatus.ACTIVE); admin.setPasswordHash(passwordEncoder.encode(PASSWORD));
-        when(users.findByEmail("admin@example.com")).thenReturn(Optional.of(admin));
+        when(users.findPublicByEmail("admin@example.com")).thenReturn(Optional.of(admin));
+        when(users.findAdminByEmail("admin@example.com")).thenReturn(Optional.of(admin));
         var request = new LoginRequest("admin@example.com", PASSWORD, false);
         assertThrows(com.clickcart.exception.ForbiddenException.class, () -> service.login(request));
         verify(refreshTokens, never()).issue(anyString(), anyBoolean());
@@ -83,8 +84,7 @@ class AuthServiceTest {
     @Test
     void customerCannotEnterAdminPortal() {
         User customer = new User(); customer.setId("customer-1"); customer.setEmail("customer@example.com"); customer.setRole(Role.CUSTOMER); customer.setStatus(AccountStatus.ACTIVE); customer.setPasswordHash(passwordEncoder.encode(PASSWORD));
-        when(users.findByEmail("customer@example.com")).thenReturn(Optional.of(customer));
-        assertThrows(com.clickcart.exception.ForbiddenException.class, () -> service.adminLogin(new LoginRequest("customer@example.com", PASSWORD, false)));
+        assertThrows(AuthException.class, () -> service.adminLogin(new LoginRequest("customer@example.com", PASSWORD, false)));
         verify(refreshTokens, never()).issue(anyString(), anyBoolean());
     }
 
@@ -162,7 +162,7 @@ class AuthServiceTest {
     void loginWithCorrectPasswordResetsCounterAndHonoursRememberMe() {
         User user = existingUser(AccountStatus.ACTIVE);
         user.setFailedLoginAttempts(3);
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(user));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(user));
 
         AuthSession session = service.login(new LoginRequest("KAMAL@example.com", PASSWORD, true));
 
@@ -170,12 +170,14 @@ class AuthServiceTest {
         assertEquals(0, user.getFailedLoginAttempts());
         assertTrue(session.refreshToken().rememberMe());
         verify(refreshTokens).issue("u-1", true);
+        verify(loginAttempts).recordSuccess(eq("u-1"), any(Instant.class));
+        verify(users, never()).save(any(User.class));
     }
 
     @Test
     void wrongPasswordAndUnknownEmailGiveTheSameMessage() {
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
-        when(users.findByEmail("nobody@example.com")).thenReturn(Optional.empty());
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
+        when(users.findPublicByEmail("nobody@example.com")).thenReturn(Optional.empty());
         when(loginAttempts.recordFailure("u-1")).thenReturn(new FailureOutcome(4, null));
 
         AuthException wrongPassword = assertThrows(AuthException.class,
@@ -191,7 +193,7 @@ class AuthServiceTest {
 
     @Test
     void remainingAttemptsShownWhenCloseToLockout() {
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
         when(loginAttempts.recordFailure("u-1")).thenReturn(new FailureOutcome(2, null));
 
         AuthException ex = assertThrows(AuthException.class,
@@ -203,7 +205,7 @@ class AuthServiceTest {
     @Test
     void fifthWrongPasswordLocksTheAccount() {
         Instant until = Instant.now().plus(15, ChronoUnit.MINUTES);
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.ACTIVE)));
         when(loginAttempts.recordFailure("u-1")).thenReturn(new FailureOutcome(0, until));
 
         AuthException ex = assertThrows(AuthException.class,
@@ -217,7 +219,7 @@ class AuthServiceTest {
     void lockedAccountRejectsEvenTheCorrectPassword() {
         User user = existingUser(AccountStatus.ACTIVE);
         user.setLockedUntil(Instant.now().plus(10, ChronoUnit.MINUTES));
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(user));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(user));
 
         AuthException ex = assertThrows(AuthException.class,
                 () -> service.login(new LoginRequest("kamal@example.com", PASSWORD, false)));
@@ -231,7 +233,7 @@ class AuthServiceTest {
     void expiredLockAllowsLoginAgain() {
         User user = existingUser(AccountStatus.ACTIVE);
         user.setLockedUntil(Instant.now().minus(1, ChronoUnit.MINUTES));
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(user));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(user));
 
         service.login(new LoginRequest("kamal@example.com", PASSWORD, false));
 
@@ -240,7 +242,7 @@ class AuthServiceTest {
 
     @Test
     void suspendedAccountCannotLogIn() {
-        when(users.findByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.SUSPENDED)));
+        when(users.findPublicByEmail("kamal@example.com")).thenReturn(Optional.of(existingUser(AccountStatus.SUSPENDED)));
 
         AuthException ex = assertThrows(AuthException.class,
                 () -> service.login(new LoginRequest("kamal@example.com", PASSWORD, false)));

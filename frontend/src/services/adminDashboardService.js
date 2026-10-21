@@ -1,5 +1,5 @@
 import { API_BASE_URL } from "../config/api";
-import categoryService from "./categoryService";
+import { authFetch } from "./authService";
 
 /**
  * Platform Admin Dashboard data access (Phase 3).
@@ -14,13 +14,13 @@ import categoryService from "./categoryService";
  *
  * `API_BASE_URL` comes from src/config/api.js — no hardcoded host, no new
  * backend endpoints. Every function rejects on failure so callers can fall
- * back to the mock data in config/adminDashboardData.js.
+ * to an explicit error state. No sample records are substituted.
  */
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
 
 async function request(path, options = {}) {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await authFetch(`${API_BASE_URL}${path}`, {
     headers: JSON_HEADERS,
     ...options,
   });
@@ -45,21 +45,6 @@ function asArray(payload) {
 export async function fetchVerifications() {
   const payload = await request("/admin/providers/verifications");
   return asArray(payload).map(normaliseProvider);
-}
-
-/** Same contract as VerificationQueue.jsx: APPROVED goes through /status. */
-export function decideVerification(id, decision) {
-  if (decision === "approve") {
-    return request(`/admin/providers/${id}/status`, {
-      method: "PATCH",
-      body: JSON.stringify({ status: "APPROVED" }),
-    });
-  }
-
-  return request(`/admin/providers/${id}/reject`, {
-    method: "PATCH",
-    body: JSON.stringify({ reasons: [], comments: "", sendEmail: false }),
-  });
 }
 
 /** Maps ProviderResponseDto onto the stable shape the preview renders. */
@@ -136,22 +121,8 @@ export async function fetchAuditLog() {
  * Service categories
  * ------------------------------------------------------------------ */
 
-/**
- * Reuses the existing category service first. That service builds its URL
- * from VITE_API_BASE_URL directly, so if it cannot reach the API we retry
- * once with the shared API_BASE_URL constant before giving up.
- */
 export async function fetchAdminCategories() {
-  try {
-    const payload = await categoryService.getAllCategoriesAdmin();
-    const rows = asArray(payload).map(normaliseCategory);
-    if (rows.length) return rows;
-  } catch {
-    // fall through to the shared-config retry below
-  }
-
-  const payload = await request("/admin/categories");
-  return asArray(payload).map(normaliseCategory);
+  return asArray(await request("/admin/categories")).map(normaliseCategory);
 }
 
 function normaliseCategory(category) {
@@ -170,7 +141,6 @@ function normaliseCategory(category) {
 
 export default {
   fetchVerifications,
-  decideVerification,
   fetchCommissionDashboard,
   fetchAuditLog,
   fetchAdminCategories,

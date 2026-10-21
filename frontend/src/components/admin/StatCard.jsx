@@ -57,10 +57,10 @@ export default function StatCard({
       <strong className={styles.value}>{value}</strong>
 
       <div className={styles.footer}>
-        <span className={`${styles.trend} ${trendClass}`.trim()}>
+        {trend && <span className={`${styles.trend} ${trendClass}`.trim()}>
           <TrendIcon size={13} aria-hidden="true" />
           {trend}
-        </span>
+        </span>}
         {hint ? <span className={styles.hint}>{hint}</span> : null}
       </div>
     </Card>

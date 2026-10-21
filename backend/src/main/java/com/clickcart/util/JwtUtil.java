@@ -35,6 +35,10 @@ public class JwtUtil {
     private static final String ISSUER = "clickcart";
     private static final int MIN_SECRET_BYTES = 32;
 
+    private org.springframework.beans.factory.ObjectProvider<com.clickcart.service.AccountStore> accounts;
+    @org.springframework.beans.factory.annotation.Autowired
+    public void setAccounts(org.springframework.beans.factory.ObjectProvider<com.clickcart.service.AccountStore> accounts) { this.accounts = accounts; }
+
     private final SecretKey secretKey;
     private final Duration accessTokenTtl;
 
@@ -88,6 +92,14 @@ public class JwtUtil {
                     .parseSignedClaims(token)
                     .getPayload();
 
+            if (Role.PLATFORM_ADMIN.name().equals(claims.get("role", String.class)) && accounts != null) {
+                var store = accounts.getIfAvailable();
+                if (store == null) return Optional.empty();
+                var admin = store.findById(claims.getSubject()).orElse(null);
+                Integer version = claims.get("ver", Integer.class);
+                if (admin == null || admin.getRole() != Role.PLATFORM_ADMIN || admin.getStatus() != com.clickcart.model.AccountStatus.ACTIVE
+                        || version == null || admin.getTokenVersion() != version) return Optional.empty();
+            }
             String providerType = claims.get("providerType", String.class);
             return Optional.of(new AuthenticatedUser(
                     claims.getSubject(),

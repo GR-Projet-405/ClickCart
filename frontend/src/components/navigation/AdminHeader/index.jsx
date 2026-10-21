@@ -1,7 +1,10 @@
 import React from "react";
+import { useAuth } from "../../../context/AuthContext";
+import { useAdminProfile } from "../../../context/AdminProfileContext";
 import { Bell, ChevronDown, Menu, PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
+import Button from "../../common/Button";
 import Badge from "../../common/Badge";
 import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";
@@ -25,6 +28,9 @@ export default function AdminHeader({
   onSidebarToggle,
 }) {
   const navigate = useNavigate();
+  const { user, logout } = useAuth();
+  const { profile } = useAdminProfile();
+  const name = profile?.fullName || user?.fullName || "Administrator";
 
   return (
     <header className="dashboard-header">
@@ -67,36 +73,24 @@ export default function AdminHeader({
           <BrandLogo size="shell" showTagline />
         </Link>
 
-        {/* Search */}
-        <div className="dashboard-header__search">
-          <SearchInput
-            aria-label="Global admin search"
-            placeholder="Search users, providers, bookings, reports..."
-          />
-        </div>
-
         <div className="dashboard-header__spacer" />
 
         {/* Actions */}
         <div className="dashboard-header__actions">
-          <IconButton
-            icon={<Bell size={18} />}
-            label="Notifications"
-            variant="ghost"
-            onClick={() => navigate("/admin/notifications")}
-          />
           <button
             className="dashboard-header__identity"
             type="button"
-            aria-label="Open admin account menu"
+            aria-label="Edit administrator profile"
+            onClick={() => navigate("/admin/profile")}
           >
-            <Avatar fallback="AD" size="sm" />
+            <Avatar src={profile?.avatar} fallback={name.slice(0,2).toUpperCase()} size="sm" />
             <span className="dashboard-header__identity-copy">
               <small>Hello,</small>
-              <strong>Admin</strong>
+              <strong>{name}</strong>
             </span>
             <ChevronDown size={15} aria-hidden="true" />
           </button>
+          <Button variant="outline" size="sm" onClick={async () => { await logout(); navigate("/admin/login", { replace: true }); }}>Sign out</Button>
           <Badge className="dashboard-header__role" variant="primary">
             Platform Admin
           </Badge>

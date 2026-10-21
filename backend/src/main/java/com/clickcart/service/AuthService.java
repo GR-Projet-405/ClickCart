@@ -19,7 +19,7 @@ import com.clickcart.exception.UnauthorizedException;
 import com.clickcart.model.AccountStatus;
 import com.clickcart.model.Role;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+
 import com.clickcart.service.LoginAttemptService.FailureOutcome;
 import com.clickcart.service.RefreshTokenService.IssuedRefreshToken;
 import com.clickcart.service.RefreshTokenService.Rotation;
@@ -42,7 +42,7 @@ public class AuthService {
     public record AuthSession(AuthResponse response, IssuedRefreshToken refreshToken) {
     }
 
-    private final UserRepository users;
+    private final AccountStore users;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokens;
@@ -51,7 +51,7 @@ public class AuthService {
     /** Compared against when the email is unknown so response time does not reveal whether an account exists. */
     private final String dummyPasswordHash;
 
-    public AuthService(UserRepository users, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
+    public AuthService(AccountStore users, PasswordEncoder passwordEncoder, JwtUtil jwtUtil,
                        RefreshTokenService refreshTokens, LoginAttemptService loginAttempts) {
         this.users = users;
         this.passwordEncoder = passwordEncoder;
@@ -105,7 +105,7 @@ public class AuthService {
     public AuthSession adminLogin(LoginRequest request) { return login(request, true); }
     private AuthSession login(LoginRequest request, boolean adminPortal) {
         String email = normalizeEmail(request.email());
-        User user = users.findByEmail(email).orElse(null);
+        User user = (adminPortal ? users.findAdminByEmail(email) : users.findPublicByEmail(email)).orElse(null);
 
         if (user == null) {
             passwordEncoder.matches(request.password(), dummyPasswordHash);
@@ -145,7 +145,7 @@ public class AuthService {
         user.setLockedUntil(null);
         user.setLastLoginAt(now);
         user.setUpdatedAt(now);
-        users.save(user);
+        loginAttempts.recordSuccess(user.getId(), now);
 
         audit.info("event=LOGIN_SUCCESS userId={} role={} rememberMe={}", user.getId(), user.getRole(),
                 request.rememberMe());

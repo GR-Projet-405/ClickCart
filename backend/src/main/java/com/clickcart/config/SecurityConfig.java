@@ -97,7 +97,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/health", "/api/public/**").permitAll()
                         // DEV-01: public authentication endpoints
-                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login", "/api/auth/admin/login",
                                 "/api/auth/refresh", "/api/auth/logout", "/api/auth/forgot-password",
                                 "/api/auth/verify-reset-code", "/api/auth/reset-password")
                         .permitAll()

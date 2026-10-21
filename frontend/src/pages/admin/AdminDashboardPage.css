@@ -85,7 +85,7 @@
 
 @media (min-width: 40rem) {
   .adm-summary {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
@@ -93,7 +93,7 @@
    without shrinking the metric values. */
 @media (min-width: 85rem) {
   .adm-summary {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
