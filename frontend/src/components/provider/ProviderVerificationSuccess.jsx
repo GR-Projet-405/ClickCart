@@ -10,10 +10,10 @@ export default function ProviderVerificationSuccess() {
       style={{
         maxWidth: "520px",
         margin: "60px auto",
-        backgroundColor: "#ffffff",
+        backgroundColor: "var(--cc-bg-surface)",
         padding: "40px 32px",
         borderRadius: "16px",
-        border: "1px solid #e5e7eb",
+        border: "1px solid var(--cc-border)",
         boxShadow: "0 4px 20px rgba(0, 0, 0, 0.04)",
         textAlign: "center",
       }}
@@ -24,7 +24,7 @@ export default function ProviderVerificationSuccess() {
           width: "90px",
           height: "90px",
           borderRadius: "50%",
-          backgroundColor: "#dcfce7",
+          backgroundColor: "var(--cc-success-soft)",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -41,7 +41,7 @@ export default function ProviderVerificationSuccess() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            color: "#ffffff",
+            color: "var(--cc-text-on-primary)",
           }}
         >
           <FiCheck size={32} strokeWidth={3} />
@@ -83,7 +83,7 @@ export default function ProviderVerificationSuccess() {
         onClick={() => navigate("/provider/dashboard")}
         style={{
           backgroundColor: "#159c2b",
-          color: "#ffffff",
+          color: "var(--cc-text-on-primary)",
           border: "none",
           padding: "12px 32px",
           borderRadius: "8px",

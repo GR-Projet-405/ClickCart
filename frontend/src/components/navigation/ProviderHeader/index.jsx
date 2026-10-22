@@ -1,3 +1,4 @@
+import ThemeToggle from "../../common/ThemeToggle";
 import { Bell, Menu, LogOut } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -26,6 +27,7 @@ export default function ProviderHeader({ menuOpen, onMenuToggle }) {
         <Link className="dashboard-header__brand" to="/provider" aria-label="ClickCart provider home"><BrandLogo size="shell" showTagline /></Link>
         <div className="dashboard-header__spacer" />
         <div className="dashboard-header__actions">
+          <ThemeToggle />
           <IconButton icon={<Bell size={18} />} label="Notifications" variant="ghost" onClick={() => navigate("/provider/notifications")} />
           <Link className="dashboard-header__identity" to="/provider/profile" aria-label="Open your provider profile">
             <Avatar src={profile?.profileImage || undefined} fallback={initials} size="lg" />

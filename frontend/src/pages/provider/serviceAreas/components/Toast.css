@@ -26,7 +26,7 @@
 }
 
 .cc-toast--success {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-primary);
   border: 1px solid var(--cc-primary-border-soft);
   border-left: 4px solid var(--cc-primary);
@@ -37,7 +37,7 @@
 }
 
 .cc-toast--error {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-primary);
   border: 1px solid var(--cc-error-soft);
   border-left: 4px solid var(--cc-error);

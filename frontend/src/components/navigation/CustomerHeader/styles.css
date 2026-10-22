@@ -43,8 +43,8 @@
   transition: all var(--cc-transition-fast, 150ms ease);
 }
 .customer-header__account:hover {
-  background: var(--cc-bg-subtle, #f8fafc);
-  border-color: var(--cc-border, #e2e8f0);
+  background: var(--cc-bg-subtle, var(--cc-bg-muted));
+  border-color: var(--cc-border, var(--cc-border));
 }
 .customer-header__account--active {
   background: #f0fdf4 !important;
@@ -79,7 +79,7 @@
   .customer-header__account {
     padding: 0.25rem;
     border-radius: 50%;
-    border: 1px solid var(--cc-border, #e2e8f0);
+    border: 1px solid var(--cc-border, var(--cc-border));
   }
 }
 
@@ -91,9 +91,9 @@
   padding: 0.45rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--cc-text-secondary, #64748b);
+  color: var(--cc-text-secondary, var(--cc-text-secondary));
   background: transparent;
-  border: 1px solid var(--cc-border, #e2e8f0);
+  border: 1px solid var(--cc-border, var(--cc-border));
   border-radius: var(--cc-radius-md, 8px);
   cursor: pointer;
   transition: all 150ms ease;

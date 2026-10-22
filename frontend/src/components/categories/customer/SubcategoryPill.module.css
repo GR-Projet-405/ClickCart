@@ -2,8 +2,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: space-between;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
+  background-color: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
   border-radius: 9999px;
   padding: 12px 24px;
   cursor: pointer;
@@ -21,7 +21,7 @@
 .text {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin-right: 16px;
 }
 

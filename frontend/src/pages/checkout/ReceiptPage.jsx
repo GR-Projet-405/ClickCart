@@ -67,8 +67,8 @@ export default function ReceiptPage() {
         <div className="cc-receipt-top">
           <div className="cc-receipt-brand">
             <span className="cc-receipt-logo-text">ClickCart</span>
-            <span style={{ fontSize: "12px", color: "#64748b" }}>AI-Powered Local Services Marketplace</span>
-            <span style={{ fontSize: "12px", color: "#94a3b8" }}>Tax Invoice / Payment Verification Receipt</span>
+            <span style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>AI-Powered Local Services Marketplace</span>
+            <span style={{ fontSize: "12px", color: "var(--cc-text-muted)" }}>Tax Invoice / Payment Verification Receipt</span>
           </div>
           <div className="cc-receipt-badge-stamp">
             PAID & VERIFIED
@@ -78,28 +78,28 @@ export default function ReceiptPage() {
         {/* Metadata Grid */}
         <div className="cc-receipt-meta-grid">
           <div>
-            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "#94a3b8", marginBottom: "4px" }}>
+            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--cc-text-muted)", marginBottom: "4px" }}>
               Receipt & Booking Info
             </div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Receipt No:</strong> {receipt?.receiptNumber}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Booking Ref:</strong> {receipt?.bookingId}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Transaction ID:</strong> {receipt?.transactionId}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Date Issued:</strong> {formattedDate}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Receipt No:</strong> {receipt?.receiptNumber}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Booking Ref:</strong> {receipt?.bookingId}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Transaction ID:</strong> {receipt?.transactionId}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Date Issued:</strong> {formattedDate}</div>
           </div>
 
           <div>
-            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "#94a3b8", marginBottom: "4px" }}>
+            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--cc-text-muted)", marginBottom: "4px" }}>
               Billed To Customer
             </div>
-            <div style={{ fontSize: "14px", color: "#0f172a", fontWeight: "600" }}>{receipt?.customerName}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.customerEmail}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.customerPhone}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.serviceAddress}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)", fontWeight: "600" }}>{receipt?.customerName}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.customerEmail}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.customerPhone}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.serviceAddress}</div>
           </div>
         </div>
 
         {/* Provider Details */}
-        <div style={{ background: "#f8fafc", padding: "12px 16px", borderRadius: "8px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ background: "var(--cc-bg-muted)", padding: "12px 16px", borderRadius: "8px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
             <Building size={18} color="#0284c7" />
             <span><strong>Service Provider:</strong> {receipt?.providerName || "Apex Premier HomeCare"}</span>
@@ -121,7 +121,7 @@ export default function ReceiptPage() {
             <tr>
               <td>
                 <strong style={{ display: "block" }}>{receipt?.serviceTitle || "Deep Home Cleaning & Sanitization"}</strong>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>On-demand local service execution</span>
+                <span style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>On-demand local service execution</span>
               </td>
               <td style={{ textAlign: "right", fontWeight: "600" }}>${receipt?.subtotal?.toFixed(2)}</td>
             </tr>

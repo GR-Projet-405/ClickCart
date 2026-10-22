@@ -78,7 +78,7 @@
 .cc-map-fallback-grid {
   position: absolute;
   inset: 0;
-  background-color: #f1f5f9;
+  background-color: var(--cc-bg-muted);
   background-image: 
     linear-gradient(rgba(16, 185, 38, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(16, 185, 38, 0.08) 1px, transparent 1px);
@@ -169,7 +169,7 @@
   display: flex;
   align-items: center;
   gap: var(--cc-space-2);
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   padding: 0.5rem 0.75rem;
   border-radius: var(--cc-radius-lg);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
@@ -215,7 +215,7 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border: 1px solid var(--cc-border);
   border-radius: var(--cc-radius-md);
   color: var(--cc-text-secondary);

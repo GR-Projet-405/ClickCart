@@ -1,3 +1,4 @@
+import ThemeToggle from "../../common/ThemeToggle";
 import React, { useEffect, useState } from "react";
 import { Bell, Heart, Menu, X, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -88,6 +89,7 @@ export default function CustomerHeader() {
           ))}
         </nav>
         <div className="customer-header__actions">
+          <ThemeToggle />
           <IconButton
             className={`customer-header__desktop-action ${
               isFavoritesActive ? "customer-header__action--active" : ""

@@ -534,7 +534,7 @@ export default function PublicProviderProfile() {
 
                             <p className="review-comment">{rev.content || "No review comment."}</p>
                             {rev.providerResponse && (
-                              <div style={{ marginTop: 12, padding: 10, backgroundColor: "#f8fafc", borderRadius: 6, fontSize: "0.85rem", borderLeft: "3px solid var(--cc-primary)" }}>
+                              <div style={{ marginTop: 12, padding: 10, backgroundColor: "var(--cc-bg-muted)", borderRadius: 6, fontSize: "0.85rem", borderLeft: "3px solid var(--cc-primary)" }}>
                                 <strong>Provider Response:</strong> {rev.providerResponse}
                               </div>
                             )}

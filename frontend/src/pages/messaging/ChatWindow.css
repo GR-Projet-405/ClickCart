@@ -47,7 +47,7 @@
   align-items: center;
   padding: 1rem 1.5rem;
   border-bottom: 1px solid var(--border-color);
-  background: #ffffff;
+  background: var(--cc-bg-surface);
 }
 
 .header-left {
@@ -89,7 +89,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.75rem 1.5rem;
-  background: #f8fafc;
+  background: var(--cc-bg-muted);
   border-bottom: 1px solid var(--border-color);
 }
 
@@ -100,8 +100,8 @@
 }
 
 .booking-icon {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--cc-border);
+  color: var(--cc-text-secondary);
   padding: 0.5rem;
   border-radius: var(--radius-md);
   display: flex;
@@ -141,7 +141,7 @@
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  background: #fdfdfd;
+  background: var(--cc-bg-surface);
 }
 
 .message-wrapper {
@@ -195,8 +195,8 @@
 }
 
 .message-wrapper.theirs .message-bubble {
-  background: #f1f5f9;
-  color: #1e293b;
+  background: var(--cc-bg-muted);
+  color: var(--cc-text-primary);
   border-top-left-radius: 0.25rem;
 }
 
@@ -229,7 +229,7 @@
 
 .chat-input-area {
   padding: 1rem 1.5rem;
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -240,7 +240,7 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  background: #f8fafc;
+  background: var(--cc-bg-muted);
   padding: 0.5rem 1rem;
   border-radius: 2rem;
   border: 1px solid var(--border-color);

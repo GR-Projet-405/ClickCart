@@ -63,7 +63,7 @@ export default function PaymentHistoryPage() {
         {loading ? (
           <div style={{ padding: "40px", textAlign: "center" }}>Loading payment history from server...</div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: "40px", textAlign: "center", color: "#64748b" }}>
+          <div style={{ padding: "40px", textAlign: "center", color: "var(--cc-text-secondary)" }}>
             No payment records found.
           </div>
         ) : (
@@ -83,7 +83,7 @@ export default function PaymentHistoryPage() {
                 <tr key={item.id || item.receiptNumber}>
                   <td>
                     <div style={{ fontWeight: "600" }}>{item.receiptNumber || "REC-2026-PENDING"}</div>
-                    <div style={{ fontSize: "12px", color: "#64748b" }}>
+                    <div style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>
                       {item.paymentDate ? new Date(item.paymentDate).toLocaleDateString() : "Just now"}
                     </div>
                   </td>
@@ -94,7 +94,7 @@ export default function PaymentHistoryPage() {
                   <td>
                     <code>{item.bookingId}</code>
                   </td>
-                  <td style={{ fontWeight: "700", color: "#0f172a" }}>
+                  <td style={{ fontWeight: "700", color: "var(--cc-text-primary)" }}>
                     ${item.amount?.toFixed ? item.amount.toFixed(2) : item.amount} {item.currency || "USD"}
                   </td>
                   <td>

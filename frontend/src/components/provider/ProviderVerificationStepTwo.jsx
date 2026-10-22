@@ -49,13 +49,13 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
   const isBusiness = accountType === 'BUSINESS';
 
   return (
-    <div style={{ maxWidth: '650px', margin: '24px auto', background: '#fff', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid #e5e7eb' }}>
-      <h2 style={{ textAlign: 'center', fontWeight: '700', fontSize: '24px', marginBottom: '20px', color: '#111827' }}>
+    <div style={{ maxWidth: '650px', margin: '24px auto', background: 'var(--cc-bg-surface)', padding: '32px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid var(--cc-border)' }}>
+      <h2 style={{ textAlign: 'center', fontWeight: '700', fontSize: '24px', marginBottom: '20px', color: 'var(--cc-text-primary)' }}>
         Provider Verification Form
       </h2>
 
       {/* Account Type Active Indicator */}
-      <div style={{ display: 'flex', background: '#f3f4f6', borderRadius: '30px', padding: '4px', marginBottom: '24px', border: '1px solid #e5e7eb' }}>
+      <div style={{ display: 'flex', background: 'var(--cc-bg-muted)', borderRadius: '30px', padding: '4px', marginBottom: '24px', border: '1px solid var(--cc-border)' }}>
         <button type="button" style={{ flex: 1, padding: '10px', borderRadius: '25px', border: 'none', background: !isBusiness ? '#159c2b' : 'transparent', color: !isBusiness ? '#fff' : '#4b5563', fontWeight: '600', cursor: 'default' }}>
           Individual
         </button>
@@ -66,11 +66,11 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
 
       {/* Stepper Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '28px' }}>
-        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#159c2b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#159c2b', color: 'var(--cc-text-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <FiCheck size={16} />
         </div>
         <div style={{ width: '100px', height: '2px', background: '#159c2b', margin: '0 8px' }}></div>
-        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#159c2b', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '13px', boxShadow: '0 0 0 4px #dcfce7' }}>
+        <div style={{ width: '30px', height: '30px', borderRadius: '50%', background: '#159c2b', color: 'var(--cc-text-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: '700', fontSize: '13px', boxShadow: '0 0 0 4px #dcfce7' }}>
           2
         </div>
       </div>
@@ -83,8 +83,8 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
         {/* NIC Front and Back Section */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
           <div>
-            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: '#111827' }}>National ID Card( Front)</label>
-            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
+            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: 'var(--cc-text-primary)' }}>National ID Card( Front)</label>
+            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: 'var(--cc-bg-muted)', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
                 accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -102,8 +102,8 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
           </div>
 
           <div>
-            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: '#111827' }}>National ID Card( Back)</label>
-            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
+            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: 'var(--cc-text-primary)' }}>National ID Card( Back)</label>
+            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '20px', textAlign: 'center', background: 'var(--cc-bg-muted)', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
                 accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -124,8 +124,8 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
         {/* Business Registration Upload Section */}
         {isBusiness && (
           <div style={{ marginBottom: '28px' }}>
-            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: '#111827' }}>Business Registration/ Certificates</label>
-            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '24px', textAlign: 'center', background: '#f9fafb', cursor: 'pointer', position: 'relative' }}>
+            <label style={{ display: 'block', fontWeight: '600', marginBottom: '8px', fontSize: '14px', color: 'var(--cc-text-primary)' }}>Business Registration/ Certificates</label>
+            <div style={{ border: '1.5px dashed #159c2b', borderRadius: '12px', padding: '24px', textAlign: 'center', background: 'var(--cc-bg-muted)', cursor: 'pointer', position: 'relative' }}>
               <input 
                 type="file" 
                 accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -147,14 +147,14 @@ const ProviderVerificationStepTwo = ({ userId, accountType, onBack, onSuccess })
           <button
             type="button"
             onClick={onBack}
-            style={{ padding: '10px 32px', borderRadius: '10px', border: '1px solid #159c2b', background: '#fff', color: '#159c2b', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}
+            style={{ padding: '10px 32px', borderRadius: '10px', border: '1px solid #159c2b', background: 'var(--cc-bg-surface)', color: '#159c2b', fontWeight: '600', cursor: 'pointer', fontSize: '14px' }}
           >
             Back
           </button>
           <button
             type="submit"
             disabled={loading}
-            style={{ padding: '10px 32px', borderRadius: '10px', border: 'none', background: '#159c2b', color: '#fff', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '14px' }}
+            style={{ padding: '10px 32px', borderRadius: '10px', border: 'none', background: '#159c2b', color: 'var(--cc-text-on-primary)', fontWeight: '600', cursor: loading ? 'not-allowed' : 'pointer', fontSize: '14px' }}
           >
             {loading ? 'Submitting...' : 'Submit for Verification'}
           </button>

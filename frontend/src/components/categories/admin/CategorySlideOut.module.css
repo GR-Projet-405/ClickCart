@@ -12,7 +12,7 @@
   right: 0;
   bottom: 0;
   width: 420px;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   z-index: 50;
   box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
   display: flex;
@@ -29,7 +29,7 @@
 
 .header {
   padding: 24px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--cc-bg-muted);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -38,7 +38,7 @@
 .header h2 {
   margin: 0;
   font-size: 1.25rem;
-  color: #111827;
+  color: var(--cc-text-primary);
   font-weight: 700;
 }
 
@@ -52,12 +52,12 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   transition: background-color 0.2s;
 }
 
 .closeBtn:hover {
-  background: #f3f4f6;
+  background: var(--cc-bg-muted);
 }
 
 .content {
@@ -83,10 +83,10 @@
 .formGroup select {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cc-border);
   border-radius: 8px;
   font-size: 0.95rem;
-  color: #111827;
+  color: var(--cc-text-primary);
   outline: none;
   font-family: inherit;
   transition: border-color 0.2s;
@@ -99,7 +99,7 @@
 
 .selectWrapper select {
   appearance: none;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
 }
 
 .selectIcon {
@@ -107,7 +107,7 @@
   right: 16px;
   top: 50%;
   transform: translateY(-50%);
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   pointer-events: none;
 }
 
@@ -126,9 +126,9 @@
 
 .tagInputWrapper {
   display: flex;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cc-border);
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   transition: border-color 0.2s;
   overflow: hidden;
 }
@@ -218,7 +218,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: #f3f4f6;
+  background-color: var(--cc-bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -235,13 +235,13 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   border: 1px dashed #d1d5db;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
 }
 
 .addIconBtn:hover {
@@ -259,7 +259,7 @@
 .toggleGroup label {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin: 0 0 4px 0;
   display: block;
 }
@@ -267,16 +267,16 @@
 .helperText {
   margin: 0;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
 }
 
 .footer {
   padding: 24px;
-  border-top: 1px solid #f3f4f6;
+  border-top: 1px solid var(--cc-bg-muted);
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
 }
 
 .saveBtn {
@@ -297,7 +297,7 @@
 }
 
 .cancelBtn {
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   color: #4b5563;
   border: 1px solid #d1d5db;
   border-radius: 8px;
@@ -310,5 +310,5 @@
 }
 
 .cancelBtn:hover {
-  background-color: #f9fafb;
+  background-color: var(--cc-bg-muted);
 }

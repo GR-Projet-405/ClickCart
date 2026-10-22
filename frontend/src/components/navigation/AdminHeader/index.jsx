@@ -1,3 +1,4 @@
+import ThemeToggle from "../../common/ThemeToggle";
 import React from "react";
 import { useAuth } from "../../../context/AuthContext";
 import { useAdminProfile } from "../../../context/AdminProfileContext";
@@ -77,6 +78,7 @@ export default function AdminHeader({
 
         {/* Actions */}
         <div className="dashboard-header__actions">
+          <ThemeToggle />
           <button
             className="dashboard-header__identity"
             type="button"

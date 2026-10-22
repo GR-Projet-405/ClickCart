@@ -198,13 +198,13 @@ export default function TransactionHistoryPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem", color: "var(--cc-text-secondary)" }}>
                     Loading transactions...
                   </td>
                 </tr>
               ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2.5rem", color: "var(--cc-text-secondary)" }}>
                     No transactions match the selected filters.
                   </td>
                 </tr>
@@ -291,8 +291,8 @@ export default function TransactionHistoryPage() {
               {/* Header Box */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Transaction Reference</div>
-                  <div style={{ fontSize: "1.125rem", fontWeight: "700", color: "#0f172a" }}>
+                  <div style={{ fontSize: "0.75rem", color: "var(--cc-text-secondary)" }}>Transaction Reference</div>
+                  <div style={{ fontSize: "1.125rem", fontWeight: "700", color: "var(--cc-text-primary)" }}>
                     {selectedTx.transactionId}
                   </div>
                 </div>
@@ -327,7 +327,7 @@ export default function TransactionHistoryPage() {
 
               {/* Financial Calculation Breakdown (BR-07) */}
               <div className="drawer-breakdown-card">
-                <div style={{ fontSize: "0.8125rem", fontWeight: "700", color: "#0f172a", marginBottom: "0.25rem" }}>
+                <div style={{ fontSize: "0.8125rem", fontWeight: "700", color: "var(--cc-text-primary)", marginBottom: "0.25rem" }}>
                   Financial Snapshot Breakdown
                 </div>
                 <div className="drawer-breakdown-row">

@@ -30,7 +30,7 @@
 
 /* Section Cards */
 .pricing-section-card {
-  background: #fff;
+  background: var(--cc-bg-surface);
   border: 1px solid #eaecf0;
   border-radius: 0.85rem;
   padding: 1.5rem;
@@ -48,7 +48,7 @@
 
 .pricing-section-title {
   margin: 0.25rem 0 0.25rem;
-  color: #101828;
+  color: var(--cc-text-primary);
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: -0.02em;
@@ -56,7 +56,7 @@
 
 .pricing-section-subtitle {
   margin: 0;
-  color: #667085;
+  color: var(--cc-text-secondary);
   font-size: 0.8125rem;
 }
 
@@ -74,7 +74,7 @@
   flex-direction: column;
   align-items: flex-start;
   padding: 1.25rem;
-  background: #fff;
+  background: var(--cc-bg-surface);
   border: 1px solid #e4e7ec;
   border-radius: 0.85rem;
   cursor: pointer;
@@ -112,14 +112,14 @@
 
 .pricing-model-card__title {
   margin: 0 0 0.25rem;
-  color: #101828;
+  color: var(--cc-text-primary);
   font-size: 0.95rem;
   font-weight: 650;
 }
 
 .pricing-model-card__desc {
   margin: 0;
-  color: #667085;
+  color: var(--cc-text-secondary);
   font-size: 0.75rem;
   line-height: 1.4;
 }
@@ -129,7 +129,7 @@
   top: 1rem;
   right: 1rem;
   color: #10b926;
-  background: #fff;
+  background: var(--cc-bg-surface);
   border-radius: 50%;
   padding: 2px;
 }
@@ -151,7 +151,7 @@
   align-items: center;
   gap: 1rem;
   padding: 1rem;
-  background: #f9fafb;
+  background: var(--cc-bg-muted);
   border: 1px solid #eaecf0;
   border-radius: 0.7rem;
   transition: background-color 150ms ease;
@@ -179,14 +179,14 @@
 
 .package-card__title {
   margin: 0 0 0.15rem;
-  color: #101828;
+  color: var(--cc-text-primary);
   font-size: 0.95rem;
   font-weight: 650;
 }
 
 .package-card__desc {
   margin: 0 0 0.5rem;
-  color: #667085;
+  color: var(--cc-text-secondary);
   font-size: 0.75rem;
   white-space: nowrap;
   overflow: hidden;

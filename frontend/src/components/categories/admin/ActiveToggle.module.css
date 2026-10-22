@@ -1,7 +1,7 @@
 .toggleContainer {
   width: 44px;
   height: 24px;
-  background-color: #e5e7eb;
+  background-color: var(--cc-border);
   border-radius: 9999px;
   padding: 2px;
   cursor: pointer;
@@ -18,7 +18,7 @@
 .toggleKnob {
   width: 20px;
   height: 20px;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   border-radius: 50%;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

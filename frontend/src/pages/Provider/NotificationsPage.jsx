@@ -115,7 +115,7 @@ export default function NotificationsPage() {
         </p>
       ) : null}
 
-      <div className="notification-center__card"><h2>Your notifications</h2>{!loading && !notifications.length && <p>No notifications yet.</p>}{notifications.map(item => <article key={item.id} style={{padding:"16px 0",borderBottom:"1px solid #e5e7eb"}}><h3>{item.title}</h3><p>{item.body}</p><small>{new Date(item.createdAt).toLocaleString()}</small>{!item.read && <button onClick={async () => { try { const updated = await markNotificationRead(item.id); setNotifications(current => current.map(row => row.id === item.id ? updated : row)); setUnreadCount(current => Math.max(0,current-1)); } catch(err) { setError(err.message); } }}>Mark as read</button>}</article>)}</div>
+      <div className="notification-center__card"><h2>Your notifications</h2>{!loading && !notifications.length && <p>No notifications yet.</p>}{notifications.map(item => <article key={item.id} style={{padding:"16px 0",borderBottom:"1px solid var(--cc-border)"}}><h3>{item.title}</h3><p>{item.body}</p><small>{new Date(item.createdAt).toLocaleString()}</small>{!item.read && <button onClick={async () => { try { const updated = await markNotificationRead(item.id); setNotifications(current => current.map(row => row.id === item.id ? updated : row)); setUnreadCount(current => Math.max(0,current-1)); } catch(err) { setError(err.message); } }}>Mark as read</button>}</article>)}</div>
       <div className="notification-center__card" id="notification-preferences">
         <div className="notification-center__card-heading">
           <h2>Notification Preferences</h2>

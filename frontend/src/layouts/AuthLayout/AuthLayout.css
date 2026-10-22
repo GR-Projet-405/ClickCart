@@ -112,7 +112,7 @@
   text-decoration: none;
 }
 .auth-panel .cc-brand-logo__name {
-  color: #fff;
+  color: var(--auth-panel-accent);
 }
 .auth-panel .cc-brand-logo__name span {
   color: var(--auth-panel-accent);

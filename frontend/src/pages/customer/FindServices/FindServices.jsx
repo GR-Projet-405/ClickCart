@@ -570,19 +570,19 @@ export default function FindServices() {
                           <div style={{ 
                             position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
                             display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 16,
-                            width: 320, background: '#FFFFFF', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08), 0px 16px 40px rgba(0, 0, 0, 0.12)',
+                            width: 320, background: 'var(--cc-bg-surface)', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08), 0px 16px 40px rgba(0, 0, 0, 0.12)',
                             borderRadius: 16, cursor: 'default', zIndex: 100
                           }}
                           onClick={(e) => e.stopPropagation()}
                           >
                             <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: 12 }}>
-                              <button style={{ width: 28, height: 28, border: '0.8px solid #F3F4F6', borderRadius: '50%', background: '#FFFFFF', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setActiveProviderId(null); }}>
+                              <button style={{ width: 28, height: 28, border: '0.8px solid #F3F4F6', borderRadius: '50%', background: 'var(--cc-bg-surface)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setActiveProviderId(null); }}>
                                 <X size={13} color="#6B7280" />
                               </button>
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginBottom: 12 }}>
-                              <div style={{ width: 48, height: 48, borderRadius: '50%', background: provider.color || '#7C3AED', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: provider.imageUrl ? `url(${provider.imageUrl})` : 'none', backgroundSize: 'cover', position: 'relative', color: '#FFF', fontWeight: 700, fontSize: 16 }}>
+                              <div style={{ width: 48, height: 48, borderRadius: '50%', background: provider.color || '#7C3AED', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: provider.imageUrl ? `url(${provider.imageUrl})` : 'none', backgroundSize: 'cover', position: 'relative', color: 'var(--cc-text-on-primary)', fontWeight: 700, fontSize: 16 }}>
                                 {provider.verified && (
                                   <div style={{ position: 'absolute', right: -4, bottom: -4, width: 16, height: 16, background: '#1ABA1A', border: '2px solid #FFFFFF', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     <Check size={10} color="white" strokeWidth={3} />
@@ -618,7 +618,7 @@ export default function FindServices() {
                               </div>
                             </div>
                             
-                            <div style={{ width: '100%', height: 1, background: '#F3F4F6', marginBottom: 14 }} />
+                            <div style={{ width: '100%', height: 1, background: 'var(--cc-bg-muted)', marginBottom: 14 }} />
                             
                             <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', width: '100%' }}>
                               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, fontSize: 12, color: '#99A1AF', marginRight: 8 }}>Starting from</span>
@@ -628,13 +628,13 @@ export default function FindServices() {
                             
                             <div style={{ display: 'flex', gap: 10, width: '100%' }}>
                               <button 
-                                style={{ flex: 1, height: 42, background: '#FFFFFF', border: '0.8px solid #E5E7EB', borderRadius: 24, fontWeight: 600, fontSize: 14, color: '#1E2939', cursor: 'pointer' }}
+                                style={{ flex: 1, height: 42, background: 'var(--cc-bg-surface)', border: '0.8px solid #E5E7EB', borderRadius: 24, fontWeight: 600, fontSize: 14, color: '#1E2939', cursor: 'pointer' }}
                                 onClick={(e) => { e.stopPropagation(); navigate(`/providers/${provider.id}`); }}
                               >
                                 View Profile
                               </button>
                               <button 
-                                style={{ flex: 1, height: 42, background: '#1ABA1A', border: 'none', borderRadius: 24, fontWeight: 700, fontSize: 14, color: '#FFFFFF', cursor: 'pointer' }}
+                                style={{ flex: 1, height: 42, background: '#1ABA1A', border: 'none', borderRadius: 24, fontWeight: 700, fontSize: 14, color: 'var(--cc-text-on-primary)', cursor: 'pointer' }}
                                 onClick={(e) => { e.stopPropagation(); navigate(`/booking/create/${provider.id}`); }}
                               >
                                 Book Now

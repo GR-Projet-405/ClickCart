@@ -85,7 +85,7 @@
   height: 2rem;
   border-radius: var(--cc-radius-md);
   border: 1px solid var(--cc-border);
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-secondary);
   cursor: pointer;
   transition: background-color 150ms, color 150ms, border-color 150ms;
@@ -118,7 +118,7 @@
   z-index: 40;
   margin-top: 0.25rem;
   min-width: 10rem;
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border: 1px solid var(--cc-border);
   border-radius: var(--cc-radius-lg);
   box-shadow: var(--cc-shadow-md);
@@ -197,7 +197,7 @@
     border: 1px solid var(--cc-border);
     border-radius: var(--cc-radius-lg);
     padding: var(--cc-space-3);
-    background: #ffffff;
+    background: var(--cc-bg-surface);
   }
 
   .cc-service-areas-row td {

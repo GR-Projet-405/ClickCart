@@ -2,23 +2,23 @@
   max-width: 650px;
   margin: 24px auto;
   padding: 32px;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   border-radius: 16px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cc-border);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
 }
 
 .verification-title {
   font-size: 24px;
   font-weight: 700;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin-bottom: 20px;
   text-align: center;
 }
 
 .verification-subtitle {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   margin-bottom: 24px;
 }
 
@@ -62,29 +62,29 @@
 .step-active .step-number {
   background-color: #159c2b;
   color: #ffffff;
-  box-shadow: 0 0 0 4px #dcfce7;
+  box-shadow: 0 0 0 4px var(--cc-success-soft);
 }
 
 .step-inactive .step-number {
-  background-color: #f3f4f6;
-  color: #6b7280;
+  background-color: var(--cc-bg-muted);
+  color: var(--cc-text-secondary);
 }
 
 .step-line {
   width: 100px;
   height: 2px;
-  background-color: #e5e7eb;
+  background-color: var(--cc-border);
   margin: 0 8px;
 }
 
 /* Account Type Toggle Buttons */
 .type-toggle-container {
-  background-color: #f3f4f6;
+  background-color: var(--cc-bg-muted);
   border-radius: 30px;
   padding: 4px;
   display: flex;
   margin-bottom: 24px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--cc-border);
 }
 
 .type-btn {
@@ -143,13 +143,13 @@
   border-radius: 10px;
   font-size: 14px;
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   transition: border-color 0.2s;
 }
 
 .form-input:focus {
   border-color: #159c2b;
-  box-shadow: 0 0 0 3px #dcfce7;
+  box-shadow: 0 0 0 3px var(--cc-success-soft);
 }
 
 .submit-btn {

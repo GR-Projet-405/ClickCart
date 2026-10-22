@@ -6,6 +6,7 @@
     <title>ClickCart</title>
     <script>
       window.global = window;
+      try { const theme = localStorage.getItem("clickcart-theme"); document.documentElement.dataset.theme = theme === "dark" || theme === "light" ? theme : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } catch { document.documentElement.dataset.theme = "light"; }
     </script>
   </head>
   <body>

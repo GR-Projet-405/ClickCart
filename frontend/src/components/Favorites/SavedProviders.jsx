@@ -37,7 +37,7 @@ export default function SavedProviders({ data = [], reload }) {
               border: '1px solid #ddd',
               borderRadius: '8px',
               alignItems: 'center',
-              background: 'white',
+              background: 'var(--cc-bg-surface)' ,
             }}
           >
             <img
@@ -47,7 +47,7 @@ export default function SavedProviders({ data = [], reload }) {
             />
             <div style={{ flex: 1 }}>
               <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 'bold' }}>{item.title}</h3>
-              <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>{item.providerName}</p>
+              <p style={{ margin: '0 0 10px 0', color: 'var(--cc-text-secondary)', fontSize: '14px' }}>{item.providerName}</p>
               <div style={{ fontSize: '13px', color: '#555' }}>
                 <span style={{ color: '#eab308', fontWeight: 'bold' }}>★ {item.rating}</span> • {item.price}
               </div>
@@ -70,8 +70,8 @@ export default function SavedProviders({ data = [], reload }) {
               <button
                 onClick={() => setToast(`Viewing profile of "${item.providerName}"`)}
                 style={{
-                  background: 'white',
-                  color: '#333',
+                  background: 'var(--cc-bg-surface)' ,
+                  color: 'var(--cc-text-primary)',
                   border: '1px solid #ccc',
                   padding: '8px',
                   borderRadius: '4px',
@@ -83,7 +83,7 @@ export default function SavedProviders({ data = [], reload }) {
               <button
                 onClick={() => handleRemove(item.targetId, item.title)}
                 style={{
-                  background: 'white',
+                  background: 'var(--cc-bg-surface)' ,
                   color: '#dc2626',
                   border: '1px solid #dc2626',
                   padding: '8px',

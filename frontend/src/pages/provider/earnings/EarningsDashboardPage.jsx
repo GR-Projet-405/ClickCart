@@ -247,7 +247,7 @@ export default function EarningsDashboardPage() {
                     type="button"
                     style={{
                       padding: "0.75rem",
-                      border: exportType === "summary" ? "2px solid #10b926" : "1px solid #e2e8f0",
+                      border: exportType === "summary" ? "2px solid #10b926" : "1px solid var(--cc-border)",
                       background: exportType === "summary" ? "#f0fdf4" : "#ffffff",
                       borderRadius: "8px",
                       textAlign: "left",
@@ -255,14 +255,14 @@ export default function EarningsDashboardPage() {
                     }}
                     onClick={() => setExportType("summary")}
                   >
-                    <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "#0f172a" }}>Earnings Summary</div>
-                    <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Gross, commission & net totals</div>
+                    <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "var(--cc-text-primary)" }}>Earnings Summary</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--cc-text-secondary)" }}>Gross, commission & net totals</div>
                   </button>
                   <button
                     type="button"
                     style={{
                       padding: "0.75rem",
-                      border: exportType === "detailed" ? "2px solid #10b926" : "1px solid #e2e8f0",
+                      border: exportType === "detailed" ? "2px solid #10b926" : "1px solid var(--cc-border)",
                       background: exportType === "detailed" ? "#f0fdf4" : "#ffffff",
                       borderRadius: "8px",
                       textAlign: "left",
@@ -270,8 +270,8 @@ export default function EarningsDashboardPage() {
                     }}
                     onClick={() => setExportType("detailed")}
                   >
-                    <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "#0f172a" }}>Itemized Statement</div>
-                    <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Per-booking itemized audit logs</div>
+                    <div style={{ fontWeight: "600", fontSize: "0.875rem", color: "var(--cc-text-primary)" }}>Itemized Statement</div>
+                    <div style={{ fontSize: "0.75rem", color: "var(--cc-text-secondary)" }}>Per-booking itemized audit logs</div>
                   </button>
                 </div>
               </div>
@@ -334,8 +334,8 @@ export default function EarningsDashboardPage() {
             {payoutSuccess ? (
               <div className="modal-body" style={{ textAlign: "center", padding: "2rem" }}>
                 <CheckCircle2 size={54} color="#10b926" style={{ margin: "0 auto 1rem auto" }} />
-                <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.25rem", color: "#0f172a" }}>Payout Request Received!</h4>
-                <p style={{ margin: "0 0 1.5rem 0", fontSize: "0.875rem", color: "#64748b" }}>
+                <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.25rem", color: "var(--cc-text-primary)" }}>Payout Request Received!</h4>
+                <p style={{ margin: "0 0 1.5rem 0", fontSize: "0.875rem", color: "var(--cc-text-secondary)" }}>
                   Your payout of <strong>{formatCurrency(payoutSuccess.amount)}</strong> is saved and awaiting finance review. Reference: <strong>{payoutSuccess.payoutId}</strong>.
                 </p>
                 <button className="btn-modal-confirm" style={{ margin: "0 auto" }} onClick={() => setShowPayoutModal(false)}>
@@ -369,7 +369,7 @@ export default function EarningsDashboardPage() {
                       style={{
                         width: "100%",
                         padding: "0.6rem 0.8rem",
-                        border: "1px solid #cbd5e1",
+                        border: "1px solid var(--cc-border)",
                         borderRadius: "8px",
                         fontSize: "0.9375rem"
                       }}

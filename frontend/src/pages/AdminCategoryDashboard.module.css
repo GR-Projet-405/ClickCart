@@ -1,6 +1,6 @@
 .dashboardContainer {
   padding: 32px 40px;
-  background-color: #f9fafb;
+  background-color: var(--cc-bg-muted);
   min-height: 100vh;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   position: relative;
@@ -16,14 +16,14 @@
 .pageTitle {
   font-size: 1.75rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin: 0 0 8px 0;
   letter-spacing: -0.02em;
 }
 
 .pageSubtitle {
   font-size: 0.95rem;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   margin: 0;
 }
 
@@ -45,12 +45,12 @@
 }
 
 .tableWrapper {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border-radius: 12px;
 }
 
 .loading {
   padding: 40px;
   text-align: center;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
 }

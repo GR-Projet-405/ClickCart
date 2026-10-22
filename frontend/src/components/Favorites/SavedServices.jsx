@@ -36,7 +36,7 @@ export default function SavedServices({ data = [], reload }) {
               border: '1px solid #ddd',
               borderRadius: '8px',
               overflow: 'hidden',
-              background: 'white',
+              background: 'var(--cc-bg-surface)' ,
               display: 'flex',
               flexDirection: 'column',
             }}
@@ -54,7 +54,7 @@ export default function SavedServices({ data = [], reload }) {
                 position: 'absolute',
                 top: '10px',
                 right: '10px',
-                background: 'white',
+                background: 'var(--cc-bg-surface)' ,
                 border: 'none',
                 borderRadius: '50%',
                 width: '32px',
@@ -69,7 +69,7 @@ export default function SavedServices({ data = [], reload }) {
 
             <div style={{ padding: '15px', flex: 1, display: 'flex', flexDirection: 'column' }}>
               <h3 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 'bold' }}>{item.title}</h3>
-              <p style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>{item.providerName}</p>
+              <p style={{ margin: '0 0 10px 0', color: 'var(--cc-text-secondary)', fontSize: '14px' }}>{item.providerName}</p>
               <div style={{ fontSize: '13px', color: '#555', display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '15px' }}>
                 <span style={{ color: '#eab308', fontWeight: 'bold' }}>★ {item.rating}</span> • {item.price}
               </div>
@@ -93,8 +93,8 @@ export default function SavedServices({ data = [], reload }) {
                   onClick={() => setToast(`Viewing details of "${item.title}"`)}
                   style={{
                     flex: 1,
-                    background: 'white',
-                    color: '#333',
+                    background: 'var(--cc-bg-surface)' ,
+                    color: 'var(--cc-text-primary)',
                     border: '1px solid #ccc',
                     padding: '8px',
                     borderRadius: '4px',
