@@ -2,7 +2,9 @@
   position: fixed;
   bottom: var(--cc-space-6);
   right: var(--cc-space-6);
-  z-index: 100;
+  z-index: 10000;
+  max-width: min(480px, calc(100vw - 32px));
+  overflow-wrap: anywhere;
   display: flex;
   align-items: center;
   gap: var(--cc-space-3);
@@ -26,7 +28,7 @@
 }
 
 .cc-toast--success {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-primary);
   border: 1px solid var(--cc-primary-border-soft);
   border-left: 4px solid var(--cc-primary);
@@ -37,7 +39,7 @@
 }
 
 .cc-toast--error {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-primary);
   border: 1px solid var(--cc-error-soft);
   border-left: 4px solid var(--cc-error);

@@ -19,7 +19,8 @@ export default function AppRoutes() {
       <Route path="/dev/ui-foundation" element={<UIFoundationShowcase />} />
 
       {/* Public authentication pages */}
-      <Route path="/login" element={<LoginPage />} />
+      <Route path="/login" element={<LoginPage key="public" />} />
+      <Route path="/admin/login" element={<LoginPage key="admin" adminPortal />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 

@@ -78,6 +78,7 @@ public class BlockedDateService {
                 id
         );
 
+        if (!existing.getProviderId().equals(request.getProviderId())) throw new com.clickcart.exception.ForbiddenException("This blocked date belongs to another provider");
         existing.setStartDate(request.getStartDate());
         existing.setEndDate(request.getEndDate());
         existing.setReason(request.getReason());
@@ -97,6 +98,7 @@ public class BlockedDateService {
             );
         }
 
+        com.clickcart.security.CurrentProvider.requireOwner(blockedDateRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Blocked date not found")).getProviderId());
         blockedDateRepository.deleteById(id);
     }
 

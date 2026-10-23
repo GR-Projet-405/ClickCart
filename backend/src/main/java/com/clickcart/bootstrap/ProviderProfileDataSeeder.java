@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import com.clickcart.model.ProviderProfile;
 import com.clickcart.repository.ProviderProfileRepository;
 
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 public class ProviderProfileDataSeeder implements CommandLineRunner {
 

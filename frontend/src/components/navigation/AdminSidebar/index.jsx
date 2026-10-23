@@ -1,5 +1,5 @@
 import React from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { BarChart3 } from "lucide-react";
 import Button from "../../common/Button";
 import SidebarItem from "../SidebarItem";
@@ -51,9 +51,7 @@ export default function AdminSidebar({ onNavigate }) {
           <br />
           All in one place.
         </p>
-        <Button variant="outline" size="sm">
-          View Reports →
-        </Button>
+        <Link className="cc-button cc-button--outline cc-button--sm" style={{textDecoration:"none"}} to="/admin/bookings">View bookings →</Link>
       </aside>
     </div>
   );

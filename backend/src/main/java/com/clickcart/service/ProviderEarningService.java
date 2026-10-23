@@ -9,6 +9,8 @@ import java.util.List;
 
 public interface ProviderEarningService {
 
+    java.util.List<com.clickcart.model.ProviderEarning> getRecordedEarnings(String providerId);
+
     EarningsSummaryResponse getEarningsSummary(String providerId, String period);
 
     List<MonthlyTrendDto> getMonthlyTrends(String providerId);

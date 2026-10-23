@@ -9,6 +9,7 @@ export default function ReceiptPage() {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const [error,setError]=useState("");
   const [receipt, setReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -16,10 +17,10 @@ export default function ReceiptPage() {
     const loadReceipt = async () => {
       setLoading(true);
       try {
-        const data = await paymentService.getReceipt(id || "REC-2026-981245");
+        const data = await paymentService.getReceipt(id);
         setReceipt(data);
       } catch (err) {
-        console.error("Error loading receipt:", err);
+        setError(err.message || "Receipt could not be loaded.");
       } finally {
         setLoading(false);
       }
@@ -38,6 +39,8 @@ export default function ReceiptPage() {
       </div>
     );
   }
+
+  if(error || !receipt) return <div className="cc-receipt-wrapper"><p role="alert">{error || "Receipt not found"}</p><Button onClick={()=>navigate("/my-bookings")}>Back to bookings</Button></div>;
 
   const formattedDate = receipt?.issueDate
     ? new Date(receipt.issueDate).toLocaleDateString("en-US", {
@@ -67,45 +70,45 @@ export default function ReceiptPage() {
         <div className="cc-receipt-top">
           <div className="cc-receipt-brand">
             <span className="cc-receipt-logo-text">ClickCart</span>
-            <span style={{ fontSize: "12px", color: "#64748b" }}>AI-Powered Local Services Marketplace</span>
-            <span style={{ fontSize: "12px", color: "#94a3b8" }}>Tax Invoice / Payment Verification Receipt</span>
+            <span style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>AI-Powered Local Services Marketplace</span>
+            <span style={{ fontSize: "12px", color: "var(--cc-text-muted)" }}>Cash payment receipt</span>
           </div>
           <div className="cc-receipt-badge-stamp">
-            PAID & VERIFIED
+            CASH RECEIVED
           </div>
         </div>
 
         {/* Metadata Grid */}
         <div className="cc-receipt-meta-grid">
           <div>
-            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "#94a3b8", marginBottom: "4px" }}>
+            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--cc-text-muted)", marginBottom: "4px" }}>
               Receipt & Booking Info
             </div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Receipt No:</strong> {receipt?.receiptNumber}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Booking Ref:</strong> {receipt?.bookingId}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Transaction ID:</strong> {receipt?.transactionId}</div>
-            <div style={{ fontSize: "14px", color: "#0f172a" }}><strong>Date Issued:</strong> {formattedDate}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Receipt No:</strong> {receipt?.receiptNumber}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Booking Ref:</strong> {receipt?.bookingId}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Transaction ID:</strong> {receipt?.transactionId}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)" }}><strong>Date Issued:</strong> {formattedDate}</div>
           </div>
 
           <div>
-            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "#94a3b8", marginBottom: "4px" }}>
+            <div style={{ fontSize: "12px", fontWeight: "700", textTransform: "uppercase", color: "var(--cc-text-muted)", marginBottom: "4px" }}>
               Billed To Customer
             </div>
-            <div style={{ fontSize: "14px", color: "#0f172a", fontWeight: "600" }}>{receipt?.customerName}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.customerEmail}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.customerPhone}</div>
-            <div style={{ fontSize: "13px", color: "#475569" }}>{receipt?.serviceAddress}</div>
+            <div style={{ fontSize: "14px", color: "var(--cc-text-primary)", fontWeight: "600" }}>{receipt?.customerName}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.customerEmail}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.customerPhone}</div>
+            <div style={{ fontSize: "13px", color: "var(--cc-text-secondary)" }}>{receipt?.serviceAddress}</div>
           </div>
         </div>
 
         {/* Provider Details */}
-        <div style={{ background: "#f8fafc", padding: "12px 16px", borderRadius: "8px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ background: "var(--cc-bg-muted)", padding: "12px 16px", borderRadius: "8px", marginBottom: "24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "14px" }}>
             <Building size={18} color="#0284c7" />
-            <span><strong>Service Provider:</strong> {receipt?.providerName || "Apex Premier HomeCare"}</span>
+            <span><strong>Service Provider:</strong> {receipt?.providerName || "Service provider"}</span>
           </div>
           <div style={{ fontSize: "13px", color: "#16a34a", fontWeight: "600", display: "flex", alignItems: "center", gap: "4px" }}>
-            <Shield size={14} /> Verified Partner
+            <Shield size={14} /> Service Provider
           </div>
         </div>
 
@@ -120,18 +123,18 @@ export default function ReceiptPage() {
           <tbody>
             <tr>
               <td>
-                <strong style={{ display: "block" }}>{receipt?.serviceTitle || "Deep Home Cleaning & Sanitization"}</strong>
-                <span style={{ fontSize: "12px", color: "#64748b" }}>On-demand local service execution</span>
+                <strong style={{ display: "block" }}>{receipt?.serviceTitle}</strong>
+                <span style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>On-demand local service execution</span>
               </td>
-              <td style={{ textAlign: "right", fontWeight: "600" }}>${receipt?.subtotal?.toFixed(2)}</td>
+              <td style={{ textAlign: "right", fontWeight: "600" }}>{receipt?.currency} {receipt?.subtotal?.toFixed(2)}</td>
             </tr>
             <tr>
-              <td>Platform Processing & Protection Fee (10%)</td>
-              <td style={{ textAlign: "right" }}>${receipt?.platformFee?.toFixed(2)}</td>
+              <td>Customer platform fee</td>
+              <td style={{ textAlign: "right" }}>{receipt?.currency} {receipt?.platformFee?.toFixed(2)}</td>
             </tr>
             <tr>
-              <td>Estimated Service Tax (5%)</td>
-              <td style={{ textAlign: "right" }}>${receipt?.taxAmount?.toFixed(2)}</td>
+              <td>Tax charged</td>
+              <td style={{ textAlign: "right" }}>{receipt?.currency} {receipt?.taxAmount?.toFixed(2)}</td>
             </tr>
           </tbody>
         </table>
@@ -140,18 +143,18 @@ export default function ReceiptPage() {
         <div className="cc-receipt-totals">
           <div className="cc-receipt-row">
             <span>Payment Method:</span>
-            <span>{receipt?.paymentMethod} ({receipt?.cardLast4 ? `**** ${receipt.cardLast4}` : "Instant"})</span>
+            <span>Cash paid directly to provider</span>
           </div>
           <div className="cc-receipt-row grand-total">
             <span>Total Paid ({receipt?.currency || "USD"}):</span>
-            <span style={{ color: "#0284c7" }}>${receipt?.totalAmount?.toFixed(2)}</span>
+            <span style={{ color: "#0284c7" }}>{receipt?.currency} {receipt?.totalAmount?.toFixed(2)}</span>
           </div>
         </div>
 
         {/* Footer info */}
         <div className="cc-receipt-footer-note">
           <p>Thank you for booking with ClickCart AI-Powered Local Services Marketplace.</p>
-          <p>This electronic receipt is official proof of transaction stored in MongoDB persistence under record <code>{receipt?.paymentId}</code>.</p>
+          <p>Your provider confirmed receipt of this cash payment. Payment reference: <code>{receipt?.paymentId}</code>.</p>
         </div>
       </div>
     </div>

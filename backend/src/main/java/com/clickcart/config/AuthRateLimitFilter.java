@@ -33,7 +33,9 @@ public class AuthRateLimitFilter extends OncePerRequestFilter {
     }
 
     static final List<Rule> RULES = List.of(
+            new Rule("POST", "/api/auth/change-password", 5, Duration.ofMinutes(15)),
             new Rule("POST", "/api/auth/login", 10, Duration.ofMinutes(1)),
+            new Rule("POST", "/api/auth/admin/login", 10, Duration.ofMinutes(1)),
             new Rule("POST", "/api/auth/register", 10, Duration.ofMinutes(15)),
             new Rule("GET", "/api/auth/email-availability", 30, Duration.ofMinutes(1)),
             new Rule("POST", "/api/auth/refresh", 30, Duration.ofMinutes(1)),

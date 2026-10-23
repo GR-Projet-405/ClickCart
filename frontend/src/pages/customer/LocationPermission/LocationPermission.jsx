@@ -40,13 +40,13 @@ export default function LocationPermission() {
       <div className="location-permission__content">
         {/* Placeholder pins on the map background to match design */}
         <div style={{ position: 'absolute', top: '38%', left: '15%', zIndex: 1, opacity: 0.6 }}>
-          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 'bold' }}>K</div>
+          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cc-text-on-primary)', fontSize: 10, fontWeight: 'bold' }}>K</div>
         </div>
         <div style={{ position: 'absolute', top: '15%', right: '25%', zIndex: 1, opacity: 0.6 }}>
-          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 'bold' }}>N</div>
+          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cc-text-on-primary)', fontSize: 10, fontWeight: 'bold' }}>N</div>
         </div>
         <div style={{ position: 'absolute', bottom: '25%', right: '15%', zIndex: 1, opacity: 0.6 }}>
-          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 10, fontWeight: 'bold' }}>D</div>
+          <div style={{ width: 24, height: 24, background: '#9ECFB0', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--cc-text-on-primary)', fontSize: 10, fontWeight: 'bold' }}>D</div>
         </div>
 
         <div className={`location-permission__card ${isGranted ? 'location-permission__card--granted' : ''}`}>

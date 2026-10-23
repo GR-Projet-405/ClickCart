@@ -10,7 +10,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/services")
-@CrossOrigin(origins = "*")
 public class MapDiscoveryController {
 
     @Autowired

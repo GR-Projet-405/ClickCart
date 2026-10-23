@@ -1,3 +1,4 @@
+import { API_BASE_URL } from '../../../config/api';
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ChevronRight, MapPin, Star, Crosshair, X, Filter, Target, Home, Wrench, Zap, Snowflake, Scissors, BookOpen, Check } from 'lucide-react';
@@ -212,7 +213,7 @@ export default function FindServices() {
   useEffect(() => {
     const fetchProviders = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/v1/services');
+        const response = await fetch(`${API_BASE_URL}/v1/services`);
         if (response.ok) {
           const data = await response.json();
           setProviders(data); // `data` is now an array of ServiceListing objects, keeping the `providers` state name for minimal disruption
@@ -313,7 +314,9 @@ export default function FindServices() {
   };
 
   const filteredProviders = providers.filter(p => {
-    const categoryMatch = activeFilter === 'All' || p.category.includes(activeFilter);
+    const term = new URLSearchParams(location.search).get('q')?.toLowerCase() || '';
+    if (term && !`${p.title} ${p.category} ${p.providerName}`.toLowerCase().includes(term)) return false;
+    const categoryMatch = activeFilter === 'All' || (p.category || '').includes(activeFilter);
     if (!categoryMatch) return false;
 
     if (minRating > 0 && (p.rating || 0) < minRating) return false;
@@ -500,13 +503,13 @@ export default function FindServices() {
                   <p className="provider-card__category">{provider.providerName || provider.category}</p>
                   <div className="provider-card__rating">
                     <Star fill="#F59E0B" color="#F59E0B" size={12} />
-                    <span className="provider-card__rating-value">{provider.rating ? parseFloat(provider.rating).toFixed(1) : '4.5'}</span>
+                    <span className="provider-card__rating-value">{provider.rating ? parseFloat(provider.rating).toFixed(1) : 'New'}</span>
                     <span className="provider-card__rating-count">({provider.reviewsCount || 0})</span>
                   </div>
                 </div>
                 <div className="provider-card__distance">
                   <MapPin size={10} color="#149114" />
-                  {provider.distance || '2.4 km'}
+                  {provider.distance || 'Distance unavailable'}
                 </div>
               </div>
             ))
@@ -570,19 +573,19 @@ export default function FindServices() {
                           <div style={{ 
                             position: 'absolute', bottom: 60, left: '50%', transform: 'translateX(-50%)',
                             display: 'flex', flexDirection: 'column', alignItems: 'flex-start', padding: 16,
-                            width: 320, background: '#FFFFFF', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08), 0px 16px 40px rgba(0, 0, 0, 0.12)',
+                            width: 320, background: 'var(--cc-bg-surface)', boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.08), 0px 16px 40px rgba(0, 0, 0, 0.12)',
                             borderRadius: 16, cursor: 'default', zIndex: 100
                           }}
                           onClick={(e) => e.stopPropagation()}
                           >
                             <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%', marginBottom: 12 }}>
-                              <button style={{ width: 28, height: 28, border: '0.8px solid #F3F4F6', borderRadius: '50%', background: '#FFFFFF', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setActiveProviderId(null); }}>
+                              <button style={{ width: 28, height: 28, border: '0.8px solid #F3F4F6', borderRadius: '50%', background: 'var(--cc-bg-surface)', display: 'flex', justifyContent: 'center', alignItems: 'center', cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); setActiveProviderId(null); }}>
                                 <X size={13} color="#6B7280" />
                               </button>
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'row', gap: 12, marginBottom: 12 }}>
-                              <div style={{ width: 48, height: 48, borderRadius: '50%', background: provider.color || '#7C3AED', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: provider.imageUrl ? `url(${provider.imageUrl})` : 'none', backgroundSize: 'cover', position: 'relative', color: '#FFF', fontWeight: 700, fontSize: 16 }}>
+                              <div style={{ width: 48, height: 48, borderRadius: '50%', background: provider.color || '#7C3AED', display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: provider.imageUrl ? `url(${provider.imageUrl})` : 'none', backgroundSize: 'cover', position: 'relative', color: 'var(--cc-text-on-primary)', fontWeight: 700, fontSize: 16 }}>
                                 {provider.verified && (
                                   <div style={{ position: 'absolute', right: -4, bottom: -4, width: 16, height: 16, background: '#1ABA1A', border: '2px solid #FFFFFF', borderRadius: '50%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                                     <Check size={10} color="white" strokeWidth={3} />
@@ -600,25 +603,25 @@ export default function FindServices() {
                             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
                               <div style={{ display: 'flex', gap: 2 }}>
                                 {[1, 2, 3, 4, 5].map((_, i) => (
-                                  <Star key={i} size={13} fill={i < Math.round(provider.rating || 4.5) ? '#F59E0B' : '#E5E7EB'} color={i < Math.round(provider.rating || 4.5) ? '#F59E0B' : '#E5E7EB'} />
+                                  <Star key={i} size={13} fill={i < Math.round(provider.rating || 0) ? '#F59E0B' : '#E5E7EB'} color={i < Math.round(provider.rating || 0) ? '#F59E0B' : '#E5E7EB'} />
                                 ))}
                               </div>
-                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#1E2939' }}>{provider.rating ? parseFloat(provider.rating).toFixed(1) : '4.5'}</span>
+                              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 14, color: '#1E2939' }}>{provider.rating ? parseFloat(provider.rating).toFixed(1) : 'New'}</span>
                               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#99A1AF' }}>({provider.reviewsCount || 0} reviews)</span>
                             </div>
                             
                             <div style={{ display: 'flex', flexDirection: 'row', gap: 8, marginBottom: 14 }}>
                               <div style={{ display: 'flex', alignItems: 'center', padding: '4px 10px', gap: 4, background: '#E8FBE8', borderRadius: 20 }}>
                                 <MapPin size={10} color="#149114" />
-                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, color: '#149114' }}>{provider.distance || '2.4 km'} away</span>
+                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 600, fontSize: 12, color: '#149114' }}>{provider.distance || 'Distance unavailable'} away</span>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                 <MapPin size={11} color="#9CA3AF" />
-                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.locationName || 'Colombo'}</span>
+                                <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 400, fontSize: 12, color: '#6A7282' }}>{provider.locationName || provider.location || 'Ask provider'}</span>
                               </div>
                             </div>
                             
-                            <div style={{ width: '100%', height: 1, background: '#F3F4F6', marginBottom: 14 }} />
+                            <div style={{ width: '100%', height: 1, background: 'var(--cc-bg-muted)', marginBottom: 14 }} />
                             
                             <div style={{ marginBottom: 14, display: 'flex', alignItems: 'baseline', width: '100%' }}>
                               <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, fontSize: 12, color: '#99A1AF', marginRight: 8 }}>Starting from</span>
@@ -628,14 +631,14 @@ export default function FindServices() {
                             
                             <div style={{ display: 'flex', gap: 10, width: '100%' }}>
                               <button 
-                                style={{ flex: 1, height: 42, background: '#FFFFFF', border: '0.8px solid #E5E7EB', borderRadius: 24, fontWeight: 600, fontSize: 14, color: '#1E2939', cursor: 'pointer' }}
-                                onClick={(e) => { e.stopPropagation(); navigate(`/providers/${provider.id}`); }}
+                                style={{ flex: 1, height: 42, background: 'var(--cc-bg-surface)', border: '0.8px solid #E5E7EB', borderRadius: 24, fontWeight: 600, fontSize: 14, color: '#1E2939', cursor: 'pointer' }}
+                                onClick={(e) => { e.stopPropagation(); navigate(`/providers/${provider.providerId}`); }}
                               >
                                 View Profile
                               </button>
                               <button 
-                                style={{ flex: 1, height: 42, background: '#1ABA1A', border: 'none', borderRadius: 24, fontWeight: 700, fontSize: 14, color: '#FFFFFF', cursor: 'pointer' }}
-                                onClick={(e) => { e.stopPropagation(); navigate(`/booking/create/${provider.id}`); }}
+                                style={{ flex: 1, height: 42, background: '#1ABA1A', border: 'none', borderRadius: 24, fontWeight: 700, fontSize: 14, color: 'var(--cc-text-on-primary)', cursor: 'pointer' }}
+                                onClick={(e) => { e.stopPropagation(); navigate(`/booking/create?serviceId=${encodeURIComponent(provider.id)}`); }}
                               >
                                 Book Now
                               </button>

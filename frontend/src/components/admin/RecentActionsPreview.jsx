@@ -69,12 +69,7 @@ export default function RecentActionsPreview({ loading, source, data, error }) {
         ))}
       </ul>
 
-      {source === "fallback" ? (
-        <p className={styles.footnote} role="status">
-          Showing sample actions — the audit log service is unavailable
-          {error ? ` (${error})` : ""}.
-        </p>
-      ) : null}
+
     </div>
   );
 }

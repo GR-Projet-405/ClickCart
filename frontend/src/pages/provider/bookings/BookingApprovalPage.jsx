@@ -9,9 +9,10 @@ import PageContainer from "../../../components/common/PageContainer";
 import { API_BASE_URL } from "../../../config/api";
 import "./BookingApprovalPage.css";
 
-const PROVIDER_ID = "provider-1";
+import { authFetch } from "../../../services/authService";
 
 function toAmPm(value) {
+  if (!value) return "";
   const [hourText, minute] = value.split(":");
   let hour = Number(hourText);
   const suffix = hour >= 12 ? "PM" : "AM";
@@ -77,9 +78,9 @@ export default function BookingApprovalPage() {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(
+        const response = await authFetch(
           `${API_BASE_URL}/provider/bookings?sort=${sort}`,
-          { headers: { "X-Provider-Id": PROVIDER_ID } },
+          { headers: {  } },
         );
         if (!response.ok) {
           throw new Error("Pending requests could not be loaded.");
@@ -120,11 +121,11 @@ export default function BookingApprovalPage() {
     setError("");
     try {
       const action = nextStatus === "ACCEPTED" ? "approve" : "reject";
-      const response = await fetch(
+      const response = await authFetch(
         `${API_BASE_URL}/v1/bookings/${requestId}/${action}`,
         {
           method: "PATCH",
-          headers: { "X-Provider-Id": PROVIDER_ID },
+          headers: {  },
         },
       );
       if (!response.ok) {

@@ -62,3 +62,36 @@
   --cc-breakpoint-mobile: 40rem;
   --cc-breakpoint-desktop: 64rem;
 }
+
+:root[data-theme="dark"] {
+ color-scheme:dark;
+ --cc-bg-app:#0b0b0c;--cc-bg-surface:#171719;--cc-bg-muted:#222225;
+ --cc-text-primary:#f4f4f5;--cc-text-secondary:#d4d4d8;--cc-text-muted:#a1a1aa;
+ --cc-border:#424247;--cc-border-soft:#303034;
+ --cc-primary:#31d64c;--cc-primary-hover:#24bf3d;--cc-primary-dark:#65e879;
+ --cc-primary-soft:#29292d;--cc-primary-softer:#202023;--cc-primary-border-soft:#45454a;
+ --cc-success-text:#72e7a8;--cc-success-soft:#183d2a;--cc-warning-text:#ffd182;--cc-warning-soft:#3d3018;
+ --cc-error-text:#ffa69f;--cc-error-soft:#402322;--cc-info-text:#9dcaff;--cc-info-soft:#1c3048;
+ --cc-overlay:rgb(0 0 0 / 65%);--cc-shadow-md:0 5px 20px rgb(0 0 0 / 24%);
+}
+html{color-scheme:light}body{background:var(--cc-bg-app);color:var(--cc-text-primary)}
+
+/* Legacy components share the same surfaces and typography as the current UI. */
+:root {
+ --cc-surface:var(--cc-bg-surface);--cc-danger:var(--cc-error-text);
+ --cc-color-bg-surface:var(--cc-bg-surface);--cc-color-bg-subtle:var(--cc-bg-muted);
+ --cc-color-border-subtle:var(--cc-border-soft);--cc-color-primary:var(--cc-primary);
+ --cc-color-text-primary:var(--cc-text-primary);--cc-color-text-secondary:var(--cc-text-secondary);--cc-color-text-muted:var(--cc-text-muted);
+ --bg-primary:var(--cc-bg-surface);--bg-secondary:var(--cc-bg-muted);--bg-tertiary:var(--cc-bg-app);
+ --text-primary:var(--cc-text-primary);--text-secondary:var(--cc-text-secondary);--text-muted:var(--cc-text-muted);
+ --border-color:var(--cc-border);--primary-color:var(--cc-primary);--primary-light:var(--cc-primary-soft);
+}
+:root[data-theme="dark"] {--cc-primary-dark:#e4e4e7;}
+:root[data-theme="dark"] select,:root[data-theme="dark"] option,:root[data-theme="dark"] optgroup {
+ background-color:var(--cc-bg-surface);color:var(--cc-text-primary);
+}
+:root[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=submit]),:root[data-theme="dark"] textarea {
+ color:var(--cc-text-primary);background-color:var(--cc-bg-surface);border-color:var(--cc-border);
+}
+:root[data-theme="dark"] input::placeholder,:root[data-theme="dark"] textarea::placeholder {color:var(--cc-text-muted);opacity:1}
+:root[data-theme="dark"] .cc-sidebar-item,:root[data-theme="dark"] .filter-chip {color:var(--cc-text-primary)}

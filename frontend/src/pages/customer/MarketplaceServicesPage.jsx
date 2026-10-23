@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, ArrowRight, Search, Wrench, X, MapPin } from "lucide-react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Button from "../../components/common/Button";
 import EmptyState from "../../components/common/EmptyState";
 import Spinner from "../../components/common/Spinner";
@@ -43,6 +43,7 @@ function ServiceArtwork({ service }) {
 }
 
 function ServiceDetails({ service, onClose }) {
+  const navigate = useNavigate();
   return (
     <div
       className="marketplace-service-overlay"
@@ -69,6 +70,12 @@ function ServiceDetails({ service, onClose }) {
             {formatPrice(service)}
             {service.priceUnit && <small> {service.priceUnit}</small>}
           </strong>
+          <div style={{ marginTop: 24 }}>
+            <Button onClick={() => navigate(`/booking/create?serviceId=${encodeURIComponent(service.id)}`)} rightIcon={<ArrowRight size={18} />}>
+              Book Now
+            </Button>
+            <p>Choose your date, time and address next. Pay cash after the service.</p>
+          </div>
         </div>
       </section>
     </div>

@@ -1,3 +1,4 @@
+import { confirmAction } from "../../context/FeedbackHost";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   AlertCircle,
@@ -350,7 +351,7 @@ export default function CustomerRefunds() {
   };
 
   const handleCancel = async (refund) => {
-    if (!window.confirm(`Cancel refund ${refund.refundId}?`)) return;
+    if (!await confirmAction(`Cancel refund ${refund.refundId}?`)) return;
     setCancellingId(refund.id);
     try {
       await cancelRefund(refund.id);

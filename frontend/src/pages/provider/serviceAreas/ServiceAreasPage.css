@@ -149,7 +149,7 @@
   padding: 0 0.5rem;
   border-radius: var(--cc-radius-md);
   border: 1px solid var(--cc-border);
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   color: var(--cc-text-secondary);
   font-size: var(--cc-text-caption-size);
   font-weight: 600;

@@ -17,12 +17,6 @@ import com.clickcart.service.ReviewService;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(
-        originPatterns = {
-                "http://localhost:*",
-                "http://127.0.0.1:*"
-        }
-)
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewSubmissionController {
@@ -40,11 +34,13 @@ public class ReviewSubmissionController {
 
     @PostMapping
     public ResponseEntity<ReviewResponse> createReview(
-            @RequestHeader("X-Customer-Id")
+            @RequestHeader(value = "X-Customer-Id", required = false)
             String customerId,
             @Valid @RequestBody
             CreateReviewRequest request
     ) {
+
+        customerId = com.clickcart.security.CurrentCustomer.id();
 
         ReviewEligibilityResponse eligibility =
                 eligibilityGateway.requireEligibleBooking(
@@ -60,6 +56,7 @@ public class ReviewSubmissionController {
             );
         }
 
+        request.setBookingId(eligibility.getBookingId());
         ReviewResponse createdReview =
                 reviewService.createVerifiedReview(
                         request,

@@ -31,4 +31,12 @@ public class CloudinaryService {
                 ? uploadResult.get("secure_url").toString() 
                 : uploadResult.get("url").toString();
     }
+
+    public String uploadMedia(MultipartFile file) throws IOException {
+        Map<?, ?> result = cloudinary.uploader().upload(file.getBytes(),
+            ObjectUtils.asMap("folder", "provider_service_media", "resource_type", "auto"));
+        Object url = result.get("secure_url");
+        if (url == null) throw new IOException("Media upload did not return a URL");
+        return url.toString();
+    }
 }

@@ -1,3 +1,4 @@
+import { notify, confirmAction } from "../context/FeedbackHost";
 import React, { useState, useEffect } from 'react';
 import categoryService from '../services/categoryService';
 import CategoryTable from '../components/categories/admin/CategoryTable';
@@ -43,9 +44,9 @@ const AdminCategoryDashboard = () => {
   };
 
   const handleDelete = async (category) => {
-    if (window.confirm(`Are you sure you want to delete ${category.name}?`)) {
+    if (await confirmAction(`Are you sure you want to delete ${category.name}?`)) {
       if (!category.id) {
-        alert("Cannot delete a category without an ID. Please refresh the page.");
+        notify("Cannot delete a category without an ID. Please refresh the page.");
         return;
       }
       try {
@@ -53,14 +54,14 @@ const AdminCategoryDashboard = () => {
         setCategories(prev => prev.filter(c => c.id !== category.id));
       } catch (error) {
         console.error('Error deleting category:', error);
-        alert('Failed to delete category.');
+        notify('Failed to delete category.');
       }
     }
   };
 
   const handleToggleStatus = async (category) => {
     if (!category.id) {
-      alert("Cannot toggle a category without an ID. Please refresh the page.");
+      notify("Cannot toggle a category without an ID. Please refresh the page.");
       return;
     }
     const newStatus = category.active === false ? true : false;
@@ -74,7 +75,7 @@ const AdminCategoryDashboard = () => {
       await categoryService.toggleCategoryStatus(category.id, newStatus);
     } catch (error) {
       console.error('Error toggling status:', error);
-      alert('Failed to toggle status.');
+      notify('Failed to toggle status.');
       // Revert on failure
       setCategories(prev => prev.map(c => 
         c.id === category.id ? { ...c, active: !newStatus } : c
@@ -97,7 +98,7 @@ const AdminCategoryDashboard = () => {
       }
     } catch (error) {
       console.error('Error saving category:', error);
-      alert('Failed to save category.');
+      notify('Failed to save category.');
     } finally {
       setIsSlideOutOpen(false);
       setEditingCategory(null);

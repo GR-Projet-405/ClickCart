@@ -1,3 +1,6 @@
+import VerificationStatus from "../../components/provider/VerificationStatus";
+import { useProvider } from "../../context/ProviderContext";
+import Avatar from "../../components/common/Avatar";
 import { useEffect, useId, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -50,6 +53,7 @@ function getSmoothCurvePath(points) {
 }
 
 export default function ProviderDashboard() {
+  const { verification } = useProvider();
   const [dashboardData, setDashboardData] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,6 +154,7 @@ export default function ProviderDashboard() {
   return (
     <div className="cc-provider-dashboard">
       <h1 className="cc-dashboard-title">Dashboard</h1>
+      <VerificationStatus />
 
       {/* Welcome Card */}
       <section className="cc-welcome-card" aria-label="Welcome and profile status">
@@ -159,27 +164,19 @@ export default function ProviderDashboard() {
         </div>
 
         <div className="cc-welcome-card__profile">
-          <img
-            src={provider.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(provider.name)}&background=random`}
-            alt={provider.name}
-            className="cc-profile-avatar"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "https://ui-avatars.com/api/?name=Provider";
-            }}
-          />
+          <Avatar src={provider.avatar || undefined} fallback={provider.name?.split(/\s+/).map(part => part[0]).slice(0, 2).join("").toUpperCase()} size="lg" />
           <div className="cc-profile-meta">
             <div className="cc-profile-progress-header">
               <span>
                 Profile • <strong>{provider.profileCompletion}% complete</strong>
               </span>
-              <button
+              <Link to="/provider/profile/edit"
                 className="cc-arrow-btn"
                 type="button"
                 aria-label="View profile completeness details"
               >
                 <ChevronRight size={18} />
-              </button>
+              </Link>
             </div>
             <div
               className="cc-profile-bar-track"
@@ -194,13 +191,13 @@ export default function ProviderDashboard() {
               />
             </div>
             <div className="cc-profile-actions">
-              <span className="cc-verified-badge">
+              {verification?.status === "APPROVED" && <span className="cc-verified-badge">
                 <CheckCircle2 size={16} fill="#10b926" color="#ffffff" />
                 Verified Provider
-              </span>
-              <Link to="/provider/profile" style={{ textDecoration: "none" }}>
+              </span>}
+              <Link to={provider.profileCompletion === 100 ? "/provider/profile" : "/provider/profile/edit"} style={{ textDecoration: "none" }}>
                 <button className="cc-complete-btn" type="button">
-                  Complete Profile
+                  {provider.profileCompletion === 100 ? "View Profile" : "Complete Profile"}
                 </button>
               </Link>
             </div>

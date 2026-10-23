@@ -25,6 +25,8 @@ export function statusLabel(status) {
 
 export function paymentLabel(hold) {
   switch (hold) {
+    case "CASH_DUE": return "Cash due";
+    case "CASH_RECEIVED": return "Cash received";
     case "ESCROW":
       return "Escrow Held";
     case "CASH_ON_DELIVERY":

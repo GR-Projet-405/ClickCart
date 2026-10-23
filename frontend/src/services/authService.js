@@ -12,6 +12,9 @@ import { API_BASE_URL } from "../config/api";
 const AUTH_URL = `${API_BASE_URL.replace(/\/$/, "")}/auth`;
 
 let accessToken = null;
+let sessionUser = null;
+
+export function getSessionUser() { return sessionUser; }
 let refreshInFlight = null;
 const sessionListeners = new Set();
 
@@ -60,6 +63,7 @@ async function request(path, { method = "GET", body, signal, auth = false } = {}
 function setSession(session) {
   accessToken = session?.accessToken ?? null;
   const user = session?.user ?? null;
+  sessionUser = user;
   sessionListeners.forEach((listener) => listener(user));
 }
 
@@ -76,8 +80,8 @@ export function onSessionChange(listener) {
   return () => sessionListeners.delete(listener);
 }
 
-export async function login({ email, password, rememberMe }) {
-  const session = await request("/login", {
+export async function login({ email, password, rememberMe, adminPortal = false }) {
+  const session = await request(adminPortal ? "/admin/login" : "/login", {
     method: "POST",
     body: { email: email.trim(), password, rememberMe: Boolean(rememberMe) },
   });
@@ -170,4 +174,9 @@ export async function authFetch(url, options = {}) {
     }
   }
   return response;
+}
+
+export async function changePassword(details) {
+  await request("/change-password", { method: "POST", auth: true, body: details });
+  setSession(null);
 }

@@ -1,9 +1,9 @@
 .pageContainer {
-  background-color: #f9fafb;
+  background-color: var(--cc-bg-muted);
   min-height: 100vh;
   padding: 40px 20px;
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  color: #111827;
+  color: var(--cc-text-primary);
 }
 
 .contentWrapper {
@@ -19,7 +19,7 @@
 }
 
 .breadcrumbItem {
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -46,14 +46,14 @@
 .pageTitle {
   font-size: 2.25rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin: 0 0 12px 0;
   letter-spacing: -0.02em;
 }
 
 .pageSubtitle {
   font-size: 1.125rem;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   margin: 0;
 }
 
@@ -69,7 +69,7 @@
 }
 
 .subcategoriesSection {
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   border-radius: 16px;
   padding: 32px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
@@ -100,7 +100,7 @@
 .subcategoriesTitle {
   font-size: 1.25rem;
   font-weight: 700;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin: 0;
 }
 
@@ -120,11 +120,11 @@
   width: 100%;
   padding: 32px;
   text-align: center;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   font-size: 0.95rem;
-  background-color: #f9fafb;
+  background-color: var(--cc-bg-muted);
   border-radius: 8px;
-  border: 1px dashed #e5e7eb;
+  border: 1px dashed var(--cc-border);
 }
 
 .loadingContainer {
@@ -137,7 +137,7 @@
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid #e5e7eb;
+  border: 3px solid var(--cc-border);
   border-top-color: #00B341;
   border-radius: 50%;
   animation: spin 1s linear infinite;

@@ -15,13 +15,13 @@
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  background: #ffffff;
+  background: var(--cc-bg-surface);
 }
 
 .sidebar-header {
   padding: 1.5rem;
   border-bottom: 1px solid var(--border-color);
-  background: #ffffff;
+  background: var(--cc-bg-surface);
 }
 
 .header-title-row {
@@ -123,14 +123,14 @@
   flex: 1;
   overflow-y: auto;
   padding: 0.5rem;
-  background: #fafafa;
+  background: var(--cc-bg-muted);
 }
 
 .chat-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: #fdfdfd;
+  background: var(--cc-bg-surface);
 }
 
 .empty-chat-area {
@@ -210,11 +210,11 @@
 }
 
 .conversation-item:hover {
-  background: #f1f5f9;
+  background: var(--cc-bg-muted);
 }
 
 .conversation-item.active {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border-color: var(--primary-color, #00897b);
   box-shadow: var(--shadow-sm);
 }
@@ -309,7 +309,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  background: #f1f5f9;
+  background: var(--cc-bg-muted);
   padding: 0.2rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;

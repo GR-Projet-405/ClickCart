@@ -1,15 +1,7 @@
-# Customer layout usage
+# Customer layout
 
-Customer-facing feature pages should be registered as child routes of `CustomerLayout` in `frontend/src/routes/AppRoutes.jsx`.
+`CustomerLayout` supplies the shared navigation and page shell for customer pages. Feature content renders through the layout outlet.
 
-Each feature page supplies only its main content. Developers must not recreate `CustomerTopBar`, `CustomerHeader`, or `CustomerFooter`; `CustomerLayout` provides them automatically around the router outlet.
+Routes are defined in `frontend/src/routes/CustomerRoutes.jsx` and mounted by `AppRoutes.jsx`. Pages reuse the shared layout rather than rendering duplicate headers, sidebars or footers.
 
-```jsx
-<Route element={<CustomerLayout />}>
-  <Route path="example" element={<ExampleCustomerPage />} />
-</Route>
-```
-
-Use `PageContainer` inside a feature page for standard centered content. A page may omit it when a future design intentionally requires a full-width section.
-
-The shared UI foundation showcase remains available at `/dev/ui-foundation` for development verification.
+Account access follows the route guards. Provider work routes additionally require approved verification; profile, verification and account settings remain accessible during onboarding. Administrator authentication uses `/admin/login`.

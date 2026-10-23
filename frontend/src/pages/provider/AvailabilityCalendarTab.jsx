@@ -7,7 +7,7 @@ import Badge from "../../components/common/Badge";
 import Spinner from "../../components/common/Spinner";
 import useBlockedDates from "../../hooks/useBlockedDates";
 import { getAvailabilitySlots } from "../../services/availabilityService";
-import { CURRENT_PROVIDER_ID } from "../../config/provider";
+import { getCurrentProviderId } from "../../config/provider";
 import "./AvailabilityCalendarTab.css";
 
 const MONTHS_FULL = [
@@ -91,7 +91,7 @@ export default function AvailabilityCalendarTab() {
       setSlotsError(null);
       try {
         const data = await getAvailabilitySlots(
-          CURRENT_PROVIDER_ID,
+          getCurrentProviderId(),
           startDate,
           endDate
         );

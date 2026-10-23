@@ -1,14 +1,10 @@
 import {
-  BarChart3,
   CalendarCheck,
   CircleDollarSign,
-  Flag,
   FolderTree,
   Home,
-  Megaphone,
   Percent,
   Settings,
-  ShieldAlert,
   UserRoundCheck,
   Users,
 } from "lucide-react";
@@ -20,10 +16,6 @@ export const adminNavigation = [
   { label: "Bookings",            path: "/admin/bookings",         icon: CalendarCheck   },
   { label: "Transactions",        path: "/admin/transactions",     icon: CircleDollarSign},
   { label: "Commission Mgmt",     path: "/commission_management",  icon: Percent         },
-  { label: "Disputes & Support",  path: "/admin/disputes",         icon: ShieldAlert     },
-  { label: "Content Moderation",  path: "/admin/moderation",       icon: Flag            },
   { label: "Service Categories",  path: "/admin/categories",       icon: FolderTree      },
-  { label: "Marketing",           path: "/admin/marketing",        icon: Megaphone       },
-  { label: "Reports & Analytics", path: "/admin/reports",          icon: BarChart3       },
-  { label: "System Settings",     path: "/admin/settings",         icon: Settings        },
+  { label: "My Profile", path: "/admin/profile", icon: Settings },
 ];

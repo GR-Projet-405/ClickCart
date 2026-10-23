@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
  * </ul>
  */
 @RestController
-@CrossOrigin(origins = "*")
 public class SettlementController {
 
     private final SettlementService settlementService;
@@ -58,7 +57,6 @@ public class SettlementController {
     public ResponseEntity<SettlementRow> createSettlement(
             @Valid @RequestBody SettlementCreateRequest request
     ) {
-        SettlementRow created = settlementService.createSettlement(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        throw new com.clickcart.exception.ForbiddenException("Settlement records are generated from payout requests and finance processing");
     }
 }

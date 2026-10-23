@@ -1,3 +1,5 @@
+import { useAuth } from "../../../context/AuthContext";
+import { messagingService } from "../../../services/messagingService";
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
@@ -24,13 +26,17 @@ import {
 import { getPublicProviderProfile, EMPTY_PROFILE } from "../../../services/providerProfileService";
 import { providerServicesApi } from "../../../services/providerServices";
 import { fetchProviderReviews, fetchProviderRatingSummary } from "../../../services/reviewService";
-import { fetchServiceAreas } from "../../../services/serviceAreaApi";
+import { fetchPublicServiceAreas } from "../../../services/serviceAreaApi";
 import Spinner from "../../../components/common/Spinner";
 import "./PublicProviderProfile.css";
 
 export default function PublicProviderProfile() {
   const { providerId } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [profileError, setProfileError] = useState("");
+  const [messageError, setMessageError] = useState("");
+  const [startingChat, setStartingChat] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   // Core Provider Profile State
@@ -60,10 +66,11 @@ export default function PublicProviderProfile() {
     async function loadProfile() {
       try {
         setProfileLoading(true);
+        setProfileError("");
         const data = await getPublicProviderProfile(providerId);
         setProfileData(data);
       } catch (err) {
-        console.error("Error loading public profile:", err);
+        setProfileError("This provider profile is not available yet.");
       } finally {
         setProfileLoading(false);
       }
@@ -74,7 +81,7 @@ export default function PublicProviderProfile() {
       try {
         setServicesLoading(true);
         setServicesError(null);
-        const response = await providerServicesApi.list(providerId);
+        const response = await providerServicesApi.listPublic(providerId);
         const list = Array.isArray(response) ? response : response?.content || [];
         setServicesList(list);
       } catch (err) {
@@ -121,11 +128,11 @@ export default function PublicProviderProfile() {
       try {
         setServiceAreasLoading(true);
         setServiceAreasError(null);
-        const data = await fetchServiceAreas({ size: 50 });
+        const data = await fetchPublicServiceAreas(providerId);
         const list = Array.isArray(data) ? data : data?.content || [];
         // Filter by providerId if attribute present in service area response
         const filtered = list.filter((item) => !item.providerId || item.providerId === providerId);
-        setServiceAreasList(filtered.length > 0 ? filtered : list);
+        setServiceAreasList(filtered);
       } catch (err) {
         console.error("Error loading service areas:", err);
         setServiceAreasError("Unable to load detailed coverage areas.");
@@ -152,11 +159,19 @@ export default function PublicProviderProfile() {
     "No bio description provided yet for this service provider.";
 
   const handleBookService = (serviceName) => {
-    alert(`Initiating booking for ${serviceName || "service"} with ${name}`);
+    setActiveTab("overview");
+    document.querySelector(".services-grid")?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleMessageProvider = () => {
-    alert(`Opening chat with ${name}`);
+  const handleMessageProvider = async (serviceId) => {
+    if (!user) { navigate("/login", { state: { from: { pathname: `/providers/${providerId}` } } }); return; }
+    if (user.role !== "CUSTOMER") { navigate("/provider/profile"); return; }
+    setStartingChat(true); setMessageError("");
+    try {
+      const conversation = await messagingService.createOrFindConversation(providerId, { serviceId });
+      navigate(`/messages/${conversation.id}`);
+    } catch (error) { setMessageError(error.message); }
+    finally { setStartingChat(false); }
   };
 
   // Derived rating numbers from real summary API
@@ -181,14 +196,16 @@ export default function PublicProviderProfile() {
     );
   }
 
+  if (profileError) return <div className="public-profile-root" role="alert"><p>{profileError}</p></div>;
   return (
     <div className="public-profile-root">
+      {messageError && <p role="alert">{messageError}</p>}
       {/* 1. HERO COVER & HEADER SECTION */}
       <div className="profile-hero-wrapper">
         <div className="profile-cover-banner">
           <div className="cover-pattern-overlay" />
           <div className="cover-badge-top">
-            <Sparkles size={14} /> ClickCart Verified Professional
+            <Sparkles size={14} /> ClickCart Service Provider
           </div>
         </div>
 
@@ -205,17 +222,15 @@ export default function PublicProviderProfile() {
                 <User size={44} />
               </div>
             )}
-            <span className="online-indicator" title="Available for bookings" />
+
           </div>
 
           <div className="hero-info-column">
             <div className="hero-title-row">
               <h1 className="hero-name">{name}</h1>
-              <span className="verified-chip">
-                <CheckCircle2 size={15} /> Verified
-              </span>
+
               <span className="type-chip">
-                {isIndividual ? "Individual Provider" : "Registered Business"}
+                {isIndividual ? "Individual Provider" : "Business Provider"}
               </span>
             </div>
 
@@ -280,11 +295,11 @@ export default function PublicProviderProfile() {
               onClick={() => handleBookService("Featured Service")}
             >
               <Zap size={18} />
-              <span>Book Service</span>
+              <span>View Services</span>
             </button>
             <button
               className="pub-btn pub-btn--secondary"
-              onClick={handleMessageProvider}
+              onClick={() => handleMessageProvider()} disabled={startingChat}
             >
               <MessageSquare size={18} />
               <span>Message Provider</span>
@@ -333,24 +348,24 @@ export default function PublicProviderProfile() {
                 <div className="highlight-pill">
                   <ShieldCheck size={18} className="pill-icon" />
                   <div>
-                    <span className="pill-title">Background Checked</span>
-                    <span className="pill-desc">Identity &amp; credentials verified</span>
+                    <span className="pill-title">Provider Details</span>
+                    <span className="pill-desc">View provider details</span>
                   </div>
                 </div>
 
                 <div className="highlight-pill">
                   <Clock size={18} className="pill-icon" />
                   <div>
-                    <span className="pill-title">Punctual &amp; Reliable</span>
-                    <span className="pill-desc">Guaranteed on-time arrival</span>
+                    <span className="pill-title">Service Coverage</span>
+                    <span className="pill-desc">See the areas served below</span>
                   </div>
                 </div>
 
                 <div className="highlight-pill">
                   <Award size={18} className="pill-icon" />
                   <div>
-                    <span className="pill-title">Quality Assured</span>
-                    <span className="pill-desc">100% Satisfaction guarantee</span>
+                    <span className="pill-title">Customer Reviews</span>
+                    <span className="pill-desc">Read customer feedback</span>
                   </div>
                 </div>
               </div>
@@ -408,9 +423,9 @@ export default function PublicProviderProfile() {
 
                           <button
                             className="service-book-btn"
-                            onClick={() => handleBookService(srv.title)}
+                            onClick={() => handleMessageProvider(srv.id)} disabled={startingChat}
                           >
-                            <span>Book Now</span>
+                            <span>Enquire</span>
                             <ChevronRight size={16} />
                           </button>
                         </div>
@@ -519,7 +534,7 @@ export default function PublicProviderProfile() {
 
                             <p className="review-comment">{rev.content || "No review comment."}</p>
                             {rev.providerResponse && (
-                              <div style={{ marginTop: 12, padding: 10, backgroundColor: "#f8fafc", borderRadius: 6, fontSize: "0.85rem", borderLeft: "3px solid var(--cc-primary)" }}>
+                              <div style={{ marginTop: 12, padding: 10, backgroundColor: "var(--cc-bg-muted)", borderRadius: 6, fontSize: "0.85rem", borderLeft: "3px solid var(--cc-primary)" }}>
                                 <strong>Provider Response:</strong> {rev.providerResponse}
                               </div>
                             )}

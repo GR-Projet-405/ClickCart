@@ -19,12 +19,6 @@ import com.clickcart.service.ReviewService;
 
 import jakarta.validation.Valid;
 
-@CrossOrigin(
-        originPatterns = {
-                "http://localhost:*",
-                "http://127.0.0.1:*"
-        }
-)
 @RestController
 @RequestMapping("/api/reviews")
 public class ReviewController {
@@ -77,7 +71,7 @@ public class ReviewController {
             @PathVariable String customerId
     ) {
         return ResponseEntity.ok(
-                reviewService.getCustomerReviews(customerId)
+                reviewService.getCustomerReviews(com.clickcart.security.CurrentCustomer.id())
         );
     }
 
@@ -102,13 +96,13 @@ public class ReviewController {
     @PostMapping("/{reviewId}/response")
     public ResponseEntity<ReviewResponse> addProviderResponse(
             @PathVariable String reviewId,
-            @RequestHeader("X-Provider-Id") String providerId,
+            @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @Valid @RequestBody ProviderReplyRequest request
     ) {
         return ResponseEntity.ok(
                 reviewService.addProviderResponse(
                         reviewId,
-                        providerId,
+                        com.clickcart.security.CurrentProvider.id(),
                         request.getResponse()
                 )
         );

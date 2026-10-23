@@ -24,6 +24,13 @@ public class ProviderVerification {
     private String businessAddress;
     private String businessContactNumber;
 
+    private java.util.List<String> rejectionReasons = new java.util.ArrayList<>();
+    private String rejectionComments;
+    public java.util.List<String> getRejectionReasons() { return rejectionReasons; }
+    public void setRejectionReasons(java.util.List<String> reasons) { this.rejectionReasons = reasons; }
+    public String getRejectionComments() { return rejectionComments; }
+    public void setRejectionComments(String comments) { this.rejectionComments = comments; }
+
     private String status; 
     private Instant createdAt;
     private Instant updatedAt;

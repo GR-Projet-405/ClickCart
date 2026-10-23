@@ -1,3 +1,4 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
 const PROFILE_API_BASE_URL = `${API_BASE_URL}/provider/profile`;
@@ -19,7 +20,7 @@ export const EMPTY_PROFILE = {
 
 export async function getProviderProfile() {
   try {
-    const response = await fetch(PROFILE_API_BASE_URL);
+    const response = await authFetch(PROFILE_API_BASE_URL);
     if (!response.ok) {
       throw new Error(`Failed to fetch provider profile: ${response.status}`);
     }
@@ -27,14 +28,13 @@ export async function getProviderProfile() {
     return normalizeProfileResponse(data);
   } catch (error) {
     console.error("Error fetching provider profile from backend:", error);
-    return EMPTY_PROFILE;
+    throw error;
   }
 }
 
 export async function saveProviderProfile(profileData, id) {
   try {
-    const profileId = id || profileData.id;
-    const url = profileId ? `${PROFILE_API_BASE_URL}?id=${encodeURIComponent(profileId)}` : PROFILE_API_BASE_URL;
+    const url = PROFILE_API_BASE_URL;
 
     // Map fields for ProviderProfileRequest DTO
     const requestBody = {
@@ -49,7 +49,7 @@ export async function saveProviderProfile(profileData, id) {
       profileImage: profileData.profileImage || profileData.imagePreview || "",
     };
 
-    const response = await fetch(url, {
+    const response = await authFetch(url, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -74,7 +74,7 @@ export async function saveProviderProfile(profileData, id) {
 export async function getPublicProviderProfile(id) {
   try {
     if (!id) return getProviderProfile();
-    const response = await fetch(`${PROFILE_API_BASE_URL}/${encodeURIComponent(id)}`);
+    const response = await authFetch(`${PROFILE_API_BASE_URL}/${encodeURIComponent(id)}`);
     if (!response.ok) {
       throw new Error(`Failed to fetch public provider profile: ${response.status}`);
     }
@@ -82,7 +82,7 @@ export async function getPublicProviderProfile(id) {
     return normalizeProfileResponse(data);
   } catch (error) {
     console.error("Error fetching public provider profile:", error);
-    return EMPTY_PROFILE;
+    throw error;
   }
 }
 

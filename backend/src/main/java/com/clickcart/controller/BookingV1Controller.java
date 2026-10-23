@@ -26,7 +26,7 @@ public class BookingV1Controller {
     public ResponseEntity<BookingResponse> approve(
             @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @PathVariable String id) {
-        requireProvider(providerId);
+        providerId = com.clickcart.security.CurrentProvider.id();
         return ResponseEntity.ok(bookings.approve(id, providerId));
     }
 
@@ -34,7 +34,7 @@ public class BookingV1Controller {
     public ResponseEntity<BookingResponse> reject(
             @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @PathVariable String id) {
-        requireProvider(providerId);
+        providerId = com.clickcart.security.CurrentProvider.id();
         return ResponseEntity.ok(bookings.reject(id, providerId));
     }
 

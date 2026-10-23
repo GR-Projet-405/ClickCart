@@ -930,7 +930,7 @@
 
 .booking-timeline__item--active .booking-timeline__dot {
   border-color: var(--cc-primary);
-  background: white;
+  background: var(--cc-bg-surface);
 }
 
 .booking-timeline__item--pending .booking-timeline__dot {

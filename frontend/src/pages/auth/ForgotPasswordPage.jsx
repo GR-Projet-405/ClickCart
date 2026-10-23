@@ -35,6 +35,7 @@ export default function ForgotPasswordPage() {
   const navigate = useNavigate();
   const { status, logout } = useAuth();
 
+  const loginPath = location.state?.adminPortal ? "/admin/login" : "/login";
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState(location.state?.email || "");
   const [emailError, setEmailError] = useState("");
@@ -183,7 +184,7 @@ export default function ForgotPasswordPage() {
   return (
     <AuthLayout
       topBarLinks={
-        <Link to="/login" className="auth-topbar__keep">
+        <Link to={loginPath} className="auth-topbar__keep">
           Back to log in
         </Link>
       }
@@ -236,7 +237,7 @@ export default function ForgotPasswordPage() {
                 {submitting ? "Sending code..." : "Send code"}
               </Button>
             </form>
-            <BackToLogin email={email} />
+            <BackToLogin email={email} loginPath={loginPath} />
           </>
         )}
 
@@ -385,7 +386,7 @@ export default function ForgotPasswordPage() {
               className="auth-submit"
               size="lg"
               leftIcon={<KeyRound />}
-              onClick={() => navigate("/login", { replace: true, state: { email: email.trim() } })}
+              onClick={() => navigate(loginPath, { replace: true, state: { email: email.trim() } })}
             >
               Log in with new password
             </Button>
@@ -402,9 +403,9 @@ export default function ForgotPasswordPage() {
   );
 }
 
-function BackToLogin({ email }) {
+function BackToLogin({ email, loginPath }) {
   return (
-    <Link className="auth-text-button auth-back" to="/login" state={{ email }}>
+    <Link className="auth-text-button auth-back" to={loginPath} state={{ email }}>
       <ArrowLeft size={16} aria-hidden="true" /> Back to log in
     </Link>
   );

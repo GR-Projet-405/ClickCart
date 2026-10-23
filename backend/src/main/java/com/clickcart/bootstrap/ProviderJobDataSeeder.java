@@ -15,6 +15,7 @@ import com.clickcart.model.JobStatus;
 import com.clickcart.model.ProviderJob;
 import com.clickcart.repository.ProviderJobRepository;
 
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 public class ProviderJobDataSeeder implements CommandLineRunner {
 

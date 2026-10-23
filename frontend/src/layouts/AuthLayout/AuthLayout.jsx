@@ -1,3 +1,4 @@
+import ThemeToggle from "../../components/common/ThemeToggle";
 import React from "react";
 import { ChevronDown, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -21,7 +22,7 @@ export default function AuthLayout({ panel, panelSide = "left", topBarLinks, chi
             {/* Phone number removed as per request */}
           </div>
           <nav className="auth-topbar__links" aria-label="Utility navigation">
-            {topBarLinks}
+            {topBarLinks}<ThemeToggle />
           </nav>
         </div>
       </div>

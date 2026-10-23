@@ -1,3 +1,4 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
 function buildHeaders() {
@@ -24,7 +25,7 @@ async function handleResponse(response) {
 }
 
 export async function getBlockedDates(providerId) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/blocked-dates`,
     { headers: buildHeaders() }
   );
@@ -32,7 +33,7 @@ export async function getBlockedDates(providerId) {
 }
 
 export async function createBlockedDate(providerId, blockedDate) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/blocked-dates`,
     {
       method: "POST",
@@ -44,7 +45,7 @@ export async function createBlockedDate(providerId, blockedDate) {
 }
 
 export async function updateBlockedDate(providerId, id, blockedDate) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/blocked-dates/${id}`,
     {
       method: "PUT",
@@ -56,7 +57,7 @@ export async function updateBlockedDate(providerId, id, blockedDate) {
 }
 
 export async function deleteBlockedDate(providerId, id) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/blocked-dates/${id}`,
     {
       method: "DELETE",

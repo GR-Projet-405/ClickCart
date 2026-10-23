@@ -1,0 +1,15 @@
+clickcart:
+  security:
+    enabled: true
+  demo-data:
+    enabled: false
+logging:
+  level:
+    org.springframework.data.mongodb.core.MongoTemplate: WARN
+    org.springframework.data.mongodb.repository.query: WARN
+    com.clickcart: INFO
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never

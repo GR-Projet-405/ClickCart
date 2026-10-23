@@ -105,9 +105,6 @@ public class ServiceAreaController {
     }
 
     private String getProviderId(Principal principal) {
-        if (principal == null || principal.getName() == null) {
-            return "dev-provider-09";
-        }
-        return principal.getName();
+        return com.clickcart.security.CurrentProvider.id();
     }
 }

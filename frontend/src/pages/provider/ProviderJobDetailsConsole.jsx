@@ -1,3 +1,6 @@
+import { confirmAction } from "../../context/FeedbackHost";
+import { messagingService } from "../../services/messagingService";
+import { paymentService } from "../../services/paymentService";
 import React, { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
@@ -39,10 +42,10 @@ import {
 import "./providerJobs.css";
 
 const STEPS = [
-  { n: 1, title: "Placed & Paid", hint: "Card escrow" },
+  { n: 1, title: "Booking placed", hint: "Cash on service" },
   { n: 2, title: "Accepted by Pro", hint: "Confirmed" },
   { n: 3, title: "In Progress", hint: "Servicing & coils check" },
-  { n: 4, title: "Complete & Release", hint: "Pending sign-off" },
+  { n: 4, title: "Completed", hint: "Confirm cash received" },
 ];
 
 export default function ProviderJobDetailsConsole() {
@@ -240,7 +243,8 @@ export default function ProviderJobDetailsConsole() {
               Call Client
             </Button>
           ) : null}
-          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />} onClick={() => navigate("/provider/messages")}>
+          {job.status === "COMPLETED" && job.paymentHold === "CASH_DUE" && <Button loading={busy === "cash"} onClick={async()=>{if(!await confirmAction("Confirm that you have received the full cash amount from this customer?"))return;setBusy("cash");setError("");try{await paymentService.confirmCash(job.bookingCode);await loadJob();}catch(e){setError(e.message);}finally{setBusy("");}}}>Confirm cash received</Button>}
+          <Button variant="outline" size="sm" leftIcon={<MessageSquare size={14} />} onClick={async()=>{setError("");try{const conversations=await messagingService.listConversations("PROVIDER",0,100);const chat=conversations.find(c=>c.bookingId===job.bookingCode);navigate(chat?`/provider/messages/${chat.id}`:"/provider/messages");}catch(e){setError(e.message);}}}>
             Chat
           </Button>
           {canStart ? (
@@ -406,7 +410,7 @@ export default function ProviderJobDetailsConsole() {
               NET PROVIDER PAYOUT
               <strong>{formatLkr(job.netPayout)}</strong>
             </div>
-            <p className="pj-muted">{paymentLabel(job.paymentHold)}. Funds follow the existing payout process after client sign-off.</p>
+            <p className="pj-muted">{paymentLabel(job.paymentHold)}. For cash bookings, collect the agreed amount after completing the service, then confirm cash received. Platform commission is settled separately.</p>
           </section>
 
           <section className="pj-side-card">

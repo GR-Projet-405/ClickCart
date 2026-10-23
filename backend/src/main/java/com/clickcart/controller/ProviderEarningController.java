@@ -27,7 +27,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/provider/earnings")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ProviderEarningController {
 
     private final ProviderEarningService earningService;
@@ -45,51 +44,11 @@ public class ProviderEarningController {
      * Enforces BE-039 (ownership check) and BE-040 (role check).
      */
     private String resolveAndValidateProviderId(String requestedProviderId, Authentication authentication) {
-        if (authentication != null && authentication.isAuthenticated()
-                && !"anonymousUser".equals(authentication.getPrincipal())) {
-
-            // 1. Enforce Role Check: Customers are strictly forbidden from accessing provider earnings
-            boolean hasCustomerRole = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_CUSTOMER")
-                            || a.getAuthority().equalsIgnoreCase("CUSTOMER"));
-            if (hasCustomerRole) {
-                throw new ForbiddenException("Access denied: Customers are not permitted to access service provider earnings (Role: CUSTOMER)");
-            }
-
-            if (authentication.getPrincipal() instanceof AuthenticatedUser user) {
-                if (user.role() == Role.CUSTOMER) {
-                    throw new ForbiddenException("Access denied: Customers are not permitted to access service provider earnings (Role: CUSTOMER)");
-                }
-            }
-
-            boolean isAdmin = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equalsIgnoreCase("ROLE_PLATFORM_ADMIN")
-                            || a.getAuthority().equalsIgnoreCase("PLATFORM_ADMIN"));
-
-            String authenticatedProviderId = null;
-            if (authentication.getPrincipal() instanceof AuthenticatedUser user) {
-                authenticatedProviderId = user.id();
-            } else if (authentication.getPrincipal() instanceof Jwt jwt) {
-                authenticatedProviderId = jwt.getSubject();
-            } else if (authentication.getPrincipal() instanceof String principalStr) {
-                authenticatedProviderId = principalStr;
-            }
-
-            // 2. Enforce Ownership Check (BE-039): A provider cannot access another provider's earnings
-            if (!isAdmin && authenticatedProviderId != null && !authenticatedProviderId.isBlank()) {
-                if (requestedProviderId != null && !requestedProviderId.isBlank()
-                        && !requestedProviderId.equalsIgnoreCase(authenticatedProviderId)) {
-                    throw new ForbiddenException("Access denied: You do not have permission to access another provider's earnings (Requested: "
-                            + requestedProviderId + ", Authenticated: " + authenticatedProviderId + ")");
-                }
-                return authenticatedProviderId;
-            }
-        } else if (securityEnabled) {
-            // BE-040: When security is enabled, require authentication
-            throw new UnauthorizedException("Full authentication is required to access provider earnings");
+        String providerId = com.clickcart.security.CurrentProvider.id(authentication);
+        if (requestedProviderId != null && !requestedProviderId.isBlank() && !providerId.equals(requestedProviderId)) {
+            throw new ForbiddenException("You can only access your own earnings");
         }
-
-        return (requestedProviderId != null && !requestedProviderId.isBlank()) ? requestedProviderId : "provider-101";
+        return providerId;
     }
 
     /**
@@ -206,8 +165,6 @@ public class ProviderEarningController {
     public ResponseEntity<ProviderTransactionDto> recordEarning(
             @Valid @RequestBody CreateEarningRequest request,
             Authentication authentication) {
-        resolveAndValidateProviderId(request.getProviderId(), authentication);
-        ProviderTransactionDto created = earningService.recordEarning(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        throw new com.clickcart.exception.ForbiddenException("Earnings are recorded from reviewed commission transactions, not provider-entered balances");
     }
 }

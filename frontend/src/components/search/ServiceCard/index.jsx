@@ -1,9 +1,11 @@
 import { ArrowRight, MapPin, Star } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
 import Button from "../../common/Button";
 import "../search.css";
 
 export default function ServiceCard({ service, onViewService }) {
+  const navigate = useNavigate();
   const providerName = service.provider?.name || "Trusted provider";
   const businessName = service.provider?.businessName || "Local service provider";
   const priceFrom = Number(service.priceFrom ?? 0);
@@ -55,9 +57,14 @@ export default function ServiceCard({ service, onViewService }) {
 
         <div className="marketplace-service-card__price">
           <strong>From LKR {priceFrom.toLocaleString("en-LK")}</strong>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
           <Button variant="outline" size="sm" onClick={() => onViewService(service)} rightIcon={<ArrowRight size={14} />}>
             View Service
           </Button>
+          <Button size="sm" onClick={() => navigate(`/booking/create?serviceId=${encodeURIComponent(service.id)}`)}>
+            Book Now
+          </Button>
+          </div>
         </div>
       </div>
     </article>

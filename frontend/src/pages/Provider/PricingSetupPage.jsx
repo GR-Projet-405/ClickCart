@@ -1,3 +1,4 @@
+import { confirmAction } from "../../context/FeedbackHost";
 // DEV-07: Service Pricing & Packages - Enhanced UI matching Provider Services design system
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
@@ -48,17 +49,17 @@ export default function PricingSetupPage() {
     try {
       setIsLoading(true);
       const [pricingRes, packagesRes] = await Promise.all([
-        pricingService.getPricing(serviceId).catch(() => null),
-        pricingService.getPackages(serviceId).catch(() => []),
+        pricingService.getPricing(serviceId),
+        pricingService.getPackages(serviceId),
       ]);
 
       if (pricingRes) {
         setPricingModel(pricingRes.pricingModel || "FIXED");
-        setBasePrice(pricingRes.basePrice || "");
+        setBasePrice(pricingRes.basePrice ?? "");
       }
       if (packagesRes) setPackages(packagesRes);
     } catch (err) {
-      console.error("Failed to load data", err);
+      setError(err.message || "Unable to load pricing. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +132,7 @@ export default function PricingSetupPage() {
   };
 
   const handleDeletePackage = async (pkgId) => {
-    if (!window.confirm("Are you sure you want to delete this package?")) return;
+    if (!await confirmAction("Are you sure you want to delete this package?")) return;
     setIsLoading(true);
     try {
       await pricingService.deletePackage(serviceId, pkgId);

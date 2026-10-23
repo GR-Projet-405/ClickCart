@@ -14,7 +14,7 @@
   bottom: 0;
   height: 100vh;
   width: 400px;
-  background: #FFFFFF;
+  background: var(--cc-bg-surface);
   box-shadow: -4px 0px 24px rgba(0, 0, 0, 0.1);
   z-index: 1000;
   display: flex;
@@ -26,7 +26,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--cc-bg-muted);
   flex-shrink: 0;
 }
 
@@ -34,20 +34,20 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   font-size: 18px;
-  color: #101828;
+  color: var(--cc-text-primary);
   margin: 0;
 }
 
 .filter-sidebar__close {
   width: 32px;
   height: 32px;
-  border: 0.8px solid #F3F4F6;
+  border: 0.8px solid var(--cc-bg-muted);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  background: #FFFFFF;
+  background: var(--cc-bg-surface);
 }
 
 .filter-sidebar__content {
@@ -62,7 +62,7 @@
   display: flex;
   flex-direction: column;
   padding: 20px 0;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--cc-bg-muted);
 }
 
 .filter-section:last-child {
@@ -73,7 +73,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 700;
   font-size: 14px;
-  color: #101828;
+  color: var(--cc-text-primary);
   margin: 0 0 12px 0;
 }
 
@@ -107,8 +107,8 @@
   padding: 10px 12px;
   gap: 10px;
   height: 38px;
-  background: #FFFFFF;
-  border: 0.8px solid #E5E7EB;
+  background: var(--cc-bg-surface);
+  border: 0.8px solid var(--cc-border);
   border-radius: 12px;
   cursor: pointer;
 }
@@ -146,7 +146,7 @@
 .filter-slider__track {
   width: 100%;
   height: 4px;
-  background: #E5E7EB;
+  background: var(--cc-border);
   border-radius: 4px;
   position: relative;
 }
@@ -187,9 +187,9 @@
   padding: 12px;
   gap: 12px;
   height: 46px;
-  border: 0.8px solid #E5E7EB;
+  border: 0.8px solid var(--cc-border);
   border-radius: 12px;
-  background: #FFFFFF;
+  background: var(--cc-bg-surface);
   cursor: pointer;
 }
 
@@ -221,8 +221,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #FFFFFF;
-  border: 0.8px solid #E5E7EB;
+  background: var(--cc-bg-surface);
+  border: 0.8px solid var(--cc-border);
   border-radius: 20px;
   font-family: 'Plus Jakarta Sans', sans-serif;
   font-weight: 600;
@@ -241,15 +241,15 @@
   display: flex;
   padding: 16px 24px;
   gap: 12px;
-  border-top: 0.8px solid #F3F4F6;
-  background: #FFFFFF;
+  border-top: 0.8px solid var(--cc-bg-muted);
+  background: var(--cc-bg-surface);
   flex-shrink: 0;
 }
 
 .filter-footer__clear {
   flex: 1;
   height: 46px;
-  background: #FFFFFF;
+  background: var(--cc-bg-surface);
   border: 0.8px solid #D1D5DB;
   border-radius: 24px;
   font-family: 'Plus Jakarta Sans', sans-serif;

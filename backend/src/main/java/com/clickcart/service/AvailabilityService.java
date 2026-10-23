@@ -123,7 +123,7 @@ public class AvailabilityService {
                 request.getEndTime()
         );
 
-        existingRule.setProviderId(request.getProviderId());
+        if (!existingRule.getProviderId().equals(request.getProviderId())) throw new com.clickcart.exception.ForbiddenException("This availability rule belongs to another provider");
         existingRule.setDayOfWeek(request.getDayOfWeek());
         existingRule.setStartTime(request.getStartTime());
         existingRule.setEndTime(request.getEndTime());
@@ -144,6 +144,7 @@ public class AvailabilityService {
             throw new ResourceNotFoundException("Availability rule not found");
         }
 
+        com.clickcart.security.CurrentProvider.requireOwner(availabilityRuleRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Availability rule not found")).getProviderId());
         availabilityRuleRepository.deleteById(id);
         log.info("DEV-10: rule deleted, id={}", id);
     }

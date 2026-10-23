@@ -8,6 +8,7 @@ import java.time.Instant;
 
 public class ProviderTransactionDto {
     private String id;
+    private String providerId;
     private String transactionId;
     private String bookingId;
     private String serviceTitle;
@@ -26,9 +27,33 @@ public class ProviderTransactionDto {
     public ProviderTransactionDto() {
     }
 
+    public ProviderTransactionDto(String id, String providerId, String bookingId, String transactionId,
+            String serviceTitle, String category, String customerName,
+            BigDecimal grossAmount, BigDecimal commissionRate, BigDecimal commissionAmount,
+            BigDecimal netAmount, String currency, EarningStatus status,
+            String settlementBatchId, Instant serviceCompletedAt, Instant createdAt) {
+        this.id = id;
+        this.providerId = providerId;
+        this.bookingId = bookingId;
+        this.transactionId = transactionId;
+        this.serviceTitle = serviceTitle;
+        this.category = category;
+        this.customerName = customerName;
+        this.grossAmount = grossAmount;
+        this.commissionRate = commissionRate;
+        this.commissionAmount = commissionAmount;
+        this.netAmount = netAmount;
+        this.currency = currency;
+        this.status = status;
+        this.settlementBatchId = settlementBatchId;
+        this.serviceCompletedAt = serviceCompletedAt;
+        this.createdAt = createdAt;
+    }
+
     public static ProviderTransactionDto fromEntity(ProviderEarning entity) {
         ProviderTransactionDto dto = new ProviderTransactionDto();
         dto.setId(entity.getId());
+        dto.setProviderId(entity.getProviderId());
         dto.setTransactionId(entity.getTransactionId());
         dto.setBookingId(entity.getBookingId());
         dto.setServiceTitle(entity.getServiceTitle());
@@ -46,12 +71,21 @@ public class ProviderTransactionDto {
         return dto;
     }
 
+    // Getters and Setters
     public String getId() {
         return id;
     }
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getProviderId() {
+        return providerId;
+    }
+
+    public void setProviderId(String providerId) {
+        this.providerId = providerId;
     }
 
     public String getTransactionId() {

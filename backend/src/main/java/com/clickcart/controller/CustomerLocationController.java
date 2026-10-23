@@ -13,7 +13,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/customers/location")
-@CrossOrigin(origins = "*") // In production, this should be restricted
+// In production, this should be restricted
 public class CustomerLocationController {
 
     @PostMapping

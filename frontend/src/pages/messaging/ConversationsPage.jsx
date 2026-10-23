@@ -1,3 +1,4 @@
+import { useAuth } from "../../context/AuthContext";
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMessaging } from '../../hooks/useMessaging';
@@ -22,7 +23,8 @@ export default function ConversationsPage({ role }) {
   const { conversationId } = useParams();
   const navigate = useNavigate();
   // We assume a hardcoded currentUserId for now if auth is not fully wired
-  const currentUserId = role === 'CUSTOMER' ? 'cust_123' : 'prov_123';
+  const { user } = useAuth();
+  const currentUserId = user?.id;
   
   const {
     conversations,

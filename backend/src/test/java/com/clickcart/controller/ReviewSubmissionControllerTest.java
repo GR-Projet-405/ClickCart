@@ -25,7 +25,7 @@ import com.clickcart.dto.ReviewResponse;
 import com.clickcart.service.ReviewEligibilityGateway;
 import com.clickcart.service.ReviewService;
 
-@WithMockUser
+@WithMockUser(username="customer-1", roles="CUSTOMER")
 @WebMvcTest(ReviewSubmissionController.class)
 class ReviewSubmissionControllerTest {
 
@@ -90,7 +90,7 @@ class ReviewSubmissionControllerTest {
                         post("/api/reviews").with(csrf())
                                 .header(
                                         "X-Customer-Id",
-                                        "customer-1"
+                                        "attacker-supplied-id"
                                 )
                                 .contentType(
                                         MediaType.APPLICATION_JSON
@@ -131,7 +131,7 @@ class ReviewSubmissionControllerTest {
                         post("/api/reviews").with(csrf())
                                 .header(
                                         "X-Customer-Id",
-                                        "customer-1"
+                                        "attacker-supplied-id"
                                 )
                                 .contentType(
                                         MediaType.APPLICATION_JSON

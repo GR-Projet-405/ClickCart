@@ -5,7 +5,7 @@ Owner: DEV-01 (Rukshan Senevirathna) · Branch: `feature/DEV-01-Authentication-A
 Covers SRS **IAM-001 – IAM-012**, **SEC-002, SEC-003, SEC-007, SEC-014** and the Login / Register / Forgot-Reset Password screens.
 
 - [How it works](#how-it-works)
-- [Using auth in your feature](#using-auth-in-your-feature) ← start here if you own another feature
+- [Feature integration](#feature-integration)
 - [API reference](#api-reference)
 - [Error codes](#error-codes)
 - [Configuration](#configuration)
@@ -38,9 +38,11 @@ Covers SRS **IAM-001 – IAM-012**, **SEC-002, SEC-003, SEC-007, SEC-014** and t
 
 ---
 
-## Using auth in your feature
+## Feature integration
 
-### Backend: who is the current user?
+Authenticated identities are resolved from verified tokens. Development identity headers do not authenticate requests. Administrators are stored separately in `admins`; customer and provider accounts use `users`.
+
+### Backend identity
 
 A valid token puts an `AuthenticatedUser` principal in the security context. `Principal#getName()` returns the **user id**, so existing code that reads `principal.getName()` keeps working.
 
@@ -51,7 +53,7 @@ public List<ThingResponse> list(Principal principal) {
     return thingService.findForProvider(providerId);
 }
 
-// Or, when you also need the role / provider type:
+// Accessing the role and provider type:
 @GetMapping("/api/customers/me/things")
 public List<ThingResponse> mine(@AuthenticationPrincipal AuthenticatedUser user) {
     // user.id(), user.email(), user.role(), user.providerType()
@@ -60,7 +62,6 @@ public List<ThingResponse> mine(@AuthenticationPrincipal AuthenticatedUser user)
 
 - **Never trust a user id sent by the client** (`?providerId=`, `X-Provider-Id`, request body) for ownership checks (SRS API-007). Use the principal.
 - Role rules live in `SecurityConfig` (`/api/provider/**` requires `SERVICE_PROVIDER`). Method-level checks work too: `@PreAuthorize("hasRole('PLATFORM_ADMIN')")`.
-- While `CLICKCART_DEV_AUTH_FALLBACK=true`, requests **without** a token are still treated as the old development identity (`dev-provider-09`, or `X-Dev-Role` / `X-Provider-Id` headers). Its principal is a plain `String`, not `AuthenticatedUser`, so `@AuthenticationPrincipal AuthenticatedUser` is `null` in that case.
 
 ### Frontend: calling protected APIs
 
@@ -89,7 +90,6 @@ function AccountMenu() {
 
 1. Replace plain `fetch` with `authFetch` in your service file, and remove `X-Provider-Id` / `X-Dev-Role` headers.
 2. Read the user id from `Principal` on the backend instead of request parameters or headers.
-3. Test with `CLICKCART_DEV_AUTH_FALLBACK=false` in your `backend/.env`.
 
 When every feature has migrated, the fallback can be deleted from `JwtAuthenticationFilter`.
 
@@ -245,7 +245,6 @@ All values are read from `backend/.env` (never committed). Defaults apply when a
 | `AUTH_COOKIE_SECURE` | `false` | **Set `true` in production (HTTPS).** |
 | `AUTH_COOKIE_SAME_SITE` | `Lax` | Use `None` (with `Secure=true`) only if the frontend and API are on different sites |
 | `CORS_ALLOWED_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173` | Comma-separated origins allowed to send the cookie |
-| `CLICKCART_DEV_AUTH_FALLBACK` | `true` | **Set `false` in any shared or production environment.** See [Moving off the development fallback](#moving-off-the-development-fallback). |
 
 The database name comes from `DATABASE_NAME` (`clickcart`) in the team's `application.yml`; without a database name the backend does not start.
 

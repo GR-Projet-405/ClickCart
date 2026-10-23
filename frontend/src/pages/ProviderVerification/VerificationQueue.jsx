@@ -1,3 +1,6 @@
+import { notify } from "../../context/FeedbackHost";
+import { authFetch } from "../../services/authService";
+import { API_BASE_URL } from "../../config/api";
 import React, { useState, useEffect } from 'react';
 import {
   Search, Clock, CheckCircle2, XCircle, FileText,
@@ -8,6 +11,7 @@ import {
 const VerificationQueue = () => {
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Modals State
   const [selectedProvider, setSelectedProvider] = useState(null); // Details Modal
@@ -30,13 +34,13 @@ const VerificationQueue = () => {
     setLoading(true);
     try {
       // LocalStorage 
-      const token = localStorage.getItem('token') || localStorage.getItem('jwtToken');
+      setError("");
 
-      const response = await fetch('http://localhost:8080/api/admin/providers/verifications', {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/verifications`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': token ? `Bearer ${token}` : ''
+
         }
       });
 
@@ -48,10 +52,10 @@ const VerificationQueue = () => {
           setProviders([]);
         }
       } else {
-        console.error(`Backend returned status code: ${response.status}`);
+        throw new Error("Unable to load verification submissions. Check your administrator access.");
       }
     } catch (err) {
-      console.error('Failed to fetch backend data:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -95,12 +99,17 @@ const VerificationQueue = () => {
     return idx === 0 ? 'NIC / Identity' : 'Business Registration';
   };
 
-  const handleDownload = (docUrl, fileName = 'document') => {
+  const handleDownload = async (docUrl) => {
     if (!docUrl) return;
-    const fetchUrl = docUrl.includes('cloudinary.com')
-      ? docUrl.replace('/upload/', '/upload/fl_attachment/')
-      : docUrl;
-    window.open(fetchUrl, '_blank');
+    const preview = window.open("", "_blank");
+    try {
+      if (!docUrl.startsWith("/api/provider-verification/documents/")) { if (preview) preview.location.href = docUrl; return; }
+      const response = await authFetch(`${API_BASE_URL}${docUrl.slice(4)}`);
+      if (!response.ok) throw new Error("Unable to open this document. Please sign in again and retry.");
+      const url = URL.createObjectURL(await response.blob());
+      if (preview) preview.location.href = url;
+      setTimeout(() => URL.revokeObjectURL(url), 60000);
+    } catch (err) { preview?.close(); setError(err.message); }
   };
 
   const handleRefresh = () => {
@@ -114,12 +123,13 @@ const VerificationQueue = () => {
 
   const handleStatusChange = async (id, newStatus) => {
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/providers/${id}/status`, {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/${id}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus }),
       });
 
+      if (!response.ok) { const detail = await response.json(); throw new Error(detail.message || "Unable to update verification"); }
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
@@ -129,7 +139,7 @@ const VerificationQueue = () => {
         );
       }
     } catch (err) {
-      console.error('Failed to update status:', err);
+      setError(err.message);
     }
   };
 
@@ -155,7 +165,7 @@ const VerificationQueue = () => {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:8080/api/admin/providers/${pId}/reject`, {
+      const response = await authFetch(`${API_BASE_URL}/admin/providers/${pId}/reject`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -165,6 +175,7 @@ const VerificationQueue = () => {
         }),
       });
 
+      if (!response.ok) { const detail = await response.json(); throw new Error(detail.message || "Unable to update verification"); }
       if (response.ok) {
         const updatedData = await response.json();
         setProviders(prev =>
@@ -174,11 +185,11 @@ const VerificationQueue = () => {
         );
         setRejectingProvider(null);
       } else {
-        alert('Failed to reject provider.');
+        notify('Failed to reject provider.');
       }
     } catch (err) {
       console.error('Error confirming rejection:', err);
-      alert('Error updating rejection status.');
+      notify('Error updating rejection status.');
     } finally {
       setIsSubmitting(false);
     }
@@ -262,15 +273,16 @@ const VerificationQueue = () => {
   ];
 
   return (
-    <div style={{ padding: '24px', background: '#f8fafc', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '24px', background: 'var(--cc-bg-muted)', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {error && <p role="alert" style={{color:"#b91c1c",padding:16}}>{error}</p>}
 
       {/* Top Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
         <div>
-          <h1 style={{ margin: 0, color: '#0f172a', fontSize: '24px', fontWeight: 700 }}>
+          <h1 style={{ margin: 0, color: 'var(--cc-text-primary)', fontSize: '24px', fontWeight: 700 }}>
             Provider Verification Queue
           </h1>
-          <p style={{ margin: '4px 0 0 0', color: '#64748b', fontSize: '14px' }}>
+          <p style={{ margin: '4px 0 0 0', color: 'var(--cc-text-secondary)', fontSize: '14px' }}>
             Review and manage service provider verification requests and submitted documents.
           </p>
         </div>
@@ -279,9 +291,9 @@ const VerificationQueue = () => {
           onClick={handleRefresh}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px',
-            background: '#ffffff', border: '1px solid #e2e8f0',
+            background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)',
             borderRadius: '8px', padding: '8px 16px',
-            fontSize: '14px', fontWeight: 600, color: '#475569', cursor: 'pointer'
+            fontSize: '14px', fontWeight: 600, color: 'var(--cc-text-secondary)', cursor: 'pointer'
           }}
         >
           <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -291,9 +303,9 @@ const VerificationQueue = () => {
 
       {/* Dynamic Summary Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' }}>
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Pending Verifications</p>
+            <p style={{ margin: 0, color: 'var(--cc-text-secondary)', fontSize: '13px', fontWeight: 600 }}>Pending Verifications</p>
             <h2 style={{ margin: '4px 0 0 0', color: '#d97706', fontSize: '28px', fontWeight: 700 }}>{pendingCount}</h2>
           </div>
           <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#fef3c7', display: 'grid', placeItems: 'center', color: '#d97706' }}>
@@ -301,9 +313,9 @@ const VerificationQueue = () => {
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Approved This Month</p>
+            <p style={{ margin: 0, color: 'var(--cc-text-secondary)', fontSize: '13px', fontWeight: 600 }}>Approved This Month</p>
             <h2 style={{ margin: '4px 0 0 0', color: '#16a34a', fontSize: '28px', fontWeight: 700 }}>{approvedThisMonthCount}</h2>
           </div>
           <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#dcfce7', display: 'grid', placeItems: 'center', color: '#16a34a' }}>
@@ -311,9 +323,9 @@ const VerificationQueue = () => {
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Rejected Requests</p>
+            <p style={{ margin: 0, color: 'var(--cc-text-secondary)', fontSize: '13px', fontWeight: 600 }}>Rejected Requests</p>
             <h2 style={{ margin: '4px 0 0 0', color: '#dc2626', fontSize: '28px', fontWeight: 700 }}>{rejectedCount}</h2>
           </div>
           <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#fee2e2', display: 'grid', placeItems: 'center', color: '#dc2626' }}>
@@ -321,36 +333,36 @@ const VerificationQueue = () => {
           </div>
         </div>
 
-        <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)', borderRadius: '16px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, color: '#64748b', fontSize: '13px', fontWeight: 600 }}>Total Requests</p>
-            <h2 style={{ margin: '4px 0 0 0', color: '#0f172a', fontSize: '28px', fontWeight: 700 }}>{totalCount}</h2>
+            <p style={{ margin: 0, color: 'var(--cc-text-secondary)', fontSize: '13px', fontWeight: 600 }}>Total Requests</p>
+            <h2 style={{ margin: '4px 0 0 0', color: 'var(--cc-text-primary)', fontSize: '28px', fontWeight: 700 }}>{totalCount}</h2>
           </div>
-          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: '#f1f5f9', display: 'grid', placeItems: 'center', color: '#64748b' }}>
+          <div style={{ width: '44px', height: '44px', borderRadius: '50%', background: 'var(--cc-bg-muted)', display: 'grid', placeItems: 'center', color: 'var(--cc-text-secondary)' }}>
             <FileText size={22} />
           </div>
         </div>
       </div>
 
       {/* Main Table Area */}
-      <div style={{ background: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '16px', padding: '20px' }}>
+      <div style={{ background: 'var(--cc-bg-surface)', border: '1px solid var(--cc-border)', borderRadius: '16px', padding: '20px' }}>
 
         {/* Filter Toolbar */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
           <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
 
             <div style={{ position: 'relative', flex: '1', minWidth: '260px' }}>
-              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--cc-text-muted)' }} />
               <input
                 type="text"
                 placeholder="Search by Provider Name, Email, or Category..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', background: '#f8fafc', border: '1px solid #cbd5e1', borderRadius: '8px', outline: 'none' }}
+                style={{ width: '100%', paddingLeft: '36px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', background: 'var(--cc-bg-muted)', border: '1px solid var(--cc-border)', borderRadius: '8px', outline: 'none' }}
               />
             </div>
 
-            <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', gap: '4px' }}>
+            <div style={{ display: 'flex', background: 'var(--cc-bg-muted)', padding: '4px', borderRadius: '8px', gap: '4px' }}>
               {['All', 'Pending', 'Approved', 'Rejected'].map((tab) => (
                 <button
                   key={tab}
@@ -359,7 +371,7 @@ const VerificationQueue = () => {
                     padding: '6px 14px', borderRadius: '6px', fontSize: '13px',
                     fontWeight: 600, border: 'none', cursor: 'pointer',
                     background: activeTab === tab ? '#0070f3' : 'transparent',
-                    color: activeTab === tab ? '#ffffff' : '#64748b'
+                    color: activeTab === tab ? '#ffffff' : 'var(--cc-text-secondary)'
                   }}
                 >
                   {tab}
@@ -368,8 +380,8 @@ const VerificationQueue = () => {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', background: '#f8fafc', padding: '12px', borderRadius: '8px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#64748b' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '12px', background: 'var(--cc-bg-muted)', padding: '12px', borderRadius: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: 'var(--cc-text-secondary)' }}>
               <Filter size={14} />
               <span>Filters:</span>
             </div>
@@ -377,7 +389,7 @@ const VerificationQueue = () => {
             <select
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid #cbd5e1', background: '#ffffff', fontSize: '13px', cursor: 'pointer' }}
+              style={{ padding: '6px 10px', borderRadius: '6px', border: '1px solid var(--cc-border)', background: 'var(--cc-bg-surface)', fontSize: '13px', cursor: 'pointer' }}
             >
               <option value="All">All Provider Types</option>
               <option value="Business">Business</option>
@@ -385,19 +397,19 @@ const VerificationQueue = () => {
             </select>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginLeft: 'auto' }}>
-              <Calendar size={14} style={{ color: '#94a3b8' }} />
+              <Calendar size={14} style={{ color: 'var(--cc-text-muted)' }} />
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--cc-border)', fontSize: '12px' }}
               />
-              <span style={{ fontSize: '12px', color: '#94a3b8' }}>to</span>
+              <span style={{ fontSize: '12px', color: 'var(--cc-text-muted)' }}>to</span>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px' }}
+                style={{ padding: '4px 8px', borderRadius: '6px', border: '1px solid var(--cc-border)', fontSize: '12px' }}
               />
             </div>
           </div>
@@ -407,7 +419,7 @@ const VerificationQueue = () => {
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
             <thead>
-              <tr style={{ background: '#f1f5f9', color: '#475569', borderBottom: '1px solid #e2e8f0' }}>
+              <tr style={{ background: 'var(--cc-bg-muted)', color: 'var(--cc-text-secondary)', borderBottom: '1px solid var(--cc-border)' }}>
                 <th style={{ padding: '12px 14px', width: '22%' }}>Provider Name & Contact</th>
                 <th style={{ padding: '12px 14px', width: '10%' }}>Type</th>
                 <th style={{ padding: '12px 14px', width: '15%' }}>Service Category</th>
@@ -420,7 +432,7 @@ const VerificationQueue = () => {
             <tbody>
               {filteredProviders.length === 0 ? (
                 <tr>
-                  <td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: '#94a3b8' }}>
+                  <td colSpan="7" style={{ padding: '24px', textAlign: 'center', color: 'var(--cc-text-muted)' }}>
                     No providers found.
                   </td>
                 </tr>
@@ -432,7 +444,7 @@ const VerificationQueue = () => {
                   const providerName = p.ownerName || p.businessName || 'Provider';
 
                   return (
-                    <tr key={pId} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <tr key={pId} style={{ borderBottom: '1px solid var(--cc-border-soft)' }}>
                       <td style={{ padding: '12px 14px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           <img
@@ -445,10 +457,10 @@ const VerificationQueue = () => {
                             style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover' }}
                           />
                           <div>
-                            <div style={{ fontWeight: 700, color: '#0f172a' }}>
+                            <div style={{ fontWeight: 700, color: 'var(--cc-text-primary)' }}>
                               {providerName}
                             </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>{p.email || 'N/A'}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--cc-text-secondary)' }}>{p.email || 'N/A'}</div>
                           </div>
                         </div>
                       </td>
@@ -476,8 +488,8 @@ const VerificationQueue = () => {
                                   style={{
                                     display: 'inline-flex', alignItems: 'center', gap: '5px',
                                     padding: '4px 10px', borderRadius: '6px', fontSize: '12px',
-                                    fontWeight: 600, background: '#f1f5f9', color: '#1e293b',
-                                    border: '1px solid #cbd5e1', whiteSpace: 'nowrap'
+                                    fontWeight: 600, background: 'var(--cc-bg-muted)', color: 'var(--cc-text-primary)',
+                                    border: '1px solid var(--cc-border)', whiteSpace: 'nowrap'
                                   }}
                                 >
                                   <FileText size={13} style={{ color: '#0284c7' }} />
@@ -486,12 +498,12 @@ const VerificationQueue = () => {
                               );
                             })
                           ) : (
-                            <span style={{ fontSize: '12px', color: '#94a3b8' }}>No verification documents submitted</span>
+                            <span style={{ fontSize: '12px', color: 'var(--cc-text-muted)' }}>No verification documents submitted</span>
                           )}
                         </div>
                       </td>
 
-                      <td style={{ padding: '12px 14px', color: '#64748b', fontSize: '13px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '12px 14px', color: 'var(--cc-text-secondary)', fontSize: '13px', whiteSpace: 'nowrap' }}>
                         {formatDate(p.createdAt || p.date || p.submittedDate)}
                       </td>
 
@@ -510,7 +522,7 @@ const VerificationQueue = () => {
                           <button
                             onClick={() => setSelectedProvider(p)}
                             style={{
-                              background: '#0070f3', color: '#ffffff', border: 'none',
+                              background: '#0070f3', color: 'var(--cc-text-on-primary)', border: 'none',
                               padding: '6px 14px', borderRadius: '6px', fontSize: '12px', fontWeight: 600, cursor: 'pointer',
                               display: 'inline-flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap'
                             }}
@@ -525,7 +537,7 @@ const VerificationQueue = () => {
                                 onClick={() => handleStatusChange(pId, 'APPROVED')}
                                 title="Approve Request"
                                 style={{
-                                  background: '#22c55e', color: '#ffffff', border: 'none',
+                                  background: '#22c55e', color: 'var(--cc-text-on-primary)', border: 'none',
                                   width: '28px', height: '28px', borderRadius: '6px',
                                   display: 'inline-grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0
                                 }}
@@ -537,7 +549,7 @@ const VerificationQueue = () => {
                                 onClick={() => openRejectModal(p)}
                                 title="Reject Request"
                                 style={{
-                                  background: '#ef4444', color: '#ffffff', border: 'none',
+                                  background: '#ef4444', color: 'var(--cc-text-on-primary)', border: 'none',
                                   width: '28px', height: '28px', borderRadius: '6px',
                                   display: 'inline-grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0
                                 }}
@@ -571,7 +583,7 @@ const VerificationQueue = () => {
             zIndex: 9999, padding: '16px'
           }}>
             <div style={{
-              background: '#ffffff', borderRadius: '20px', width: '100%', maxWidth: '680px',
+              background: 'var(--cc-bg-surface)', borderRadius: '20px', width: '100%', maxWidth: '680px',
               maxHeight: '90vh', overflowY: 'auto', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               display: 'flex', flexDirection: 'column', padding: '24px'
             }}>
@@ -581,19 +593,19 @@ const VerificationQueue = () => {
                   <div style={{ background: '#dcfce7', width: '36px', height: '36px', borderRadius: '10px', display: 'grid', placeItems: 'center', color: '#16a34a' }}>
                     <ShieldCheck size={20} />
                   </div>
-                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#0f172a' }}>
+                  <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--cc-text-primary)' }}>
                     Provider Verification Details - {providerName}
                   </h2>
                 </div>
-                <button onClick={() => setSelectedProvider(null)} style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer' }}>
+                <button onClick={() => setSelectedProvider(null)} style={{ background: 'none', border: 'none', color: 'var(--cc-text-secondary)', cursor: 'pointer' }}>
                   <X size={20} />
                 </button>
               </div>
 
               {/* Header Card (Left Info & Right Category/Date) */}
               <div style={{
-                background: '#f0f7ff',
-                border: '1px solid #e0f2fe',
+                background: 'var(--cc-bg-muted)',
+                border: '1px solid var(--cc-border)',
                 borderRadius: '16px',
                 padding: '20px',
                 marginBottom: '20px',
@@ -616,12 +628,12 @@ const VerificationQueue = () => {
                   />
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>{providerName}</h3>
+                      <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--cc-text-primary)' }}>{providerName}</h3>
                       <span style={{ padding: '2px 8px', borderRadius: '12px', fontSize: '11px', fontWeight: 700, background: isBusiness ? '#f3e8ff' : '#e0f2fe', color: isBusiness ? '#7e22ce' : '#0369a1' }}>
                         {selectedProvider.providerType || 'Business'}
                       </span>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px', fontSize: '12px', color: '#475569' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '8px', fontSize: '12px', color: 'var(--cc-text-secondary)' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Mail size={13} /><span>{selectedProvider.email || 'N/A'}</span></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Phone size={13} /><span>{selectedProvider.phone || 'N/A'}</span></div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><MapPin size={13} /><span>{selectedProvider.address || selectedProvider.location || 'Colombo, Sri Lanka'}</span></div>
@@ -630,20 +642,20 @@ const VerificationQueue = () => {
                 </div>
 
                 {/* Vertical Divider */}
-                <div style={{ width: '1px', height: '70px', borderRight: '1px dashed #cbd5e1' }} />
+                <div style={{ width: '1px', height: '70px', borderRight: '1px dashed var(--cc-border)' }} />
 
                 {/* Right Side: Service Category & Submitted Date */}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '180px', fontSize: '12px' }}>
                   <div>
-                    <span style={{ color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Service Category</span>
-                    <div style={{ fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--cc-text-muted)', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Service Category</span>
+                    <div style={{ fontWeight: 700, color: 'var(--cc-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Wrench size={14} style={{ color: '#0070f3' }} />
                       <span>{selectedProvider.category || selectedProvider.serviceCategory || 'General Service'}</span>
                     </div>
                   </div>
                   <div>
-                    <span style={{ color: '#94a3b8', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Submitted Date</span>
-                    <div style={{ fontWeight: 700, color: '#0f172a', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ color: 'var(--cc-text-muted)', fontWeight: 600, display: 'block', marginBottom: '4px' }}>Submitted Date</span>
+                    <div style={{ fontWeight: 700, color: 'var(--cc-text-primary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <Calendar size={14} style={{ color: '#0070f3' }} />
                       <span>{formatDate(selectedProvider.createdAt || selectedProvider.date || selectedProvider.submittedDate)}</span>
                     </div>
@@ -653,7 +665,7 @@ const VerificationQueue = () => {
 
               {/* Documents Section */}
               <div style={{ marginBottom: '24px' }}>
-                <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, color: '#0f172a' }}>Submitted Documents</h4>
+                <h4 style={{ margin: '0 0 12px 0', fontSize: '14px', fontWeight: 700, color: 'var(--cc-text-primary)' }}>Submitted Documents</h4>
                 {Array.isArray(selectedProvider.documents) && selectedProvider.documents.length > 0 ? (
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
                     {selectedProvider.documents.map((doc, idx) => {
@@ -661,23 +673,23 @@ const VerificationQueue = () => {
                       const docUrl = typeof doc === 'object' && doc?.url ? doc.url : (typeof doc === 'string' ? doc : '');
 
                       return (
-                        <div key={idx} style={{ border: '1px solid #e2e8f0', borderRadius: '12px', padding: '12px', background: '#f8fafc' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '12px', fontWeight: 700, color: '#1e293b' }}>
+                        <div key={idx} style={{ border: '1px solid var(--cc-border)', borderRadius: '12px', padding: '12px', background: 'var(--cc-bg-muted)' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px', fontSize: '12px', fontWeight: 700, color: 'var(--cc-text-primary)' }}>
                             <FileText size={14} style={{ color: '#0284c7' }} />
                             <span>{docType}</span>
                           </div>
-                          <div style={{ height: '140px', background: '#ffffff', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
+                          <div style={{ height: '140px', background: 'var(--cc-bg-surface)', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px', border: '1px solid var(--cc-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '4px' }}>
                             {docUrl ? (
-                              <img src={docUrl} alt={docType} style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', cursor: 'pointer' }} onClick={() => window.open(docUrl, '_blank')} />
+                              <button onClick={() => handleDownload(docUrl)}><FileText size={32} /> Open submitted document</button>
                             ) : (
-                              <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: '#94a3b8', fontSize: '12px' }}>No Document Link</div>
+                              <div style={{ display: 'grid', placeItems: 'center', height: '100%', color: 'var(--cc-text-muted)', fontSize: '12px' }}>No Document Link</div>
                             )}
                           </div>
 
                           {/* Document Action Buttons (View Full & Download) */}
                           <div style={{ display: 'flex', gap: '8px' }}>
                             <button
-                              onClick={() => docUrl && window.open(docUrl, '_blank')}
+                              onClick={() => handleDownload(docUrl)}
                               style={{
                                 flex: 1,
                                 display: 'flex',
@@ -685,7 +697,7 @@ const VerificationQueue = () => {
                                 justifyContent: 'center',
                                 gap: '6px',
                                 padding: '8px 12px',
-                                background: '#ffffff',
+                                background: 'var(--cc-bg-surface)',
                                 border: '1px solid #0070f3',
                                 color: '#0070f3',
                                 borderRadius: '8px',
@@ -707,7 +719,7 @@ const VerificationQueue = () => {
                                 padding: '8px 12px',
                                 background: '#0070f3',
                                 border: 'none',
-                                color: '#ffffff',
+                                color: 'var(--cc-text-on-primary)',
                                 borderRadius: '8px',
                                 fontSize: '12px',
                                 fontWeight: 600,
@@ -722,16 +734,16 @@ const VerificationQueue = () => {
                     })}
                   </div>
                 ) : (
-                  <div style={{ padding: '16px', textAlign: 'center', color: '#64748b', fontSize: '13px' }}>No documents submitted</div>
+                  <div style={{ padding: '16px', textAlign: 'center', color: 'var(--cc-text-secondary)', fontSize: '13px' }}>No documents submitted</div>
                 )}
               </div>
 
               {/* Modal Actions */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
-                <button onClick={() => setSelectedProvider(null)} style={{ background: '#e2e8f0', color: '#475569', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid var(--cc-border)' }}>
+                <button onClick={() => setSelectedProvider(null)} style={{ background: 'var(--cc-border)', color: 'var(--cc-text-secondary)', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Cancel</button>
                 <div style={{ display: 'flex', gap: '10px' }}>
-                  <button onClick={() => { handleStatusChange(selectedProvider.id || selectedProvider._id, 'APPROVED'); setSelectedProvider(null); }} style={{ background: '#22c55e', color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={16} /> Approve</button>
-                  <button onClick={() => openRejectModal(selectedProvider)} style={{ background: '#ef4444', color: '#ffffff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><X size={16} /> Reject</button>
+                  <button onClick={() => { handleStatusChange(selectedProvider.id || selectedProvider._id, 'APPROVED'); setSelectedProvider(null); }} style={{ background: '#22c55e', color: 'var(--cc-text-on-primary)', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><Check size={16} /> Approve</button>
+                  <button onClick={() => openRejectModal(selectedProvider)} style={{ background: '#ef4444', color: 'var(--cc-text-on-primary)', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}><X size={16} /> Reject</button>
                 </div>
               </div>
 
@@ -752,7 +764,7 @@ const VerificationQueue = () => {
             zIndex: 10000, padding: '16px'
           }}>
             <div style={{
-              background: '#ffffff', borderRadius: '20px', width: '100%', maxWidth: '520px',
+              background: 'var(--cc-bg-surface)', borderRadius: '20px', width: '100%', maxWidth: '520px',
               boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
               display: 'flex', flexDirection: 'column', padding: '24px', position: 'relative'
             }}>
@@ -767,30 +779,30 @@ const VerificationQueue = () => {
                     <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: '#dc2626' }}>
                       Reject Verification Request
                     </h2>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: '#64748b' }}>
-                      Please select or enter the reason for rejecting <strong style={{ color: '#334155' }}>{providerName}'s</strong> application.
+                    <p style={{ margin: '4px 0 0 0', fontSize: '14px', color: 'var(--cc-text-secondary)' }}>
+                      Please select or enter the reason for rejecting <strong style={{ color: 'var(--cc-text-secondary)' }}>{providerName}'s</strong> application.
                     </p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setRejectingProvider(null)}
-                  style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '4px' }}
+                  style={{ background: 'none', border: 'none', color: 'var(--cc-text-secondary)', cursor: 'pointer', padding: '4px' }}
                 >
                   <X size={20} />
                 </button>
               </div>
 
-              <hr style={{ border: 'none', borderTop: '1px solid #e2e8f0', margin: '0 0 20px 0' }} />
+              <hr style={{ border: 'none', borderTop: '1px solid var(--cc-border)', margin: '0 0 20px 0' }} />
 
               {/* Select a Reason */}
               <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 700, color: '#334155' }}>
+                <h4 style={{ margin: '0 0 14px 0', fontSize: '15px', fontWeight: 700, color: 'var(--cc-text-secondary)' }}>
                   Select a Reason
                 </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                   {availableReasons.map((reason, idx) => (
-                    <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
+                    <label key={idx} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: 'var(--cc-text-secondary)', cursor: 'pointer' }}>
                       <input
                         type="checkbox"
                         checked={selectedReasons.includes(reason)}
@@ -805,7 +817,7 @@ const VerificationQueue = () => {
 
               {/* Additional Comments */}
               <div style={{ marginBottom: '20px' }}>
-                <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: 700, color: '#334155' }}>
+                <h4 style={{ margin: '0 0 10px 0', fontSize: '15px', fontWeight: 700, color: 'var(--cc-text-secondary)' }}>
                   Additional Comments
                 </h4>
                 <div style={{ position: 'relative' }}>
@@ -817,12 +829,12 @@ const VerificationQueue = () => {
                     placeholder="Provide detailed instructions for the provider on what needs to be updated..."
                     style={{
                       width: '100%', padding: '12px', borderRadius: '10px',
-                      border: '1px solid #cbd5e1', fontSize: '14px', outline: 'none',
+                      border: '1px solid var(--cc-border)', fontSize: '14px', outline: 'none',
                       resize: 'none', fontFamily: 'inherit', boxSizing: 'border-box',
-                      color: '#0f172a'
+                      color: 'var(--cc-text-primary)'
                     }}
                   />
-                  <span style={{ position: 'absolute', right: '12px', bottom: '-20px', fontSize: '11px', color: '#94a3b8' }}>
+                  <span style={{ position: 'absolute', right: '12px', bottom: '-20px', fontSize: '11px', color: 'var(--cc-text-muted)' }}>
                     {additionalComments.length}/500
                   </span>
                 </div>
@@ -830,7 +842,7 @@ const VerificationQueue = () => {
 
               {/* Send Email Checkbox */}
               <div style={{ marginBottom: '24px', marginTop: '10px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: '#334155', cursor: 'pointer' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', fontWeight: 600, color: 'var(--cc-text-secondary)', cursor: 'pointer' }}>
                   <input
                     type="checkbox"
                     checked={sendEmail}
@@ -846,7 +858,7 @@ const VerificationQueue = () => {
                 <button
                   onClick={() => setRejectingProvider(null)}
                   style={{
-                    background: '#e2e8f0', color: '#475569', border: 'none',
+                    background: 'var(--cc-border)', color: 'var(--cc-text-secondary)', border: 'none',
                     padding: '10px 24px', borderRadius: '8px', fontSize: '14px',
                     fontWeight: 600, cursor: 'pointer'
                   }}
@@ -858,7 +870,7 @@ const VerificationQueue = () => {
                   onClick={handleConfirmRejection}
                   disabled={isSubmitting}
                   style={{
-                    background: '#ef4444', color: '#ffffff', border: 'none',
+                    background: '#ef4444', color: 'var(--cc-text-on-primary)', border: 'none',
                     padding: '10px 24px', borderRadius: '8px', fontSize: '14px',
                     fontWeight: 600, cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     opacity: isSubmitting ? 0.7 : 1

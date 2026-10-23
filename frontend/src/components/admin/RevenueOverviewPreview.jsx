@@ -6,17 +6,6 @@ import Spinner from "../common/Spinner";
 import CommissionChart from "../commission/CommissionChart";
 import styles from "./RevenueOverviewPreview.module.css";
 
-/**
- * Compact "Revenue & Commission Overview" preview for the admin dashboard.
- *
- * Reuses the existing CommissionChart component (pages/commission and
- * components/commission stay untouched). The chart's stylesheet already ships
- * with the app bundle, so no commission CSS is imported here.
- *
- * Figures come from GET /admin/commission/dashboard. GMV and refunds are not
- * exposed by that endpoint, so they fall back to the explicit mock values in
- * config/adminDashboardData.js instead of breaking the section.
- */
 export default function RevenueOverviewPreview({
   loading,
   source,
@@ -65,22 +54,7 @@ export default function RevenueOverviewPreview({
         <CommissionChart data={trend} />
       </div>
 
-      <p className={styles.footnote} role="status">
-        {source === "fallback" ? (
-          <>
-            Commission service unavailable
-            {error ? ` (${error})` : ""} — showing sample figures.
-          </>
-        ) : (
-          <>
-            <CircleDollarSign size={13} aria-hidden="true" />
-            Commission is read from the live API
-            <span aria-hidden="true"> · </span>
-            <Percent size={13} aria-hidden="true" />
-            GMV and refunds are sample values until the API exposes them.
-          </>
-        )}
-      </p>
+      <p className={styles.footnote}>Commission comes from stored transactions. GMV and refund totals are not available from this endpoint.</p>
     </div>
   );
 }

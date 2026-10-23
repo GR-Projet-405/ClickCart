@@ -1,4 +1,6 @@
-import { useId, useRef, useState } from "react";
+import { requestCaption } from "../../context/FeedbackHost";
+import { commissionFetch } from "../../services/commissionApi";
+import { useEffect, useId, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
 
 function formatServiceAmount(value) {
@@ -18,6 +20,9 @@ function createSplitId(entries) {
 }
 
 export default function CommissionSimulator({ rules = [], history = [], onSaved, loading = false, error = "" }) {
+  const [providers, setProviders] = useState([]);
+  const [providerId, setProviderId] = useState("");
+  useEffect(() => { commissionFetch("/api/admin/commission/providers").then(async response => { if (!response.ok) throw new Error("Unable to load provider accounts"); setProviders(await response.json()); }).catch(err => setSaveError(err.message)); }, []);
   const searchId = useId();
   const searchInput = useRef(null);
   const clearSearch = () => { setQuery(""); searchInput.current?.focus(); };
@@ -77,10 +82,10 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
       input.setSelectionRange(position, position);
     });
   };
-  const confirmChange = (entry, action) => {
+  const confirmChange = async (entry, action) => {
     const expected = entry?.publicId || entry?.transactionId;
     if (!expected) return null;
-    const entered = window.prompt(`Enter unique ID ${expected} to ${action}.`);
+    const entered = await requestCaption(`Enter unique ID ${expected} to ${action}.`);
     if (entered === null) return null;
     if (entered.trim().toUpperCase() !== expected.toUpperCase()) {
       setSaveError("Unique ID does not match. No changes were made.");
@@ -91,16 +96,16 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   const save = async (event) => {
     event.preventDefault();
     if (!ready || saving || deletingId || saved || amount <= 0) return;
-    const confirmationId = editingId ? confirmChange(history.find((entry) => entry.transactionId === editingId), "update this split") : null;
+    const confirmationId = editingId ? await confirmChange(history.find((entry) => entry.transactionId === editingId), "update this split") : null;
     if (editingId && !confirmationId) return;
     setSaving(true);
     setSaveError("");
     try {
       if (!editingId) transactionId.current ||= createSplitId(history);
-      const response = await fetch(editingId ? `/api/admin/commission/transactions/${encodeURIComponent(editingId)}` : "/api/admin/commission/transactions", {
+      const response = await commissionFetch(editingId ? `/api/admin/commission/transactions/${encodeURIComponent(editingId)}` : "/api/admin/commission/transactions", {
         method: editingId ? "PUT" : "POST",
         headers: { "Content-Type": "application/json", ...(confirmationId ? { "X-Split-Confirmation": confirmationId } : {}) },
-        body: JSON.stringify({ transactionId: transactionId.current, bookingAmount: amount, category, service: category, providerTier: null }),
+        body: JSON.stringify({ transactionId: transactionId.current, bookingAmount: amount, category, service: category, provider: providerId || null, providerTier: "ALL" }),
       });
       if (!response.ok) throw new Error("Unable to save the split. Check the active commission rule and try again.");
       await response.json();
@@ -130,12 +135,12 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   };
   const remove = async (entry) => {
     if (saving || deletingId) return;
-    const confirmationId = confirmChange(entry, "delete this split");
+    const confirmationId = await confirmChange(entry, "delete this split");
     if (!confirmationId) return;
     setDeletingId(entry.transactionId);
     setSaveError("");
     try {
-      const response = await fetch(`/api/admin/commission/transactions/${encodeURIComponent(entry.transactionId)}`, { method: "DELETE", headers: { "X-Split-Confirmation": confirmationId } });
+      const response = await commissionFetch(`/api/admin/commission/transactions/${encodeURIComponent(entry.transactionId)}`, { method: "DELETE", headers: { "X-Split-Confirmation": confirmationId } });
       if (!response.ok) throw new Error("Unable to delete the split. Please try again.");
       if (editingId === entry.transactionId) cancelEdit();
       setSaved(false);
@@ -150,13 +155,13 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   const togglePaid = async (entry) => {
     if (saving || deletingId || loading) return;
     const paid = entry.status !== "SETTLED";
-    const confirmationId = confirmChange(entry, `turn Paid ${paid ? "on" : "off"}`);
+    const confirmationId = await confirmChange(entry, `turn Paid ${paid ? "on" : "off"}`);
     if (!confirmationId) return;
     setSaving(true);
     setSaveError("");
     setSaved(false);
     try {
-      const response = await fetch(`/api/admin/commission/transactions/${encodeURIComponent(entry.transactionId)}/paid`, {
+      const response = await commissionFetch(`/api/admin/commission/transactions/${encodeURIComponent(entry.transactionId)}/paid`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", "X-Split-Confirmation": confirmationId },
         body: JSON.stringify({ paid }),
@@ -173,6 +178,7 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   return <section className="commission-simulator">
     <div><span className="commission-eyebrow">COMMISSION SPLIT</span><h2>Split simulator</h2><p>Choose a category, then enter the service amount. The commission rate comes automatically from the active commission rule.</p></div>
     <form onSubmit={save}>
+<label>Provider account (optional for a calculation)<select value={providerId} disabled={Boolean(editingId)} onChange={e => { setProviderId(e.target.value); setSaved(false); transactionId.current = null; }}><option value="">Unassigned calculation</option>{providers.map(provider => <option key={provider.id} value={provider.id}>{provider.name}</option>)}</select></label>
     {editingId && <p>Updating split <strong>{history.find((entry) => entry.transactionId === editingId)?.publicId || editingId}</strong>. Amounts are recalculated using the current active rule.</p>}
     {form.category && !category && <p role="status">{form.category} is unavailable. Activate its commission rule or select an active category.</p>}
     <fieldset disabled={saving || Boolean(deletingId)} style={{ border: 0, padding: 0, margin: 0 }}>
@@ -219,8 +225,8 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
         <td>{entry.publicId || entry.transactionId}</td><td>{new Date(entry.date).toLocaleString()}</td><td>{entry.category}{isStopped(entry.category) && <span className="commission-category-stopped">Category stopped</span>}</td>
         <td>{Number(entry.bookingAmount).toFixed(2)} LKR</td><td>{Number(entry.commissionAmount).toFixed(2)} LKR</td>
         <td>{Number(entry.providerEarning).toFixed(2)} LKR</td><td>{entry.status}</td>
-        <td><button type="button" role="switch" aria-checked={entry.status === "SETTLED"} aria-label={`Paid for ${entry.publicId || entry.transactionId}`} className={`split-paid-toggle ${entry.status === "SETTLED" ? "split-paid-toggle--on" : ""}`} disabled={saving || Boolean(deletingId) || loading} onClick={() => togglePaid(entry)}><span aria-hidden="true" />{entry.status === "SETTLED" ? "On" : "Off"}</button></td>
-        <td><div className="commission-row-actions"><button type="button" className="commission-edit-button" disabled={saving || Boolean(deletingId) || loading} onClick={() => edit(entry)}>Update</button><button type="button" className="commission-stop-button" disabled={saving || Boolean(deletingId) || loading} onClick={() => remove(entry)}>{deletingId === entry.transactionId ? "Deleting…" : "Delete"}</button></div></td>
+        <td><button type="button" role="switch" aria-checked={entry.status === "SETTLED"} aria-label={`Paid for ${entry.publicId || entry.transactionId}`} className={`split-paid-toggle ${entry.status === "SETTLED" ? "split-paid-toggle--on" : ""}`} disabled={saving || Boolean(deletingId) || loading || (entry.provider && entry.status === "SETTLED")} onClick={() => togglePaid(entry)}><span aria-hidden="true" />{entry.status === "SETTLED" ? "On" : "Off"}</button></td>
+        <td><div className="commission-row-actions"><button type="button" className="commission-edit-button" disabled={saving || Boolean(deletingId) || loading || (entry.provider && entry.status === "SETTLED")} onClick={() => edit(entry)}>Update</button><button type="button" className="commission-stop-button" disabled={saving || Boolean(deletingId) || loading || (entry.provider && entry.status === "SETTLED")} onClick={() => remove(entry)}>{deletingId === entry.transactionId ? "Deleting…" : "Delete"}</button></div></td>
       </tr>)}</tbody>
     </table></div> : <div className="split-search-empty"><Search size={24} aria-hidden="true" /><strong>{query.trim() ? "No matching splits" : "No saved splits yet"}</strong><p>{query.trim() ? "Check the ID or try fewer characters." : "Save your first split to see it here."}</p>{query.trim() && <button type="button" onClick={clearSearch}>Clear search</button>}</div>}
   </section>;

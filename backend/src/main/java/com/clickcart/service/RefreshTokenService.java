@@ -21,7 +21,7 @@ import com.clickcart.exception.AuthException;
 import com.clickcart.model.AccountStatus;
 import com.clickcart.model.RefreshToken;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+
 import com.clickcart.util.SecureTokens;
 
 /**
@@ -44,7 +44,7 @@ public class RefreshTokenService {
     }
 
     private final MongoTemplate mongo;
-    private final UserRepository users;
+    private final AccountStore users;
     private final Duration sessionTtl;
     private final Duration rememberMeTtl;
     private final Clock clock;
@@ -52,13 +52,13 @@ public class RefreshTokenService {
     @Autowired
     public RefreshTokenService(
             MongoTemplate mongo,
-            UserRepository users,
+            AccountStore users,
             @Value("${AUTH_SESSION_TTL_HOURS:24}") long sessionTtlHours,
             @Value("${AUTH_REMEMBER_ME_TTL_DAYS:30}") long rememberMeTtlDays) {
         this(mongo, users, Duration.ofHours(sessionTtlHours), Duration.ofDays(rememberMeTtlDays), Clock.systemUTC());
     }
 
-    RefreshTokenService(MongoTemplate mongo, UserRepository users,
+    RefreshTokenService(MongoTemplate mongo, AccountStore users,
                         Duration sessionTtl, Duration rememberMeTtl, Clock clock) {
         this.mongo = mongo;
         this.users = users;

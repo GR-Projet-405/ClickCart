@@ -1,3 +1,7 @@
+import ProviderSettings from "../pages/provider/ProviderSettings";
+import ProviderGuard from "../context/ProviderContext";
+import { useAuth } from "../context/AuthContext";
+import NotificationsPage from "../pages/provider/NotificationsPage";
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 
@@ -40,8 +44,9 @@ import MessagesPage from "../pages/Messages/MessagesPage";
 import ProviderReviewsPage from "../pages/reviews/ProviderReviewsPage";
 
 export default function ProviderRoutes() {
+  const { user } = useAuth();
   return (
-    <Routes>
+    <ProviderGuard><Routes>
       <Route element={<ServiceProviderLayout />}>
         <Route index element={<ProviderDashboard />} />
         <Route path="dashboard" element={<ProviderDashboard />} />
@@ -66,10 +71,13 @@ export default function ProviderRoutes() {
         <Route path="profile" element={<ProviderProfileOverview />} />
         <Route path="profile/setup" element={<ProviderSetup />} />
         <Route path="profile/edit" element={<EditProviderProfile />} />
-        <Route path="profile/public" element={<Navigate to="/providers/12345" replace />} />
+        <Route path="profile/public" element={<Navigate to={`/providers/${user?.id}`} replace />} />
 
         {/* Provider Reviews & Availability */}
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="reviews" element={<ProviderReviewsPage />} />
+        <Route path="calendar" element={<AvailabilityPage key="calendar" initialTab="calendar" />} />
+        <Route path="settings" element={<ProviderSettings />} />
         <Route path="availability" element={<AvailabilityPage />} />
 
         {/* Settlement Tracking & Earnings */}
@@ -78,7 +86,7 @@ export default function ProviderRoutes() {
         <Route path="earnings/transactions" element={<TransactionHistoryPage />} />
 
         {/* DEV-25: Messages */}
-        <Route path="messages" element={<MessagesPage role="PROVIDER" />} />
+        <Route path="messages" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/conversations" element={<ConversationsPage role="PROVIDER" />} />
         <Route path="messages/:conversationId" element={<ConversationsPage role="PROVIDER" />} />
 
@@ -97,7 +105,7 @@ export default function ProviderRoutes() {
               path !== "/provider/earnings" &&
               path !== "/provider/jobs" &&
               path !== "/provider/settlements" &&
-              path !== "/provider/verification"
+              path !== "/provider/calendar" && path !== "/provider/settings" && path !== "/provider/verification" && path !== "/provider/notifications"
           )
           .map(({ path }) => (
             <Route
@@ -113,6 +121,6 @@ export default function ProviderRoutes() {
           ))}
         <Route path="*" element={<NotFound />} />
       </Route>
-    </Routes>
+    </Routes></ProviderGuard>
   );
 }

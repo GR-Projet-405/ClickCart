@@ -13,6 +13,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/providers/services/{serviceId}/packages")
 public class PackageController {
+    @Autowired
+    private com.clickcart.service.ServiceListingService listings;
 
     @Autowired
     private PackageService packageService;
@@ -23,6 +25,7 @@ public class PackageController {
         @PathVariable String serviceId,
         @Valid @RequestBody PackageRequestDTO requestDTO) {
 
+        listings.requireOwnedService(serviceId);
         PackageResponseDTO response = packageService.createPackage(serviceId, requestDTO);
         return new ResponseEntity<>(response, HttpStatus.CREATED);
     }
@@ -32,6 +35,7 @@ public class PackageController {
     public ResponseEntity<List<PackageResponseDTO>> getPackagesByServiceId(
         @PathVariable String serviceId) {
 
+        listings.requireOwnedService(serviceId);
         List<PackageResponseDTO> response = packageService.getPackagesByServiceId(serviceId);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -43,6 +47,7 @@ public class PackageController {
         @PathVariable String packageId,
         @Valid @RequestBody PackageRequestDTO requestDTO) {
 
+        listings.requireOwnedService(serviceId);
         PackageResponseDTO response = packageService.updatePackage(packageId, serviceId, requestDTO);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
@@ -53,6 +58,7 @@ public class PackageController {
         @PathVariable String serviceId,
         @PathVariable String packageId) {
 
+        listings.requireOwnedService(serviceId);
         packageService.deletePackage(packageId, serviceId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }

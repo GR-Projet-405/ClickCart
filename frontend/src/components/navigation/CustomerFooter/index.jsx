@@ -1,70 +1,33 @@
-import React from 'react';
-import {
-  Facebook,
-  Heart,
-  Instagram,
-  Linkedin,
-  MessageCircleMore,
-  Youtube,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import BrandLogo from "../../common/BrandLogo";
-import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import "./styles.css";
 
-const footerLinks = [
-  "About Us",
-  "Terms & Conditions",
-  "Privacy Policy",
-  "Help Center",
-  "Contact",
-];
 export default function CustomerFooter() {
+  const { user, status } = useAuth();
   return (
     <footer className="customer-footer">
       <PageContainer className="customer-footer__main">
-        <BrandLogo size="shell" showTagline />
+        <Link to="/" aria-label="ClickCart home"><BrandLogo size="shell" showTagline /></Link>
         <nav className="customer-footer__links" aria-label="Footer navigation">
-          {footerLinks.map((label) => (
-            <a
-              key={label}
-              href={`#${label.toLowerCase().replaceAll(" ", "-").replace("&", "and")}`}
-            >
-              {label}
-            </a>
-          ))}
+          <Link to="/find-services">Explore services</Link>
+          {user?.role === "CUSTOMER" && <>
+            <Link to="/my-bookings">My bookings</Link>
+            <Link to="/messages">Messages</Link>
+            <Link to="/customer/profile">My profile</Link>
+          </>}
+          {user?.role === "SERVICE_PROVIDER" && <>
+            <Link to="/provider/dashboard">Provider dashboard</Link>
+            <Link to="/provider/services">My services</Link>
+          </>}
+          {!user && status !== "loading" && <>
+            <Link to="/register" state={{ role: "SERVICE_PROVIDER" }}>Become a provider</Link>
+            <Link to="/login">Sign in</Link>
+          </>}
         </nav>
-        <div className="customer-footer__social" aria-label="Social links">
-          <IconButton
-            icon={<Facebook size={17} />}
-            label="Facebook"
-            variant="ghost"
-          />
-          <IconButton
-            icon={<Instagram size={17} />}
-            label="Instagram"
-            variant="ghost"
-          />
-          <IconButton
-            icon={<Linkedin size={17} />}
-            label="LinkedIn"
-            variant="ghost"
-          />
-          <IconButton
-            icon={<Youtube size={17} />}
-            label="YouTube"
-            variant="ghost"
-          />
-        </div>
-        <p className="customer-footer__community">
-          Made with <Heart size={16} fill="currentColor" /> for stronger communities
-        </p>
+        <p className="customer-footer__community">© {new Date().getFullYear()} ClickCart</p>
       </PageContainer>
-      <IconButton
-        className="customer-footer__chat"
-        icon={<MessageCircleMore size={23} />}
-        label="Open support chat"
-      />
     </footer>
   );
 }

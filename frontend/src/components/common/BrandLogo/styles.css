@@ -74,3 +74,6 @@
     font-size: 1.25rem;
   }
 }
+
+.cc-brand-logo .cc-brand-logo__name,.cc-brand-logo .cc-brand-logo__name span{color:var(--cc-primary)}
+a:has(>.cc-brand-logo){text-decoration:none}

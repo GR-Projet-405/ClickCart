@@ -38,7 +38,7 @@ import com.clickcart.model.AccountStatus;
 import com.clickcart.model.PasswordResetCode;
 import com.clickcart.model.RefreshToken;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+import com.clickcart.service.AccountStore;
 
 @ExtendWith(MockitoExtension.class)
 class PasswordResetServiceTest {
@@ -50,7 +50,7 @@ class PasswordResetServiceTest {
     private MongoTemplate mongo;
 
     @Mock
-    private UserRepository users;
+    private AccountStore users;
 
     @Mock
     private RefreshTokenService refreshTokens;

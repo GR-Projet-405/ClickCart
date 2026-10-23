@@ -46,7 +46,7 @@ public class LoginAttemptService {
                 query(where("_id").is(userId)),
                 new Update().inc("failedLoginAttempts", 1),
                 FindAndModifyOptions.options().returnNew(true),
-                User.class);
+                User.class, AccountStore.collection(userId));
         int attempts = updated != null ? updated.getFailedLoginAttempts() : maxAttempts;
 
         if (attempts >= maxAttempts) {
@@ -54,17 +54,23 @@ public class LoginAttemptService {
             mongo.updateFirst(
                     query(where("_id").is(userId)),
                     new Update().set("lockedUntil", lockedUntil).set("failedLoginAttempts", 0),
-                    User.class);
+                    User.class, AccountStore.collection(userId));
             return new FailureOutcome(0, lockedUntil);
         }
         return new FailureOutcome(maxAttempts - attempts, null);
     }
 
     /** Clears the counter and any lock, e.g. after a successful login or a password reset. */
+    public void recordSuccess(String userId, Instant now) {
+        mongo.updateFirst(query(where("_id").is(userId)),
+                new Update().set("failedLoginAttempts", 0).unset("lockedUntil")
+                        .set("lastLoginAt", now).set("updatedAt", now), User.class, AccountStore.collection(userId));
+    }
+
     public void clear(String userId) {
         mongo.updateFirst(
                 query(where("_id").is(userId)),
                 new Update().set("failedLoginAttempts", 0).unset("lockedUntil"),
-                User.class);
+                User.class, AccountStore.collection(userId));
     }
 }

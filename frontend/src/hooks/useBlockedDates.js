@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { CURRENT_PROVIDER_ID } from "../config/provider";
+import { getCurrentProviderId } from "../config/provider";
 import {
   getBlockedDates,
   createBlockedDate,
@@ -17,7 +17,7 @@ export default function useBlockedDates() {
     setLoading(true);
     setError(null);
     try {
-      const data = await getBlockedDates(CURRENT_PROVIDER_ID);
+      const data = await getBlockedDates(getCurrentProviderId());
       setBlockedDates(data);
     } catch (err) {
       setError(err);
@@ -33,7 +33,7 @@ export default function useBlockedDates() {
       setLoading(true);
       setError(null);
       try {
-        const data = await getBlockedDates(CURRENT_PROVIDER_ID);
+        const data = await getBlockedDates(getCurrentProviderId());
         if (!controller.signal.aborted) {
           setBlockedDates(data);
         }
@@ -62,7 +62,7 @@ export default function useBlockedDates() {
       setError(null);
       try {
         const created = await createBlockedDate(
-          CURRENT_PROVIDER_ID,
+          getCurrentProviderId(),
           blockedDate
         );
         await fetchBlockedDates();
@@ -83,7 +83,7 @@ export default function useBlockedDates() {
       setError(null);
       try {
         const updated = await updateBlockedDate(
-          CURRENT_PROVIDER_ID,
+          getCurrentProviderId(),
           id,
           blockedDate
         );
@@ -104,7 +104,7 @@ export default function useBlockedDates() {
       setMutating(true);
       setError(null);
       try {
-        await deleteBlockedDate(CURRENT_PROVIDER_ID, id);
+        await deleteBlockedDate(getCurrentProviderId(), id);
         await fetchBlockedDates();
       } catch (err) {
         setError(err);

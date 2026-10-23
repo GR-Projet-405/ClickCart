@@ -1,3 +1,4 @@
+import ThemeToggle from "../../common/ThemeToggle";
 import React, { useEffect, useState } from "react";
 import { Bell, Heart, Menu, X, LogOut } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -6,7 +7,7 @@ import BrandLogo from "../../common/BrandLogo";
 import IconButton from "../../common/IconButton";
 import PageContainer from "../../common/PageContainer";
 import { customerNavigation } from "../../../config/customerNavigation";
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth, homePathForRole } from "../../../context/AuthContext";
 import { useCustomer } from "../../../context/CustomerContext";
 import CustomerMobileNav from "../CustomerMobileNav";
 import NavItem from "../NavItem";
@@ -83,11 +84,12 @@ export default function CustomerHeader() {
           <BrandLogo size="shell" showTagline />
         </Link>
         <nav className="customer-header__nav" aria-label="Customer navigation">
-          {customerNavigation.map((item) => (
+          {customerNavigation.filter(item => !item.customerOnly || user?.role === "CUSTOMER").map((item) => (
             <NavItem key={item.label} {...item} active={pathname === item.to} />
           ))}
         </nav>
         <div className="customer-header__actions">
+          <ThemeToggle />
           <IconButton
             className={`customer-header__desktop-action ${
               isFavoritesActive ? "customer-header__action--active" : ""
@@ -114,12 +116,12 @@ export default function CustomerHeader() {
             <>
               {/* Clean profile icon button directly navigating to /customer/profile */}
               <Link
-                to="/customer/profile"
+                to={user?.role === "CUSTOMER" ? "/customer/profile" : homePathForRole(user?.role)}
                 className={`customer-header__account ${
                   isProfileActive ? "customer-header__account--active" : ""
                 }`}
-                title="Go to Customer Profile"
-                aria-label="View customer profile"
+                title="Open your account"
+                aria-label="Open your account"
               >
                 <Avatar
                   src={profile?.avatarUrl}

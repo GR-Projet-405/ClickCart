@@ -1,1 +1,5 @@
 /* Provider-specific feature geometry belongs inside routed pages, not this shell. */
+
+.provider-session-loading { min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; color: var(--cc-text-secondary); }
+.dashboard-header__identity { text-decoration: none; color: inherit; min-width: 0; }
+.dashboard-header__identity-copy strong { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

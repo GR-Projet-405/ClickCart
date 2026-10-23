@@ -21,6 +21,7 @@
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
+import { AdminProfileProvider } from "../../context/AdminProfileContext";
 import AdminHeader from "../../components/navigation/AdminHeader";
 import AdminMobileNav from "../../components/navigation/AdminMobileNav";
 import AdminSidebar from "../../components/navigation/AdminSidebar";
@@ -54,7 +55,7 @@ export default function AdminLayout() {
   );
 
   return (
-    <div
+    <AdminProfileProvider><div
       className="dashboard-shell admin-layout"
       data-sidebar-collapsed={sidebarCollapsed || undefined}
     >
@@ -91,6 +92,6 @@ export default function AdminLayout() {
 
       {/* ── Mobile slide-in navigation ───────────────────────── */}
       <AdminMobileNav open={menuOpen} onClose={() => setMenuOpen(false)} />
-    </div>
+    </div></AdminProfileProvider>
   );
 }

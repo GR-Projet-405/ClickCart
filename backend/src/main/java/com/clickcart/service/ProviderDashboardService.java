@@ -28,6 +28,8 @@ public class ProviderDashboardService {
     private final ReviewRepository reviewRepository;
     private final ProviderProfileRepository profileRepository;
     private final ProviderProfileService profileService;
+    @org.springframework.beans.factory.annotation.Autowired private ProviderEarningService earningService;
+    @org.springframework.beans.factory.annotation.Autowired private ProviderVerificationService verificationService;
 
     public ProviderDashboardService(
             ProviderJobRepository jobRepository,
@@ -48,15 +50,20 @@ public class ProviderDashboardService {
         List<Review> allReviews = reviewRepository.findByProviderIdOrderByCreatedAtDesc(providerId);
 
         // 1. Profile - calculate completion from actual provider profile
+        com.clickcart.dto.ProviderProfileResponse ownProfile = profileService.getOrCreateProfile(providerId);
+        String profileName = "business".equals(ownProfile.getProviderType())
+                ? ownProfile.getBusinessName() : ownProfile.getFullName();
+        if (profileName == null || profileName.isBlank()) profileName = ownProfile.getContactPerson();
+        if (profileName != null && !profileName.isBlank()) displayName = profileName;
         String greeting = getGreeting(displayName);
-        int profileCompletion = calculateProfileCompletion(providerId);
+        int profileCompletion = ownProfile.getCompletionPercentage();
         ProviderProfileDto profile = new ProviderProfileDto(
                 providerId,
                 displayName,
                 "Service Provider",
-                null, // Avatar not loaded for dashboard to avoid cross-module dependency
-                true,
-                true,
+                ownProfile.getProfileImage(),
+                verificationService.getByUserId(providerId).map(v -> "APPROVED".equals(v.getStatus())).orElse(false),
+                false,
                 greeting,
                 "Here's how your business is performing today.",
                 profileCompletion
@@ -79,11 +86,9 @@ public class ProviderDashboardService {
         );
 
         // 3. Performance Summary
-        double totalEarnings = allJobs.stream()
-                .filter(j -> j.getStatus() == JobStatus.COMPLETED && j.getNetPayout() != null)
-                .mapToDouble(ProviderJob::getNetPayout)
-                .sum();
-        
+        var recordedEarnings = earningService.getRecordedEarnings(providerId).stream().filter(e -> e.getStatus() != com.clickcart.model.EarningStatus.REFUNDED).toList();
+        double totalEarnings = recordedEarnings.stream().filter(e -> e.getNetAmount() != null).mapToDouble(e -> e.getNetAmount().doubleValue()).sum();
+
         double avgRating = allReviews.stream()
                 .mapToInt(Review::getRating)
                 .average().orElse(0.0);
@@ -112,7 +117,7 @@ public class ProviderDashboardService {
 
         // 5. Recent Activity
         List<ProviderJob> sortedByUpdated = new ArrayList<>(allJobs);
-        sortedByUpdated.sort(Comparator.comparing(ProviderJob::getUpdatedAt).reversed());
+        sortedByUpdated.sort(Comparator.comparing(ProviderJob::getUpdatedAt, Comparator.nullsLast(Comparator.reverseOrder())));
         List<RecentActivityDto> activity = sortedByUpdated.stream().limit(4).map(j -> {
             String type = j.getStatus() == JobStatus.COMPLETED ? "job_completed" : "booking_accepted";
             String title = j.getStatus() == JobStatus.COMPLETED ? "Job Completed" : (j.getStatus() == JobStatus.IN_PROGRESS ? "Job Started" : "Booking Accepted");
@@ -140,7 +145,7 @@ public class ProviderDashboardService {
         servicePerformance.sort(Comparator.comparing(ServicePerformanceDto::getRevenue).reversed());
 
         // 7. Chart Data (real data from database)
-        Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> chartData = buildChartData(allJobs, allReviews);
+        Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> chartData = buildChartData(allJobs, allReviews, recordedEarnings);
         PerformanceOverviewDto overview = new PerformanceOverviewDto(
                 "Your performance overview",
                 chartData
@@ -183,7 +188,7 @@ public class ProviderDashboardService {
         return (hours / 24) + " days ago";
     }
 
-    private Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> buildChartData(List<ProviderJob> allJobs, List<Review> allReviews) {
+    private Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> buildChartData(List<ProviderJob> allJobs, List<Review> allReviews, List<com.clickcart.model.ProviderEarning> recordedEarnings) {
         Map<String, Map<String, PerformanceOverviewDto.MetricSeries>> ranges = new LinkedHashMap<>();
 
         // 7 Days calculation
@@ -202,7 +207,7 @@ public class ProviderDashboardService {
                 .filter(j -> ZonedDateTime.ofInstant(j.getCompletedAt(), ZONE).toLocalDate().equals(day.toLocalDate()))
                 .collect(Collectors.toList());
             
-            double dEarnings = dayJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
+            double dEarnings = recordedEarnings.stream().filter(e -> e.getCreatedAt() != null && e.getNetAmount() != null && e.getCreatedAt().atZone(ZONE).toLocalDate().equals(day.toLocalDate())).mapToDouble(e -> e.getNetAmount().doubleValue()).sum();
             earnings7d.add(dEarnings);
             jobs7d.add((double) dayJobs.size());
             
@@ -250,7 +255,7 @@ public class ProviderDashboardService {
                 .filter(j -> ZonedDateTime.ofInstant(j.getCompletedAt(), ZONE).toLocalDate().equals(day.toLocalDate()))
                 .collect(Collectors.toList());
 
-            double dEarnings = dayJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
+            double dEarnings = recordedEarnings.stream().filter(e -> e.getCreatedAt() != null && e.getNetAmount() != null && e.getCreatedAt().atZone(ZONE).toLocalDate().equals(day.toLocalDate())).mapToDouble(e -> e.getNetAmount().doubleValue()).sum();
             earnings30d.add(dEarnings);
             jobs30d.add((double) dayJobs.size());
 
@@ -289,7 +294,7 @@ public class ProviderDashboardService {
         List<Double> ratings6m = new ArrayList<>();
 
         for (int i = 23; i >= 0; i--) {
-            ZonedDateTime weekStart = now.minusWeeks(i);
+            ZonedDateTime weekStart = now.toLocalDate().atStartOfDay(ZONE).minusDays(6).minusWeeks(i);
             labels6m.add(weekStart.format(DateTimeFormatter.ofPattern("MMM d")));
 
             ZonedDateTime weekEnd = weekStart.plusDays(7);
@@ -301,7 +306,7 @@ public class ProviderDashboardService {
                 })
                 .collect(Collectors.toList());
 
-            double wEarnings = weekJobs.stream().filter(j -> j.getNetPayout() != null).mapToDouble(ProviderJob::getNetPayout).sum();
+            double wEarnings = recordedEarnings.stream().filter(e -> e.getCreatedAt() != null && e.getNetAmount() != null && !e.getCreatedAt().isBefore(weekStart.toInstant()) && e.getCreatedAt().isBefore(weekEnd.toInstant())).mapToDouble(e -> e.getNetAmount().doubleValue()).sum();
             earnings6m.add(wEarnings);
             jobs6m.add((double) weekJobs.size());
 

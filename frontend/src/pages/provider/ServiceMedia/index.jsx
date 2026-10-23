@@ -1,4 +1,8 @@
-import React, { useMemo, useRef, useState } from "react";
+import { confirmAction, requestCaption } from "../../../context/FeedbackHost";
+import { useParams } from "react-router-dom";
+import { authFetch } from "../../../services/authService";
+import { API_BASE_URL } from "../../../config/api";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { ImagePlus, Pencil, Play, Plus, Trash2, UploadCloud } from "lucide-react";
 import PageContainer from "../../../components/common/PageContainer";
 import Card from "../../../components/common/Card";
@@ -7,16 +11,7 @@ import IconButton from "../../../components/common/IconButton";
 import EmptyState from "../../../components/common/EmptyState";
 import "./ServiceMedia.css";
 
-// Swap this mock list for data from your services API once it's wired up.
-const INITIAL_MEDIA = [
-  { id: "m1", type: "image", url: null, isCover: true },
-  { id: "m2", type: "image", url: null, isCover: false },
-  { id: "m3", type: "video", url: null, isCover: false, duration: "0:32" },
-  { id: "m4", type: "image", url: null, isCover: false },
-  { id: "m5", type: "video", url: null, isCover: false, duration: "0:32" },
-  { id: "m6", type: "image", url: null, isCover: false },
-  { id: "m7", type: "image", url: null, isCover: false },
-];
+
 
 const TABS = [
   { key: "all", label: "All Media" },
@@ -25,7 +20,33 @@ const TABS = [
 ];
 
 export default function ServiceMedia() {
-  const [media, setMedia] = useState(INITIAL_MEDIA);
+  const { serviceId } = useParams();
+  const [media, setMedia] = useState([]);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(true);
+  const [loaded, setLoaded] = useState(false);
+  const endpoint = `${API_BASE_URL}/provider/services/${encodeURIComponent(serviceId)}/media`;
+  async function request(path = "", options) {
+    const response = await authFetch(`${endpoint}${path}`, options);
+    const data = await response.json().catch(() => null);
+    if (!response.ok) throw new Error(data?.message || "Unable to update service media. Please try again.");
+    return data;
+  }
+  useEffect(() => {
+    let active = true;
+    setMedia([]); setBusy(true); setLoaded(false); setError("");
+    request().then(data => { if (active) { setMedia(data); setLoaded(true); } })
+      .catch(err => { if (active) setError(err.message); })
+      .finally(() => { if (active) setBusy(false); });
+    return () => { active = false; };
+  }, [serviceId]);
+  async function mutate(path, options) {
+    if (busy || !loaded) return;
+    setBusy(true); setError("");
+    try { setMedia(await request(path, options)); }
+    catch (err) { setError(err.message); }
+    finally { setBusy(false); }
+  }
   const [activeTab, setActiveTab] = useState("all");
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
@@ -47,19 +68,17 @@ export default function ServiceMedia() {
     [media, activeTab]
   );
 
-  function addFiles(fileList) {
-    const files = Array.from(fileList || []);
-    if (!files.length) return;
-
-    const newItems = files.map((file, index) => ({
-      id: `${file.name}-${Date.now()}-${index}`,
-      type: file.type.startsWith("video") ? "video" : "image",
-      url: URL.createObjectURL(file),
-      isCover: false,
-      duration: file.type.startsWith("video") ? "0:00" : undefined,
-    }));
-
-    setMedia((prev) => [...prev, ...newItems]);
+  async function addFiles(fileList) {
+    if (busy || !loaded) return;
+    setBusy(true); setError("");
+    try {
+      for (const file of Array.from(fileList || [])) {
+        if (file.size > 10 * 1024 * 1024) throw new Error("Choose files up to 10 MB.");
+        const body = new FormData(); body.append("file", file);
+        setMedia(await request("", { method: "POST", body }));
+      }
+    } catch (err) { setError(err.message); }
+    finally { setBusy(false); }
   }
 
   function handleBrowseClick() {
@@ -77,26 +96,23 @@ export default function ServiceMedia() {
     addFiles(event.dataTransfer.files);
   }
 
-  function handleDelete(id) {
-    setMedia((prev) => prev.filter((item) => item.id !== id));
+  async function handleDelete(id) {
+    if (await confirmAction("Remove this file from your service?")) mutate(`/${id}`, { method: "DELETE" });
   }
 
   function handleMakeCover(id) {
-    setMedia((prev) =>
-      prev.map((item) => ({ ...item, isCover: item.id === id }))
-    );
+    mutate(`/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ isCover: true }) });
   }
 
-  function handleEdit(id) {
-    const label = window.prompt("Set a caption / alt text for this media:");
-    if (label === null) return;
-    setMedia((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, label } : item))
-    );
+  async function handleEdit(id) {
+    const label = await requestCaption("Caption for this media:", media.find(item => item.id === id)?.label || "");
+    if (label !== null) mutate(`/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label }) });
   }
 
   return (
     <PageContainer className="service-media">
+      {error && <p role="alert" className="provider-data-error">{error}</p>}
+      {busy && <p role="status">Saving or loading your media…</p>}
       <header className="service-media__header">
         <div>
           <h1 className="cc-h1">Service Media &amp; Portfolio</h1>
@@ -105,7 +121,7 @@ export default function ServiceMedia() {
             to expect.
           </p>
         </div>
-        <Button leftIcon={<UploadCloud size={18} />} onClick={handleBrowseClick}>
+        <Button leftIcon={<UploadCloud size={18} />} onClick={handleBrowseClick} disabled={busy || !loaded}>
           Upload Media
         </Button>
       </header>
@@ -149,7 +165,7 @@ export default function ServiceMedia() {
             or click to browse &bull; JPG, PNG, MP4 up to 50MB
           </p>
         </div>
-        <Button variant="outline" onClick={handleBrowseClick}>
+        <Button variant="outline" onClick={handleBrowseClick} disabled={busy || !loaded}>
           Browse Files
         </Button>
         <input
@@ -165,8 +181,7 @@ export default function ServiceMedia() {
       <section className="service-media__portfolio">
         <h2 className="cc-h3">Your Portfolio</h2>
         <p className="cc-body-sm cc-text-secondary">
-          Reorder, edit, or remove items. Your first photo appears as the
-          cover.
+          Edit or remove your saved media, and choose an image for the service cover.
         </p>
 
         {visibleMedia.length === 0 ? (
@@ -182,7 +197,7 @@ export default function ServiceMedia() {
                 <div className="service-media__thumb">
                   {item.url ? (
                     item.type === "video" ? (
-                      <video src={item.url} muted />
+                      <video src={item.url} controls preload="metadata" />
                     ) : (
                       <img src={item.url} alt={item.label || "Portfolio media"} />
                     )
@@ -217,7 +232,7 @@ export default function ServiceMedia() {
                     </span>
                   )}
 
-                  {!item.isCover && (
+                  {!item.isCover && item.type === "image" && (
                     <button
                       type="button"
                       className="service-media__make-cover"
@@ -233,7 +248,7 @@ export default function ServiceMedia() {
             <button
               type="button"
               className="service-media__add-tile"
-              onClick={handleBrowseClick}
+              onClick={handleBrowseClick} disabled={busy || !loaded}
             >
               <Plus size={22} />
               <span>Add Media</span>

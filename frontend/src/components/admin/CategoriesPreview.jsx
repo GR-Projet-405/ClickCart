@@ -74,12 +74,7 @@ export default function CategoriesPreview({ loading, source, data, error }) {
         })}
       </ul>
 
-      {source === "fallback" ? (
-        <p className={styles.footnote} role="status">
-          Showing sample categories — the category service is unavailable
-          {error ? ` (${error})` : ""}.
-        </p>
-      ) : null}
+
     </div>
   );
 }

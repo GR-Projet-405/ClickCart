@@ -32,9 +32,22 @@ import com.clickcart.repository.SettlementRepository;
 @Service
 public class SettlementService {
 
-    private static final String DEFAULT_PROVIDER_ID = "PROV-1002";
+
 
     private final SettlementRepository settlementRepo;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.ProviderPayoutLedgerRepository payouts;
+    private void syncPayoutRequests() {
+        if (payouts == null) return;
+        String providerId = com.clickcart.security.CurrentProvider.id();
+        payouts.findById(providerId).ifPresent(ledger -> ledger.requests.forEach(request -> {
+
+            Settlement row = new Settlement(); row.setId(request.id()); row.setProviderId(providerId);
+            row.setMerchantRecipient(request.bankName()); row.setAmount(request.amount()); row.setNetAmount(request.amount()); row.setFee(BigDecimal.ZERO);
+            row.setCaptureDate(request.createdAt().atZone(java.time.ZoneOffset.UTC).toLocalDate()); row.setPayoutMethod("Bank Transfer"); row.setFinanceState("SETTLED".equals(request.status()) ? "Settled" : "REJECTED".equals(request.status()) ? "Disputed" : "On Hold");
+            settlementRepo.save(row);
+        }));
+    }
 
     public SettlementService(SettlementRepository settlementRepo) {
         this.settlementRepo = settlementRepo;
@@ -47,6 +60,7 @@ public class SettlementService {
                                                   String search, String dateFilter,
                                                   String stateFilter) {
 
+        syncPayoutRequests();
         // BE-048: normalise page=0 (or any negative value) to page=1
         int safePage = Math.max(1, page);
 
@@ -59,14 +73,14 @@ public class SettlementService {
         // ── 1. Paginated settlement rows ───────────────────────────────────
         Page<Settlement> dbPage;
         if (hasState && hasSearch) {
-            dbPage = settlementRepo.searchByProviderStateAndQuery(DEFAULT_PROVIDER_ID, stateFilter, q, pageable);
+            dbPage = settlementRepo.searchByProviderStateAndQuery(com.clickcart.security.CurrentProvider.id(), stateFilter, q, pageable);
         } else if (hasState) {
             dbPage = settlementRepo.findByProviderIdAndFinanceStateOrderByCaptureDateDescIdDesc(
-                    DEFAULT_PROVIDER_ID, stateFilter, pageable);
+                    com.clickcart.security.CurrentProvider.id(), stateFilter, pageable);
         } else if (hasSearch) {
-            dbPage = settlementRepo.searchByProviderAndQuery(DEFAULT_PROVIDER_ID, q, pageable);
+            dbPage = settlementRepo.searchByProviderAndQuery(com.clickcart.security.CurrentProvider.id(), q, pageable);
         } else {
-            dbPage = settlementRepo.findByProviderIdOrderByCaptureDateDescIdDesc(DEFAULT_PROVIDER_ID, pageable);
+            dbPage = settlementRepo.findByProviderIdOrderByCaptureDateDescIdDesc(com.clickcart.security.CurrentProvider.id(), pageable);
         }
 
         List<SettlementRow> rows = dbPage.getContent().stream()
@@ -125,7 +139,7 @@ public class SettlementService {
 
         Settlement s = new Settlement();
         s.setId(nextId);
-        s.setProviderId(DEFAULT_PROVIDER_ID);
+        s.setProviderId(com.clickcart.security.CurrentProvider.id());
         s.setMerchantRecipient(req.getMerchantRecipient());
         s.setAmount(amount);
         s.setFee(fee);
@@ -142,7 +156,7 @@ public class SettlementService {
     /** Finds the highest existing #SET-XXXX number and returns the next one. */
     private String generateNextId() {
         List<Settlement> all = settlementRepo.findByProviderIdAndFinanceStateIn(
-                DEFAULT_PROVIDER_ID,
+                com.clickcart.security.CurrentProvider.id(),
                 List.of("Authorized","Captured","Settled","Released","On Hold","Disputed"));
 
         int maxNum = all.stream()
@@ -163,7 +177,7 @@ public class SettlementService {
      * ───────────────────────────────────────────────────────────────────── */
     private SummaryStats buildSummary() {
         List<Settlement> all = settlementRepo.findByProviderIdAndFinanceStateIn(
-                DEFAULT_PROVIDER_ID,
+                com.clickcart.security.CurrentProvider.id(),
                 List.of("Authorized","Captured","Settled","Released","On Hold","Disputed"));
 
         SummaryStats s = new SummaryStats();
@@ -207,12 +221,12 @@ public class SettlementService {
      * ───────────────────────────────────────────────────────────────────── */
     private FinanceAuthStates buildAuthStates() {
         FinanceAuthStates f = new FinanceAuthStates();
-        f.setAuthorized((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "Authorized"));
-        f.setCaptured  ((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "Captured"));
-        f.setSettled   ((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "Settled"));
-        f.setReleased  ((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "Released"));
-        f.setOnHold    ((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "On Hold"));
-        f.setDisputed  ((int) settlementRepo.countByProviderIdAndFinanceState(DEFAULT_PROVIDER_ID, "Disputed"));
+        f.setAuthorized((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "Authorized"));
+        f.setCaptured  ((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "Captured"));
+        f.setSettled   ((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "Settled"));
+        f.setReleased  ((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "Released"));
+        f.setOnHold    ((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "On Hold"));
+        f.setDisputed  ((int) settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), "Disputed"));
         return f;
     }
 
@@ -220,48 +234,20 @@ public class SettlementService {
      * Settlement cycle tracker – driven by wall-clock time (T+0..T+3)
      * ───────────────────────────────────────────────────────────────────── */
     private CycleTracker buildCycleTracker() {
-        LocalTime now  = LocalTime.now();
-        int hour       = now.getHour();
-        int minute     = now.getMinute();
-
-        CycleTracker ct = new CycleTracker();
+        CycleTracker tracker = new CycleTracker();
+        String[] states = {"Authorized", "Captured", "Settled", "Released"};
         List<CycleStep> steps = new ArrayList<>();
-        steps.add(new CycleStep("T+0 · Authorized", "completed", "Completed (12:00 AM)"));
-        steps.add(new CycleStep("T+1 · Captured",   "completed", "Completed (04:00 AM)"));
-
-        if (hour < 12) {
-            // T+2 in progress, T+3 pending
-            String hhmm = String.format("%02d:%02d %s",
-                    hour % 12 == 0 ? 12 : hour % 12,
-                    minute,
-                    hour < 12 ? "AM" : "PM");
-            steps.add(new CycleStep("T+2 · Settled",  "in-progress", "In Progress (" + hhmm + ")"));
-            steps.add(new CycleStep("T+3 · Released",  "pending",     "Estimated (12:00 PM)"));
-            ct.setCurrentStage("T+2");
-            int minutesPast8 = Math.max(0, (hour - 8) * 60 + minute);
-            int totalMinutes = 4 * 60; // 08:00 → 12:00
-            ct.setProgressPercent(Math.min(99, 50 + (int)(minutesPast8 * 50.0 / totalMinutes)));
-            long minsLeft = ((12L - hour) * 60) - minute;
-            ct.setCycleFinishesIn(minsLeft + "m");
-        } else if (hour < 18) {
-            // T+3 in progress
-            steps.add(new CycleStep("T+2 · Settled",  "completed",   "Completed (12:00 PM)"));
-            steps.add(new CycleStep("T+3 · Released",  "in-progress", "In Progress"));
-            ct.setCurrentStage("T+3");
-            ct.setProgressPercent(80 + (hour - 12) * 2);
-            long minsLeft = ((18L - hour) * 60) - minute;
-            ct.setCycleFinishesIn(minsLeft / 60 + "h " + minsLeft % 60 + "m");
-        } else {
-            // Cycle complete
-            steps.add(new CycleStep("T+2 · Settled",  "completed", "Completed (12:00 PM)"));
-            steps.add(new CycleStep("T+3 · Released",  "completed", "Completed (06:00 PM)"));
-            ct.setCurrentStage("T+3");
-            ct.setProgressPercent(100);
-            ct.setCycleFinishesIn("Completed");
+        long total = 0, released = 0;
+        for (String state : states) {
+            long count = settlementRepo.countByProviderIdAndFinanceState(com.clickcart.security.CurrentProvider.id(), state);
+            total += count;
+            if ("Released".equals(state)) released = count;
+            steps.add(new CycleStep(state, count > 0 ? "completed" : "pending", count + " records"));
         }
-
-        ct.setSteps(steps);
-        return ct;
+        tracker.setSteps(steps);
+        tracker.setCurrentStage(total == 0 ? "No settlements yet" : "Recorded settlement states");
+        tracker.setProgressPercent(total == 0 ? 0 : (int) (released * 100 / total));
+        return tracker;
     }
 
     /* ─────────────────────────────────────────────────────────────────────

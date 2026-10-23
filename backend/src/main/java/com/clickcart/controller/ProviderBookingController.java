@@ -35,7 +35,7 @@ public class ProviderBookingController {
             @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @RequestParam(defaultValue = "PENDING_APPROVAL") BookingStatus status,
             @RequestParam(required = false) String sort) {
-        requireProvider(providerId);
+        providerId = com.clickcart.security.CurrentProvider.id();
         if (status != BookingStatus.PENDING_APPROVAL) {
             throw new BookingException(HttpStatus.BAD_REQUEST, "Only pending bookings can be listed here");
         }
@@ -46,7 +46,7 @@ public class ProviderBookingController {
     public BookingResponse get(
             @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @PathVariable String id) {
-        requireProvider(providerId);
+        providerId = com.clickcart.security.CurrentProvider.id();
         return bookings.get(id, providerId);
     }
 
@@ -55,7 +55,7 @@ public class ProviderBookingController {
             @RequestHeader(value = "X-Provider-Id", required = false) String providerId,
             @PathVariable String id,
             @Valid @RequestBody BookingDecisionRequest request) {
-        requireProvider(providerId);
+        providerId = com.clickcart.security.CurrentProvider.id();
         return bookings.decide(id, providerId, request.getStatus());
     }
 

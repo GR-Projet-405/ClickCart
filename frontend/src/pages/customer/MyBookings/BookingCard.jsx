@@ -69,7 +69,7 @@ export default function BookingCard({ booking, onViewDetails }) {
           <span className="booking-card__rating-separator">|</span>
           <div className="booking-card__rating">
             <Star className="booking-card__star-icon" size={14} fill="#f59e0b" color="#f59e0b" />
-            <span className="booking-card__rating-score">{providerRating || 5.0}</span>
+            <span className="booking-card__rating-score">{providerReviewCount ? providerRating : "New"}</span>
             <span className="booking-card__rating-count">({providerReviewCount || 0})</span>
           </div>
         </div>

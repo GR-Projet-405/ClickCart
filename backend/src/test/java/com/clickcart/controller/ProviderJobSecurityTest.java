@@ -44,6 +44,10 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import({SecurityConfig.class, ProviderJobService.class, GlobalExceptionHandler.class})
 class ProviderJobSecurityTest {
 
+    @MockitoBean private com.clickcart.service.CommissionTransactionService commissions;
+    @MockitoBean private com.clickcart.service.CommissionRuleService commissionRules;
+    @MockitoBean private com.clickcart.service.CommissionCalculatorService calculator;
+
     private static final String TEST_SECRET = "provider-job-test-secret-that-is-long-enough";
     private static final String JOB_ID = "job-a";
 

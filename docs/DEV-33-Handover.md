@@ -4,7 +4,7 @@
 
 DEV-33 stores in-app notification records and notification preferences for the signed-in user. Each record is owned by one recipient. A preference that is turned off stops new records of that type from being stored. A missing preference means the type stays on.
 
-The page is the Notification Center. The provider, admin, and customer bells open the same page inside each role's existing layout.
+The page is the Notification Center. Customer and provider notifications use their respective workspace layouts.
 
 2. Frontend
 
@@ -13,7 +13,6 @@ The page is the Notification Center. The provider, admin, and customer bells ope
 - API client: `frontend/src/services/notificationService.js`
 - Routes, all rendering `NotificationsPage`:
   - `/provider/notifications` inside `ServiceProviderLayout`
-  - `/admin/notifications` inside `AdminLayout`
   - `/notifications` inside `CustomerLayout`
 
 The page loads preference groups and the unread count. Disable All turns the visible toggles off locally. Save Preferences sends the map to the API. The unread line uses the count returned for the signed-in user.

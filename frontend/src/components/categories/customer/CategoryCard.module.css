@@ -1,5 +1,5 @@
 .card {
-  background-color: #ffffff;
+  background-color: var(--cc-bg-surface);
   border: 2px solid transparent;
   border-radius: 12px;
   padding: 32px 24px;
@@ -28,7 +28,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background-color: #f3f4f6;
+  background-color: var(--cc-bg-muted);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,14 +52,14 @@
 .title {
   font-size: 1.125rem;
   font-weight: 600;
-  color: #111827;
+  color: var(--cc-text-primary);
   margin: 0 0 8px 0;
   font-family: inherit;
 }
 
 .serviceCount {
   font-size: 0.875rem;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   margin: 0;
   font-family: inherit;
   transition: color 0.25s ease;

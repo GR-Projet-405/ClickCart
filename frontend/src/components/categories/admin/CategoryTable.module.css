@@ -1,9 +1,9 @@
 .tableContainer {
-  background: #ffffff;
+  background: var(--cc-bg-surface);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow-x: auto;
-  border: 1px solid #f3f4f6;
+  border: 1px solid var(--cc-bg-muted);
 }
 
 .table {
@@ -16,16 +16,16 @@
   padding: 16px 24px;
   font-size: 0.75rem;
   font-weight: 600;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #f3f4f6;
-  background-color: #fafafa;
+  border-bottom: 1px solid var(--cc-bg-muted);
+  background-color: var(--cc-bg-muted);
 }
 
 .table td {
   padding: 16px 24px;
-  border-bottom: 1px solid #f3f4f6;
+  border-bottom: 1px solid var(--cc-bg-muted);
   vertical-align: middle;
 }
 
@@ -44,12 +44,12 @@
 
 .categoryName {
   font-weight: 600;
-  color: #111827;
+  color: var(--cc-text-primary);
   font-size: 0.95rem;
 }
 
 .subcategories {
-  color: #6b7280;
+  color: var(--cc-text-secondary);
   font-size: 0.9rem;
 }
 
@@ -72,13 +72,13 @@
 }
 
 .editBtn {
-  background-color: #f3f4f6;
+  background-color: var(--cc-bg-muted);
   color: #4b5563;
 }
 
 .editBtn:hover {
-  background-color: #e5e7eb;
-  color: #111827;
+  background-color: var(--cc-border);
+  color: var(--cc-text-primary);
 }
 
 .deleteBtn {
@@ -94,5 +94,5 @@
 .emptyState {
   text-align: center;
   padding: 40px;
-  color: #6b7280;
+  color: var(--cc-text-secondary);
 }

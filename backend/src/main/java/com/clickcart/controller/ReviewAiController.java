@@ -15,7 +15,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/reviews/ai")
-@CrossOrigin(origins = "http://localhost:5173")
 public class ReviewAiController {
 
     private final ReviewAiAssistantService aiAssistantService;

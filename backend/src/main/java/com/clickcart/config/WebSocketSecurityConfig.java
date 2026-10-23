@@ -18,6 +18,14 @@ import java.security.Principal;
 @Order(Ordered.HIGHEST_PRECEDENCE + 99)
 public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
 
+    private final com.clickcart.util.JwtUtil jwtUtil;
+    private final com.clickcart.repository.ProviderVerificationRepository verifications;
+
+    public WebSocketSecurityConfig(com.clickcart.util.JwtUtil jwtUtil, com.clickcart.repository.ProviderVerificationRepository verifications) {
+        this.jwtUtil = jwtUtil;
+        this.verifications = verifications;
+    }
+
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
         registration.interceptors(new ChannelInterceptor() {
@@ -31,17 +39,20 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                     
                     if (authHeader != null && authHeader.startsWith("Bearer ")) {
                         String token = authHeader.substring(7);
-                        // TODO(DEV-auth): Replace with actual JWT parsing from the shared Auth utility
-                        // For now we assume token contains the userId directly for testing
-                        String userId = token; // Placeholder
-                        
-                        Principal principal = () -> userId;
+                        Principal principal = jwtUtil.parseAccessToken(token)
+                                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired session"));
                         accessor.setUser(principal);
                     } else {
                         // Reject unauthenticated connection
                         accessor.setUser(null);
                         throw new IllegalArgumentException("No valid authentication found");
                     }
+                }
+                if (accessor != null && accessor.getUser() instanceof com.clickcart.dto.auth.AuthenticatedUser user
+                        && user.role() == com.clickcart.model.Role.SERVICE_PROVIDER
+                        && accessor.getCommand() != StompCommand.DISCONNECT
+                        && verifications.findByUserId(user.id()).filter(v -> "APPROVED".equals(v.getStatus())).isEmpty()) {
+                    throw new IllegalArgumentException("Provider verification must be approved before messaging");
                 }
                 return message;
             }

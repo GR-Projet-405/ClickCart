@@ -1,3 +1,5 @@
+import { useSearchParams } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { useEffect, useState } from "react";
 
 import { Info } from "lucide-react";
@@ -10,8 +12,7 @@ import CustomerReviewsList from "../../components/reviews/CustomerReviewsList";
 
 import {
   createVerifiedReview,
-  DEV_CUSTOMER_ID,
-  DEV_PROVIDER_ID,
+  fetchOwnReviews,
   fetchReviewEligibility,
   fetchProviderRatingSummary,
   fetchPublishedProviderReviews,
@@ -22,6 +23,8 @@ import {
 import "./reviews.css";
 
 export default function CustomerReviewsPage() {
+  const {user}=useAuth();
+  const [params,setParams]=useSearchParams();
   const [reviews, setReviews] = useState([]);
 
   const [eligibleBooking, setEligibleBooking] = useState(null);
@@ -40,19 +43,17 @@ export default function CustomerReviewsPage() {
 
   const [message, setMessage] = useState("");
 
-  async function loadReviewData() {
+  async function loadReviewData(skipSelected=false) {
     setLoading(true);
     setEligibilityLoading(true);
     setError("");
 
     try {
-      const [reviewData, summaryData, eligibilityData] = await Promise.all([
-        fetchPublishedProviderReviews(DEV_PROVIDER_ID),
-
-        fetchProviderRatingSummary(DEV_PROVIDER_ID),
-
-        fetchReviewEligibility(DEV_CUSTOMER_ID),
-      ]);
+      const eligibilityData = await fetchReviewEligibility(user.id, skipSelected ? undefined : params.get("bookingId"));
+      const providerId = eligibilityData?.providerId || eligibleBooking?.providerId;
+      const [reviewData, summaryData] = providerId ? await Promise.all([
+        fetchOwnReviews(user.id), fetchProviderRatingSummary(providerId)
+      ]) : [await fetchOwnReviews(user.id), null];
 
       setEligibleBooking(eligibilityData);
 
@@ -110,7 +111,7 @@ export default function CustomerReviewsPage() {
 
       setMessage("Review reported successfully and sent for moderation.");
 
-      const summaryData = await fetchProviderRatingSummary(DEV_PROVIDER_ID);
+      const summaryData = await fetchProviderRatingSummary(eligibleBooking?.providerId);
 
       setSummary(summaryData);
     } catch (reportError) {
@@ -124,8 +125,7 @@ export default function CustomerReviewsPage() {
 
     const createdReview = await createVerifiedReview(
       reviewData,
-      DEV_CUSTOMER_ID,
-    );
+        );
 
     setMessage(
       createdReview.moderationStatus === "PUBLISHED"
@@ -133,7 +133,8 @@ export default function CustomerReviewsPage() {
         : "Your review was submitted successfully and is being moderated.",
     );
 
-    await loadReviewData();
+    setParams({}, {replace:true});
+    await loadReviewData(true);
 
     return createdReview;
   }

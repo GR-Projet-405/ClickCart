@@ -27,8 +27,8 @@ function ComingSoon({ label }) {
   );
 }
 
-export default function AvailabilityPage() {
-  const [activeTab, setActiveTab] = useState("working-hours");
+export default function AvailabilityPage({ initialTab = "working-hours" }) {
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   return (
     <PageContainer>

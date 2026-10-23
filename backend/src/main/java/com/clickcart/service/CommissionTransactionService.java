@@ -16,6 +16,7 @@ import java.util.UUID;
 public class CommissionTransactionService {
     private final CommissionTransactionRepository transactions;
     private final CommissionSnapshotRepository snapshots;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.PaymentRepository cashPayments;
     private final CommissionRuleService rules;
     private final CommissionCalculatorService calculator;
 
@@ -51,9 +52,15 @@ public class CommissionTransactionService {
         return changed ? transactions.findAll() : entries;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.UserRepository users;
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.clickcart.repository.ProviderEarningRepository earnings;
     public CommissionTransaction create(TransactionRequest request) {
+        if (request.transactionId() == null || request.transactionId().isBlank() || request.bookingAmount() == null || request.bookingAmount().signum() <= 0 || request.category() == null || request.category().isBlank()) throw new IllegalArgumentException("Transaction ID, positive amount and category are required");
+        if (users != null && request.provider() != null && !request.provider().isBlank() && users.findById(request.provider()).filter(u -> u.getRole() == com.clickcart.model.Role.SERVICE_PROVIDER).isEmpty()) throw new IllegalArgumentException("Choose a registered provider account");
         return transactions.findById(request.transactionId()).map(existing -> {
-            if (existing.bookingAmount().compareTo(request.bookingAmount()) != 0 || !existing.category().equals(request.category())) throw new CommissionRuleService.ConflictException("Transaction ID already exists with a different payload");
+            if (existing.bookingAmount().compareTo(request.bookingAmount()) != 0 || !existing.category().equals(request.category()) || !java.util.Objects.equals(existing.provider(), request.provider()) || !java.util.Objects.equals(existing.customer(), request.customer()) || !java.util.Objects.equals(existing.service(), request.service())) throw new CommissionRuleService.ConflictException("Transaction ID already exists with a different payload");
             return existing;
         }).orElseGet(() -> {
             CommissionRule rule = rules.match(request.category(), request.providerTier(), Instant.now());
@@ -67,6 +74,7 @@ public class CommissionTransactionService {
         CommissionTransaction existing = transactions.findById(id)
                 .orElseThrow(() -> new CommissionRuleService.NotFoundException("Split not found"));
         confirmId(existing, confirmationId);
+        if (existing.status() == TransactionStatus.SETTLED && existing.provider() != null && !existing.provider().isBlank()) throw new CommissionRuleService.ConflictException("A paid transaction cannot be changed or removed");
         if (request.bookingAmount() == null || request.bookingAmount().signum() <= 0
                 || request.category() == null || request.category().isBlank()) {
             throw new IllegalArgumentException("A positive service amount and category are required");
@@ -84,7 +92,9 @@ public class CommissionTransactionService {
         CommissionTransaction existing = transactions.findById(id)
                 .orElseThrow(() -> new CommissionRuleService.NotFoundException("Split not found"));
         confirmId(existing, confirmationId);
+        if (existing.status() == TransactionStatus.SETTLED && existing.provider() != null && !existing.provider().isBlank()) throw new CommissionRuleService.ConflictException("A paid transaction cannot be changed or removed");
         transactions.delete(existing);
+        if (earnings != null) earnings.findByTransactionId(id).ifPresent(earnings::delete);
     }
 
     private void confirmId(CommissionTransaction entry, String confirmationId) {
@@ -98,7 +108,10 @@ public class CommissionTransactionService {
         var existing = transactions.findById(id)
                 .orElseThrow(() -> new CommissionRuleService.NotFoundException("Split not found"));
         confirmId(existing, confirmationId);
+        if (existing.status() == TransactionStatus.SETTLED && existing.provider() != null && !existing.provider().isBlank()) throw new CommissionRuleService.ConflictException("A paid transaction cannot be changed or removed");
         if (paid == null) throw new IllegalArgumentException("Paid state is required");
+        if (Boolean.TRUE.equals(paid) && id.startsWith("JOB-booking-") && cashPayments.findByBookingId(id.substring("JOB-booking-".length())).filter(p -> "COMPLETED".equals(p.getStatus())).isEmpty())
+            throw new CommissionRuleService.ConflictException("Confirm customer cash receipt before settling the commission");
         return transactions.save(new CommissionTransaction(existing.transactionId(), existing.customer(), existing.provider(),
                 existing.service(), existing.bookingAmount(), existing.category(), existing.commissionAmount(),
                 existing.providerEarning(), existing.date(), paid ? TransactionStatus.SETTLED : TransactionStatus.PENDING,

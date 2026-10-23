@@ -25,6 +25,7 @@ public class BlockedDateController {
             @PathVariable String providerId,
             @Valid @RequestBody BlockedDateRequest request) {
 
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         request.setProviderId(providerId);
 
         BlockedDateResponse response =
@@ -38,6 +39,7 @@ public class BlockedDateController {
     @GetMapping
     public ResponseEntity<List<BlockedDateResponse>> getBlockedDates(
             @PathVariable String providerId) {
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
 
         return ResponseEntity.ok(
                 blockedDateService.getBlockedDatesByProvider(providerId)
@@ -50,6 +52,7 @@ public class BlockedDateController {
             @PathVariable String id,
             @Valid @RequestBody BlockedDateRequest request) {
 
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         request.setProviderId(providerId);
 
         BlockedDateResponse response =
@@ -63,6 +66,7 @@ public class BlockedDateController {
             @PathVariable String providerId,
             @PathVariable String id) {
 
+        com.clickcart.security.CurrentProvider.requireOwner(providerId);
         blockedDateService.deleteBlockedDate(id);
 
         return ResponseEntity.noContent().build();

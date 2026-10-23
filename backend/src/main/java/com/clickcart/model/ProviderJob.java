@@ -19,6 +19,12 @@ public class ProviderJob {
     private String providerId;
     private JobStatus status;
     private String serviceTitle;
+    private String serviceId;
+    private String providerName;
+    public String getServiceId(){return serviceId;}
+    public void setServiceId(String value){serviceId=value;}
+    public String getProviderName(){return providerName;}
+    public void setProviderName(String value){providerName=value;}
     private String serviceCategory;
     private String packageName;
     private String slaLabel;

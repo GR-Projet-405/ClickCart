@@ -1,0 +1,65 @@
+spring:
+  application:
+    name: clickcart-backend
+  main:
+    allow-bean-definition-overriding: true
+  config:
+    import: optional:file:.env[.properties], optional:file:.env
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${DATABASE_NAME}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # Gmail / SMTP Settings 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+server:
+  port: ${SERVER_PORT}
+
+clickcart:
+  attachments:
+    dir: ${ATTACHMENTS_DIR}
+  security:
+    enabled: ${CLICKCART_SECURITY_ENABLED}
+    issuer-uri: ${JWT_ISSUER_URI:}
+    audience: ${JWT_AUDIENCE:clickcart}
+  jwt:
+    secret: ${JWT_SECRET}
+    ttl-seconds: ${CLICKCART_JWT_TTL:31536000}
+  upload:
+    proof-dir: ${CLICKCART_PROOF_DIR}
+
+# Cloudinary Settings
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+logging:
+  level:
+    org.springframework.data.mongodb: DEBUG
+    com.clickcart: DEBUG
+
+# Gemini AI Settings
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}

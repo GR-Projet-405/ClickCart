@@ -12,12 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.clickcart.dto.ReviewEligibilityResponse;
 import com.clickcart.service.ReviewEligibilityGateway;
 
-@CrossOrigin(
-        originPatterns = {
-                "http://localhost:*",
-                "http://127.0.0.1:*"
-        }
-)
 @RestController
 @RequestMapping("/api/reviews/me")
 public class ReviewEligibilityController {
@@ -33,10 +27,14 @@ public class ReviewEligibilityController {
     @GetMapping("/eligibility")
     public ResponseEntity<ReviewEligibilityResponse>
     getEligibility(
-            @RequestHeader("X-Customer-Id")
-            String customerId
+            @RequestHeader(value = "X-Customer-Id", required = false)
+            String customerId,
+            @org.springframework.web.bind.annotation.RequestParam(required=false) String bookingId
     ) {
 
+        customerId = com.clickcart.security.CurrentCustomer.id();
+
+        if (bookingId != null && !bookingId.isBlank()) return ResponseEntity.ok(eligibilityGateway.requireEligibleBooking(bookingId, customerId));
         Optional<ReviewEligibilityResponse> eligibility =
                 eligibilityGateway
                         .findEligibleBookingForCustomer(

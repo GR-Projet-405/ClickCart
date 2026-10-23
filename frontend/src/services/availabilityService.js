@@ -1,3 +1,4 @@
+import { authFetch } from "./authService";
 import { API_BASE_URL } from "../config/api";
 
 function buildHeaders() {
@@ -24,7 +25,7 @@ async function handleResponse(response) {
 }
 
 export async function getAvailabilityRules(providerId) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability`,
     { headers: buildHeaders() }
   );
@@ -32,7 +33,7 @@ export async function getAvailabilityRules(providerId) {
 }
 
 export async function getActiveAvailabilityRules(providerId) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability/active`,
     { headers: buildHeaders() }
   );
@@ -40,7 +41,7 @@ export async function getActiveAvailabilityRules(providerId) {
 }
 
 export async function createAvailabilityRule(providerId, rule) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability`,
     {
       method: "POST",
@@ -52,7 +53,7 @@ export async function createAvailabilityRule(providerId, rule) {
 }
 
 export async function updateAvailabilityRule(providerId, id, rule) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability/${id}`,
     {
       method: "PUT",
@@ -64,7 +65,7 @@ export async function updateAvailabilityRule(providerId, id, rule) {
 }
 
 export async function deleteAvailabilityRule(providerId, id) {
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability/${id}`,
     {
       method: "DELETE",
@@ -76,7 +77,7 @@ export async function deleteAvailabilityRule(providerId, id) {
 
 export async function getAvailabilitySlots(providerId, startDate, endDate) {
   const params = new URLSearchParams({ startDate, endDate });
-  const response = await fetch(
+  const response = await authFetch(
     `${API_BASE_URL}/providers/${providerId}/availability/slots?${params}`,
     { headers: buildHeaders() }
   );

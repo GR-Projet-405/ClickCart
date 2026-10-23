@@ -6,7 +6,7 @@ import jakarta.validation.constraints.Positive;
 
 public class BookingCreateDTO {
 
-    @NotBlank(message = "Customer ID is required")
+
     private String customerId;
 
     @NotBlank(message = "Customer name is required")
@@ -18,16 +18,16 @@ public class BookingCreateDTO {
     @NotBlank(message = "Service ID is required")
     private String serviceId;
 
-    @NotBlank(message = "Service title is required")
+
     private String serviceTitle;
 
     private String serviceCategory;
     private String imageUrl;
 
-    @NotBlank(message = "Provider ID is required")
+
     private String providerId;
 
-    @NotBlank(message = "Provider name is required")
+
     private String providerName;
 
     private String providerAvatar;
@@ -45,8 +45,8 @@ public class BookingCreateDTO {
 
     private String address;
 
-    @NotNull(message = "Total cost is required")
-    @Positive(message = "Total cost must be positive")
+
+
     private Double totalCost;
 
     private String currency = "LKR";

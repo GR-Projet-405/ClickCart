@@ -44,7 +44,7 @@ const TABS = [
   { id: "ACTIVE", label: "Active / Live" },
   { id: "COMPLETED", label: "Completed" },
 ];
-const AUTO_DISPATCH_STORAGE_KEY = "clickcart-provider-auto-dispatch";
+
 
 export default function ProviderJobManagementDashboard() {
   const navigate = useNavigate();
@@ -55,13 +55,6 @@ export default function ProviderJobManagementDashboard() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [busyId, setBusyId] = useState("");
-  const [autoDispatch, setAutoDispatch] = useState(() => {
-    try {
-      return window.localStorage.getItem(AUTO_DISPATCH_STORAGE_KEY) === "true";
-    } catch {
-      return false;
-    }
-  });
   const [showCustomJobModal, setShowCustomJobModal] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(new Date());
   const [selectedTimelineDate, setSelectedTimelineDate] = useState(() => new Date());
@@ -160,16 +153,6 @@ export default function ProviderJobManagementDashboard() {
   const timelineJobs = timelineSourceJobs
     .filter((job) => job.scheduledStart && job.status !== "COMPLETED" && isSameDay(job.scheduledStart, selectedTimelineDate))
     .sort((first, second) => new Date(first.scheduledStart) - new Date(second.scheduledStart));
-
-  function toggleAutoDispatch() {
-    const nextValue = !autoDispatch;
-    setAutoDispatch(nextValue);
-    try {
-      window.localStorage.setItem(AUTO_DISPATCH_STORAGE_KEY, String(nextValue));
-    } catch {
-      setError("Unable to save the auto-dispatch preference in this browser.");
-    }
-  }
 
   async function onAccept(job) {
     setBusyId(job.id);
@@ -422,25 +405,12 @@ export default function ProviderJobManagementDashboard() {
         <aside className="pj-side">
           <section className="pj-side-card">
             <div className="pj-side-card__head">
-              <h2>Dispatch & Matching</h2>
-              <span className={`pj-chip ${autoDispatch ? "pj-chip--green" : "pj-chip--muted"}`}>
-                {autoDispatch ? "Enabled" : "Paused"}
-              </span>
+              <h2>Service coverage</h2>
             </div>
-            <div className="pj-toggle">
-              <span>Instant Auto-Dispatch<br /><small>Preference saved in this browser</small></span>
-              <button
-                className="pj-switch"
-                type="button"
-                aria-label={`${autoDispatch ? "Disable" : "Enable"} auto-dispatch preference`}
-                aria-pressed={autoDispatch}
-                onClick={toggleAutoDispatch}
-              >
-                <span />
-              </button>
-            </div>
+            <p>Manage where customers can book your services.</p>
+            <button type="button" onClick={() => navigate("/provider/service-areas")}>Manage service areas</button>
             <div className="pj-metrics">
-              <div><span>Operating Service Radius</span><strong>10 km</strong></div>
+
               <div><span>Today&apos;s Distance Covered</span><strong>{todayDistance.toFixed(1)} km</strong></div>
               <div><span>Jobs in current shift</span><strong>{schedule.length}</strong></div>
             </div>

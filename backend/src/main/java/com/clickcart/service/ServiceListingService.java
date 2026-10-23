@@ -43,9 +43,21 @@ public class ServiceListingService {
         this.pricingRepository = pricingRepository;
     }
 
+    public void requireOwnedService(String serviceId) {
+        if (repository.findByIdAndProviderId(serviceId, com.clickcart.security.CurrentProvider.id()).isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Service not found in your account");
+        }
+    }
+
     public List<ServiceListingResponse> findForProvider(String providerId) {
         return repository.findAllByProviderIdOrderByUpdatedAtDesc(providerId)
                 .stream().map(this::toResponse).toList();
+    }
+
+    public List<ServiceListingResponse> findPublicForProvider(String providerId) {
+        return repository.findAllByProviderIdOrderByUpdatedAtDesc(providerId).stream()
+                .filter(listing -> listing.getStatus() == ServiceListingStatus.ACTIVE)
+                .map(this::toResponse).toList();
     }
 
     public PagedResponse<ServiceListingResponse> searchMarketplace(

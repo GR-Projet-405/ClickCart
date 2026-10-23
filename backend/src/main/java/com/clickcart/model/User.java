@@ -23,6 +23,9 @@ public class User {
     private String passwordHash;
 
     private String fullName;
+    private String avatar;
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 
     /** Normalized to E.164, e.g. +94771234567. */
     private String phone;

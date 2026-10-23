@@ -548,10 +548,7 @@ export default function SettlementTrackingPage() {
             onClick={handleExport} aria-label="Export settlements as CSV">
             <Download size={15} /> Export CSV
           </button>
-          <button id="stl-add-settlement" className="stl__add-btn"
-            onClick={() => setShowModal(true)} aria-label="Add new settlement">
-            <Plus size={15} /> Add Settlement
-          </button>
+          <a className="stl__add-btn" href="/provider/earnings">Request payout</a>
         </div>
       </div>
 
@@ -604,9 +601,9 @@ export default function SettlementTrackingPage() {
           )}
         </div>
         <div className="stl__cycle-progress-wrap" role="progressbar"
-          aria-valuenow={cycle.progressPercent ?? 75} aria-valuemin={0} aria-valuemax={100}>
+          aria-valuenow={cycle.progressPercent ?? 0} aria-valuemin={0} aria-valuemax={100}>
           <div className="stl__cycle-progress-fill"
-            style={{ width: `${cycle.progressPercent ?? 75}%` }} />
+            style={{ width: `${cycle.progressPercent ?? 0}%` }} />
         </div>
         <div className="stl__cycle-steps">
           {(cycle.steps ?? []).map((step) => (

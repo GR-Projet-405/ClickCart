@@ -1,3 +1,4 @@
+import { notify } from "../../../context/FeedbackHost";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -25,6 +26,7 @@ export default function TransactionHistoryPage() {
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Filters
   const [search, setSearch] = useState("");
@@ -37,6 +39,7 @@ export default function TransactionHistoryPage() {
   useEffect(() => {
     async function fetchTx() {
       setLoading(true);
+      setError("");
       try {
         const res = await providerEarningsService.getTransactions({
           search,
@@ -48,7 +51,8 @@ export default function TransactionHistoryPage() {
         setTotalElements(res.totalElements || 0);
         setTotalPages(res.totalPages || 1);
       } catch (err) {
-        console.error("Failed to load transactions:", err);
+        setError(err.message);
+        setTransactions([]);
       } finally {
         setLoading(false);
       }
@@ -78,7 +82,7 @@ export default function TransactionHistoryPage() {
 
   const handleExportCSV = () => {
     if (transactions.length === 0) {
-      alert("No transactions to export.");
+      notify("No transactions to export.");
       return;
     }
 
@@ -108,6 +112,7 @@ export default function TransactionHistoryPage() {
 
   return (
     <div className="earnings-page">
+      {error && <div role="alert" className="provider-data-error">{error}</div>}
       {/* Top Header */}
       <div className="tx-page-header">
         <Link to="/provider/earnings" className="back-link">
@@ -194,13 +199,13 @@ export default function TransactionHistoryPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem", color: "#64748b" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2rem", color: "var(--cc-text-secondary)" }}>
                     Loading transactions...
                   </td>
                 </tr>
               ) : transactions.length === 0 ? (
                 <tr>
-                  <td colSpan={9} style={{ textAlign: "center", padding: "2.5rem", color: "#64748b" }}>
+                  <td colSpan={9} style={{ textAlign: "center", padding: "2.5rem", color: "var(--cc-text-secondary)" }}>
                     No transactions match the selected filters.
                   </td>
                 </tr>
@@ -287,8 +292,8 @@ export default function TransactionHistoryPage() {
               {/* Header Box */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b" }}>Transaction Reference</div>
-                  <div style={{ fontSize: "1.125rem", fontWeight: "700", color: "#0f172a" }}>
+                  <div style={{ fontSize: "0.75rem", color: "var(--cc-text-secondary)" }}>Transaction Reference</div>
+                  <div style={{ fontSize: "1.125rem", fontWeight: "700", color: "var(--cc-text-primary)" }}>
                     {selectedTx.transactionId}
                   </div>
                 </div>
@@ -323,7 +328,7 @@ export default function TransactionHistoryPage() {
 
               {/* Financial Calculation Breakdown (BR-07) */}
               <div className="drawer-breakdown-card">
-                <div style={{ fontSize: "0.8125rem", fontWeight: "700", color: "#0f172a", marginBottom: "0.25rem" }}>
+                <div style={{ fontSize: "0.8125rem", fontWeight: "700", color: "var(--cc-text-primary)", marginBottom: "0.25rem" }}>
                   Financial Snapshot Breakdown
                 </div>
                 <div className="drawer-breakdown-row">
@@ -353,7 +358,7 @@ export default function TransactionHistoryPage() {
               <button
                 className="btn-download-invoice"
                 onClick={() => {
-                  alert(`Downloading tax receipt for ${selectedTx.transactionId}...`);
+                  notify("PDF invoices are not available. Use Export CSV to download your transaction records.");
                 }}
               >
                 <Download size={16} />

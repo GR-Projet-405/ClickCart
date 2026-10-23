@@ -29,7 +29,7 @@ import com.clickcart.model.AccountStatus;
 import com.clickcart.model.PasswordResetCode;
 import com.clickcart.model.RefreshToken;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+
 import com.clickcart.util.SecureTokens;
 
 /**
@@ -49,7 +49,7 @@ public class PasswordResetService {
     private static final Duration PURGE_AFTER = Duration.ofHours(1);
 
     private final MongoTemplate mongo;
-    private final UserRepository users;
+    private final AccountStore users;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenService refreshTokens;
     private final PasswordResetCodeSender codeSender;
@@ -62,7 +62,7 @@ public class PasswordResetService {
     @Autowired
     public PasswordResetService(
             MongoTemplate mongo,
-            UserRepository users,
+            AccountStore users,
             PasswordEncoder passwordEncoder,
             RefreshTokenService refreshTokens,
             PasswordResetCodeSender codeSender,
@@ -75,7 +75,7 @@ public class PasswordResetService {
                 Clock.systemUTC());
     }
 
-    PasswordResetService(MongoTemplate mongo, UserRepository users, PasswordEncoder passwordEncoder,
+    PasswordResetService(MongoTemplate mongo, AccountStore users, PasswordEncoder passwordEncoder,
                          RefreshTokenService refreshTokens, PasswordResetCodeSender codeSender,
                          Duration codeTtl, Duration resendCooldown, int maxCodeAttempts,
                          Duration resetTokenTtl, Clock clock) {

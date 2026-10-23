@@ -15,7 +15,7 @@ import {
  */
 const AuthContext = createContext(null);
 
-// "/" currently redirects to the provider dashboard in AppRoutes, so customers land on the marketplace.
+// Each account opens its own workspace after authentication.
 const HOME_BY_ROLE = {
   CUSTOMER: "/find-services",
   SERVICE_PROVIDER: "/provider/dashboard",
@@ -29,9 +29,9 @@ export function homePathForRole(role) {
 
 /** Whether a user with this role may be sent back to a page they originally requested. */
 export function canReturnTo(role, path) {
-  if (!path || path === "/" || path.startsWith("/login") || path.startsWith("/register")) return false;
-  if (path.startsWith("/provider")) return role === "SERVICE_PROVIDER";
-  if (path.startsWith("/admin")) return role === "PLATFORM_ADMIN";
+  if (!path || !path.startsWith("/") || path.startsWith("//") || path === "/admin/login" || path === "/" || path.startsWith("/login") || path.startsWith("/register")) return false;
+  if (path === "/provider" || path.startsWith("/provider/")) return role === "SERVICE_PROVIDER";
+  if (path.startsWith("/admin") || path.startsWith("/commission_management")) return role === "PLATFORM_ADMIN";
   return role === "CUSTOMER";
 }
 

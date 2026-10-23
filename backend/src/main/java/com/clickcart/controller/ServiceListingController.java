@@ -27,7 +27,6 @@ import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/api/provider/services")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 @Validated
 public class ServiceListingController {
 
@@ -39,35 +38,39 @@ public class ServiceListingController {
 
     @GetMapping
     public List<ServiceListingResponse> list(
-        @RequestParam @NotBlank String providerId
+        @RequestParam(required = false) String providerId
     ) {
+        providerId = com.clickcart.security.CurrentProvider.id();
         return service.findForProvider(providerId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ServiceListingResponse create(
-        @RequestParam @NotBlank String providerId,
+        @RequestParam(required = false) String providerId,
         @Valid @RequestBody ServiceListingRequest request
     ) {
+        providerId = com.clickcart.security.CurrentProvider.id();
         return service.create(providerId, request);
     }
 
     @PutMapping("/{id}")
     public ServiceListingResponse update(
         @PathVariable String id,
-        @RequestParam @NotBlank String providerId,
+        @RequestParam(required = false) String providerId,
         @Valid @RequestBody ServiceListingRequest request
     ) {
+        providerId = com.clickcart.security.CurrentProvider.id();
         return service.update(providerId, id, request);
     }
 
     @PatchMapping("/{id}/status")
     public ServiceListingResponse updateStatus(
         @PathVariable String id,
-        @RequestParam @NotBlank String providerId,
+        @RequestParam(required = false) String providerId,
         @Valid @RequestBody ServiceListingStatusRequest request
     ) {
+        providerId = com.clickcart.security.CurrentProvider.id();
         return service.updateStatus(providerId, id, request.status());
     }
 
@@ -75,8 +78,9 @@ public class ServiceListingController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(
         @PathVariable String id,
-        @RequestParam @NotBlank String providerId
+        @RequestParam(required = false) String providerId
     ) {
+        providerId = com.clickcart.security.CurrentProvider.id();
         service.delete(providerId, id);
     }
 }

@@ -32,6 +32,8 @@ public class AuthIndexInitializer {
 
     @EventListener(ApplicationReadyEvent.class)
     public void ensureIndexes() {
+        // Creating the index also creates the admins collection on first startup.
+        mongoTemplate.indexOps("admins").ensureIndex(new Index("email", Sort.Direction.ASC).unique().named("uk_admins_email"));
         try {
             mongoTemplate.indexOps(User.class)
                     .ensureIndex(new Index("email", Sort.Direction.ASC).unique().named("uk_users_email"));

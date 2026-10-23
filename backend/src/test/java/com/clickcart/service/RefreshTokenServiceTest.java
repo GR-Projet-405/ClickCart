@@ -31,7 +31,7 @@ import com.clickcart.exception.AuthException;
 import com.clickcart.model.AccountStatus;
 import com.clickcart.model.RefreshToken;
 import com.clickcart.model.User;
-import com.clickcart.repository.UserRepository;
+import com.clickcart.service.AccountStore;
 import com.clickcart.service.RefreshTokenService.IssuedRefreshToken;
 import com.clickcart.service.RefreshTokenService.Rotation;
 import com.clickcart.util.SecureTokens;
@@ -45,7 +45,7 @@ class RefreshTokenServiceTest {
     private MongoTemplate mongo;
 
     @Mock
-    private UserRepository users;
+    private AccountStore users;
 
     private RefreshTokenService service;
 

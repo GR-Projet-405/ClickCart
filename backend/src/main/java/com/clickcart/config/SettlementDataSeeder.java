@@ -21,6 +21,7 @@ import com.clickcart.repository.SettlementRepository;
  * and Sri Lankan bank / payment method names into MongoDB.
  * Drops and re-seeds on every restart so any data changes take effect immediately.
  */
+@org.springframework.boot.autoconfigure.condition.ConditionalOnProperty(name = "clickcart.demo-data.enabled", havingValue = "true")
 @Component
 @Order(20)
 public class SettlementDataSeeder implements CommandLineRunner {
