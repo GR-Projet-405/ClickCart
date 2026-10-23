@@ -124,6 +124,7 @@ public class MongoReviewEligibilityGateway
             );
         }
 
+        bookingId = resolveBookingId(job);
         if (reviewRepository.existsByBookingId(bookingId)) {
             throw new IllegalStateException(
                     "A review already exists for this booking"

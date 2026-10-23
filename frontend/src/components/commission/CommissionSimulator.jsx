@@ -1,3 +1,4 @@
+import { requestCaption } from "../../context/FeedbackHost";
 import { commissionFetch } from "../../services/commissionApi";
 import { useEffect, useId, useRef, useState } from "react";
 import { Search, X } from "lucide-react";
@@ -81,10 +82,10 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
       input.setSelectionRange(position, position);
     });
   };
-  const confirmChange = (entry, action) => {
+  const confirmChange = async (entry, action) => {
     const expected = entry?.publicId || entry?.transactionId;
     if (!expected) return null;
-    const entered = window.prompt(`Enter unique ID ${expected} to ${action}.`);
+    const entered = await requestCaption(`Enter unique ID ${expected} to ${action}.`);
     if (entered === null) return null;
     if (entered.trim().toUpperCase() !== expected.toUpperCase()) {
       setSaveError("Unique ID does not match. No changes were made.");
@@ -95,7 +96,7 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   const save = async (event) => {
     event.preventDefault();
     if (!ready || saving || deletingId || saved || amount <= 0) return;
-    const confirmationId = editingId ? confirmChange(history.find((entry) => entry.transactionId === editingId), "update this split") : null;
+    const confirmationId = editingId ? await confirmChange(history.find((entry) => entry.transactionId === editingId), "update this split") : null;
     if (editingId && !confirmationId) return;
     setSaving(true);
     setSaveError("");
@@ -134,7 +135,7 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   };
   const remove = async (entry) => {
     if (saving || deletingId) return;
-    const confirmationId = confirmChange(entry, "delete this split");
+    const confirmationId = await confirmChange(entry, "delete this split");
     if (!confirmationId) return;
     setDeletingId(entry.transactionId);
     setSaveError("");
@@ -154,7 +155,7 @@ export default function CommissionSimulator({ rules = [], history = [], onSaved,
   const togglePaid = async (entry) => {
     if (saving || deletingId || loading) return;
     const paid = entry.status !== "SETTLED";
-    const confirmationId = confirmChange(entry, `turn Paid ${paid ? "on" : "off"}`);
+    const confirmationId = await confirmChange(entry, `turn Paid ${paid ? "on" : "off"}`);
     if (!confirmationId) return;
     setSaving(true);
     setSaveError("");

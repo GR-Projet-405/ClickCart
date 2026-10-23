@@ -27,6 +27,7 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
 
     private static final Logger log = LoggerFactory.getLogger(ProviderEarningServiceImpl.class);
 
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.PaymentRepository payments;
     private final ProviderEarningRepository earningRepository;
     @org.springframework.beans.factory.annotation.Autowired
     private com.clickcart.repository.ProviderPayoutLedgerRepository payouts;
@@ -49,6 +50,11 @@ public class ProviderEarningServiceImpl implements ProviderEarningService {
                 earning.setGrossAmount(tx.bookingAmount()); earning.setCommissionAmount(tx.commissionAmount()); earning.setNetAmount(tx.providerEarning());
                 earning.setCommissionRate(tx.bookingAmount().signum() == 0 ? BigDecimal.ZERO : tx.commissionAmount().divide(tx.bookingAmount(), 6, RoundingMode.HALF_UP));
                 earning.setStatus(tx.status() == com.clickcart.model.CommissionTransaction.TransactionStatus.SETTLED ? EarningStatus.AVAILABLE : EarningStatus.PENDING);
+                if (payments != null && tx.transactionId().startsWith("JOB-booking-")) {
+                    var cash=payments.findByBookingId(tx.transactionId().substring("JOB-booking-".length()));
+                    // Cash is already in the provider's hands, never available for a second payout.
+                    earning.setStatus(cash.filter(p -> "COMPLETED".equals(p.getStatus())).isPresent() ? EarningStatus.SETTLED : EarningStatus.PENDING);
+                }
                 earning.setCreatedAt(tx.date()); earning.setServiceCompletedAt(tx.date()); combined.put(tx.transactionId(), earning);
             }
         }

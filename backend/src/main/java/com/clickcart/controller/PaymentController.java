@@ -12,10 +12,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/checkout")
-@CrossOrigin(origins = "*")
 public class PaymentController {
 
     private final PaymentService paymentService;
+    @Autowired private com.clickcart.service.PaymentServiceImpl cashPayments;
+    @PostMapping("/booking/{bookingId}/confirm-cash")
+    public PaymentResponse confirmCash(@PathVariable String bookingId) { return cashPayments.confirmCash(bookingId); }
 
     @Autowired
     public PaymentController(PaymentService paymentService) {

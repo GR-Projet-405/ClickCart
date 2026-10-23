@@ -16,6 +16,7 @@ import java.util.UUID;
 public class CommissionTransactionService {
     private final CommissionTransactionRepository transactions;
     private final CommissionSnapshotRepository snapshots;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.PaymentRepository cashPayments;
     private final CommissionRuleService rules;
     private final CommissionCalculatorService calculator;
 
@@ -109,6 +110,8 @@ public class CommissionTransactionService {
         confirmId(existing, confirmationId);
         if (existing.status() == TransactionStatus.SETTLED && existing.provider() != null && !existing.provider().isBlank()) throw new CommissionRuleService.ConflictException("A paid transaction cannot be changed or removed");
         if (paid == null) throw new IllegalArgumentException("Paid state is required");
+        if (Boolean.TRUE.equals(paid) && id.startsWith("JOB-booking-") && cashPayments.findByBookingId(id.substring("JOB-booking-".length())).filter(p -> "COMPLETED".equals(p.getStatus())).isEmpty())
+            throw new CommissionRuleService.ConflictException("Confirm customer cash receipt before settling the commission");
         return transactions.save(new CommissionTransaction(existing.transactionId(), existing.customer(), existing.provider(),
                 existing.service(), existing.bookingAmount(), existing.category(), existing.commissionAmount(),
                 existing.providerEarning(), existing.date(), paid ? TransactionStatus.SETTLED : TransactionStatus.PENDING,

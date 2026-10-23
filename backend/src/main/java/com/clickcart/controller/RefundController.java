@@ -24,7 +24,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/refunds")
-@CrossOrigin(origins = "*")
 public class RefundController {
 
     private final RefundService service;

@@ -37,6 +37,12 @@ public class BookingServiceImpl implements BookingService {
             LocalTime.of(16, 0));
 
     private final BookingRepository bookingRepository;
+    @Autowired
+    private com.clickcart.repository.ProviderVerificationRepository verifications;
+    @Autowired private com.clickcart.repository.ServiceListingRepository listings;
+    @Autowired private com.clickcart.repository.UserRepository users;
+    @Autowired private BookingWorkflowService workflow;
+    @Autowired private ConversationService conversations;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository) {
@@ -120,13 +126,13 @@ public class BookingServiceImpl implements BookingService {
 
         if (tab == null || tab.trim().isEmpty() || "upcoming".equalsIgnoreCase(tab)) {
             bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
-                    Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
+                    Arrays.asList(BookingStatus.PENDING_APPROVAL, BookingStatus.ACCEPTED, BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
         } else if ("active".equalsIgnoreCase(tab)) {
             bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
                     Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
         } else if ("history".equalsIgnoreCase(tab)) {
             bookings = bookingRepository.findByCustomerIdAndStatusIn(customerId,
-                    Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
+                    Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED, BookingStatus.DECLINED));
         } else {
             bookings = bookingRepository.findByCustomerId(customerId);
         }
@@ -139,11 +145,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public BookingSummaryDTO getCustomerBookingSummary(String customerId) {
         long upcoming = bookingRepository.countByCustomerIdAndStatusIn(customerId,
-                Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
+                Arrays.asList(BookingStatus.PENDING_APPROVAL, BookingStatus.ACCEPTED, BookingStatus.UPCOMING, BookingStatus.CONFIRMED));
         long active = bookingRepository.countByCustomerIdAndStatusIn(customerId,
                 Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS));
         long history = bookingRepository.countByCustomerIdAndStatusIn(customerId,
-                Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED));
+                Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED, BookingStatus.DECLINED));
         long total = upcoming + active + history;
 
         return new BookingSummaryDTO(upcoming, active, history, total);
@@ -159,8 +165,28 @@ public class BookingServiceImpl implements BookingService {
     // ORIGINAL CREATE BOOKING (From HEAD)
     @Override
     public BookingDTO createBooking(BookingCreateDTO createDTO) {
+        var listing = listings.findById(createDTO.getServiceId()).orElseThrow(() -> new IllegalArgumentException("Service not found"));
+        if (listing.getStatus() != com.clickcart.model.ServiceListingStatus.ACTIVE) throw new IllegalArgumentException("This service is not available for booking");
+        if (listing.getPriceFrom() == null || listing.getPriceFrom().signum() <= 0) throw new IllegalArgumentException("The provider must set a service price first");
+        var provider = users.findById(listing.getProviderId()).orElseThrow(() -> new IllegalArgumentException("Provider not found"));
+        if (provider.getRole() != com.clickcart.model.Role.SERVICE_PROVIDER) throw new IllegalArgumentException("Invalid provider");
+        if (verifications.findByUserId(listing.getProviderId()).filter(v -> "APPROVED".equals(v.getStatus())).isEmpty()) throw new IllegalArgumentException("This provider must complete verification before accepting bookings");
+        LocalDate date;
+        LocalTime time;
+        try { date = LocalDate.parse(createDTO.getBookingDate()); time = LocalTime.parse(createDTO.getTimeSlot()); }
+        catch (Exception e) { throw new IllegalArgumentException("Choose a valid booking date and time"); }
+        Instant scheduled = date.atTime(time).atZone(java.time.ZoneId.of("Asia/Colombo")).toInstant();
+        if (!scheduled.isAfter(Instant.now())) throw new IllegalArgumentException("Choose a future booking date and time");
+        if (createDTO.getAddress() == null || createDTO.getAddress().isBlank() || createDTO.getCustomerPhone() == null || createDTO.getCustomerPhone().isBlank()) throw new IllegalArgumentException("Address and contact phone are required");
+        createDTO.setProviderId(listing.getProviderId()); createDTO.setProviderName(provider.getFullName());
+        createDTO.setServiceTitle(listing.getTitle()); createDTO.setServiceCategory(listing.getCategory());
+        createDTO.setImageUrl(listing.getImageUrl()); createDTO.setTotalCost(listing.getPriceFrom().doubleValue());
+        createDTO.setCurrency("LKR"); createDTO.setProviderRating(listing.getRating()); createDTO.setProviderReviewCount(listing.getReviewsCount());
         Instant now = Instant.now();
         Booking booking = new Booking();
+        booking.setScheduledAt(scheduled); booking.setBookingLocalDate(date); booking.setStartTime(time);
+        booking.setEstimatedPay(listing.getPriceFrom()); booking.setCity(createDTO.getLocation()); booking.setCountry("Sri Lanka");
+        booking.setUnread(true);
         booking.setCustomerId(createDTO.getCustomerId());
         booking.setCustomerName(createDTO.getCustomerName());
         booking.setCustomerEmail(createDTO.getCustomerEmail());
@@ -172,22 +198,25 @@ public class BookingServiceImpl implements BookingService {
         booking.setProviderId(createDTO.getProviderId());
         booking.setProviderName(createDTO.getProviderName());
         booking.setProviderAvatar(createDTO.getProviderAvatar());
-        booking.setProviderRating(createDTO.getProviderRating() != null ? createDTO.getProviderRating() : 5.0);
+        booking.setProviderRating(createDTO.getProviderRating() != null ? createDTO.getProviderRating() : 0.0);
         booking.setProviderReviewCount(
-                createDTO.getProviderReviewCount() != null ? createDTO.getProviderReviewCount() : 1);
+                createDTO.getProviderReviewCount() != null ? createDTO.getProviderReviewCount() : 0);
         booking.setBookingDate(createDTO.getBookingDate());
         booking.setTimeSlot(createDTO.getTimeSlot());
         booking.setLocation(createDTO.getLocation());
         booking.setAddress(createDTO.getAddress());
         booking.setTotalCost(createDTO.getTotalCost());
         booking.setCurrency(createDTO.getCurrency() != null ? createDTO.getCurrency() : "LKR");
-        booking.setStatus(BookingStatus.UPCOMING);
-        booking.setStatusLabel("Confirmed");
+        booking.setStatus(BookingStatus.PENDING_APPROVAL);
+        booking.setStatusLabel("Awaiting provider approval");
         booking.setNotes(createDTO.getNotes());
         booking.setCreatedAt(now);
         booking.setUpdatedAt(now);
 
         Booking saved = bookingRepository.save(booking);
+        var chat = new com.clickcart.dto.messaging.CreateOrFindConversationRequest();
+        chat.setBookingId(saved.getId()); chat.setProviderId(saved.getProviderId()); chat.setServiceId(saved.getServiceId());
+        conversations.getOrCreateConversation(saved.getCustomerId(), chat);
         return new BookingDTO(saved);
     }
 
@@ -245,6 +274,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = bookingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Booking not found with id: " + id));
 
+        if (!java.util.Set.of(BookingStatus.PENDING_APPROVAL, BookingStatus.CONFIRMED, BookingStatus.ACCEPTED, BookingStatus.UPCOMING).contains(booking.getStatus())) throw new IllegalArgumentException("This booking can no longer be cancelled");
         booking.setStatus(BookingStatus.CANCELLED);
         booking.setStatusLabel("Cancelled");
         if (reason != null && !reason.trim().isEmpty()) {
@@ -288,7 +318,9 @@ public class BookingServiceImpl implements BookingService {
                     HttpStatus.CONFLICT,
                     "Only a pending booking can be accepted or declined");
         }
-        booking.setStatus(nextStatus);
+        booking.setStatus(nextStatus == BookingStatus.ACCEPTED ? BookingStatus.CONFIRMED : BookingStatus.DECLINED);
+        booking.setStatusLabel(nextStatus == BookingStatus.ACCEPTED ? "Confirmed" : "Declined");
+        if (nextStatus == BookingStatus.ACCEPTED) workflow.ensureJob(booking);
         booking.setUnread(false);
         booking.setUpdatedAt(Instant.now());
         return toResponse(bookingRepository.save(booking));
@@ -302,7 +334,9 @@ public class BookingServiceImpl implements BookingService {
                     HttpStatus.CONFLICT,
                     "Only a pending booking can be approved");
         }
+        workflow.ensureJob(booking);
         booking.setStatus(BookingStatus.CONFIRMED);
+        booking.setStatusLabel("Confirmed");
         booking.setUnread(false);
         booking.setUpdatedAt(Instant.now());
         return toResponse(bookingRepository.save(booking));
@@ -317,6 +351,7 @@ public class BookingServiceImpl implements BookingService {
                     "Only a pending booking can be rejected");
         }
         booking.setStatus(BookingStatus.DECLINED);
+        booking.setStatusLabel("Declined");
         booking.setUnread(false);
         booking.setUpdatedAt(Instant.now());
         return toResponse(bookingRepository.save(booking));

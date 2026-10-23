@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
  * </ul>
  */
 @RestController
-@CrossOrigin(origins = "*")
 public class SettlementController {
 
     private final SettlementService settlementService;

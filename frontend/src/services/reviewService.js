@@ -151,8 +151,8 @@ export async function reportReview(reviewId) {
   return parseResponse(response);
 }
 
-export async function fetchReviewEligibility(customerId = DEV_CUSTOMER_ID) {
-  const response = await authFetch(`${API_BASE_URL}/reviews/me/eligibility`, {
+export async function fetchReviewEligibility(customerId = DEV_CUSTOMER_ID, bookingId) {
+  const response = await authFetch(`${API_BASE_URL}/reviews/me/eligibility${bookingId ? `?bookingId=${encodeURIComponent(bookingId)}` : ""}`, {
     method: "GET",
     headers: {
       "X-Customer-Id": customerId,
@@ -183,3 +183,5 @@ export async function createVerifiedReview(
 
   return parseResponse(response);
 }
+
+export async function fetchOwnReviews(customerId) {return parseResponse(await authFetch(`${API_BASE_URL}/reviews/customer/${encodeURIComponent(customerId)}`));}

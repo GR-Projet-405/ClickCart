@@ -19,9 +19,11 @@ import java.security.Principal;
 public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer {
 
     private final com.clickcart.util.JwtUtil jwtUtil;
+    private final com.clickcart.repository.ProviderVerificationRepository verifications;
 
-    public WebSocketSecurityConfig(com.clickcart.util.JwtUtil jwtUtil) {
+    public WebSocketSecurityConfig(com.clickcart.util.JwtUtil jwtUtil, com.clickcart.repository.ProviderVerificationRepository verifications) {
         this.jwtUtil = jwtUtil;
+        this.verifications = verifications;
     }
 
     @Override
@@ -45,6 +47,12 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                         accessor.setUser(null);
                         throw new IllegalArgumentException("No valid authentication found");
                     }
+                }
+                if (accessor != null && accessor.getUser() instanceof com.clickcart.dto.auth.AuthenticatedUser user
+                        && user.role() == com.clickcart.model.Role.SERVICE_PROVIDER
+                        && accessor.getCommand() != StompCommand.DISCONNECT
+                        && verifications.findByUserId(user.id()).filter(v -> "APPROVED".equals(v.getStatus())).isEmpty()) {
+                    throw new IllegalArgumentException("Provider verification must be approved before messaging");
                 }
                 return message;
             }

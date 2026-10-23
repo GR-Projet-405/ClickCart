@@ -10,18 +10,18 @@ public class CreatePaymentIntentRequest {
     @NotBlank(message = "Booking ID is required")
     private String bookingId;
 
-    @NotBlank(message = "Customer ID is required")
+
     private String customerId;
 
     private String providerId;
     private String providerName;
     private String serviceId;
 
-    @NotBlank(message = "Service title is required")
+
     private String serviceTitle;
 
-    @NotNull(message = "Amount is required")
-    @DecimalMin(value = "0.01", message = "Amount must be greater than zero")
+
+
     private BigDecimal amount;
 
     private String currency = "USD";

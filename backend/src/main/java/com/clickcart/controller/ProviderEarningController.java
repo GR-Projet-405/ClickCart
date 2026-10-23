@@ -27,7 +27,6 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/provider/earnings")
-@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ProviderEarningController {
 
     private final ProviderEarningService earningService;

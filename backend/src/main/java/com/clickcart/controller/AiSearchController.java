@@ -9,7 +9,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai")
-@CrossOrigin(origins = "http://localhost:5173") // Frontend for development, adjust as needed for production
+// Frontend for development, adjust as needed for production
 public class AiSearchController {
 
     private final AiSearchService aiSearchService;

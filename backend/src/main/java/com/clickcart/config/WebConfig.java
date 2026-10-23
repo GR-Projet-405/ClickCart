@@ -1,20 +1,3 @@
 package com.clickcart.config;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-
-@Configuration
-public class WebConfig implements WebMvcConfigurer {
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:5173", "http://localhost:5174") // React Frontend URLs
-                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
-                .allowedHeaders("*")
-                .exposedHeaders("Content-Disposition")
-                .allowCredentials(true)
-                .maxAge(3600);
-    }
-}
+/** CORS is configured centrally in CorsConfig and SecurityConfig. */
+public class WebConfig {}

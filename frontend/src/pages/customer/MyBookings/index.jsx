@@ -19,19 +19,20 @@ export default function MyBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedBooking, setSelectedBooking] = useState(null);
 
-  const customerId = "cust_101";
+  const [error,setError]=useState("");
 
   const loadData = async (tab) => {
     setLoading(true);
+    setError("");
     try {
       const [bookingsData, summaryData] = await Promise.all([
-        fetchCustomerBookings(customerId, tab),
-        fetchCustomerBookingSummary(customerId),
+        fetchCustomerBookings(undefined, tab),
+        fetchCustomerBookingSummary(),
       ]);
       setBookings(bookingsData || []);
       setSummary(summaryData || null);
     } catch (error) {
-      console.error("Failed to load customer bookings:", error);
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -50,7 +51,7 @@ export default function MyBookingsPage() {
       await cancelBooking(bookingId, reason);
       await loadData(activeTab);
     } catch (err) {
-      console.error("Error cancelling booking:", err);
+      throw err;
     }
   };
 
@@ -70,6 +71,7 @@ export default function MyBookingsPage() {
   return (
     <div className="my-bookings">
       <PageContainer>
+        {error && <p role="alert">{error}</p>}
         {/* Header */}
         <header className="my-bookings__header">
           <h1 className="my-bookings__title">My Bookings</h1>

@@ -26,7 +26,6 @@ import com.clickcart.service.ProviderVerificationService;
 
 @RestController
 @RequestMapping("/api/admin/providers")
-@CrossOrigin(origins = "*")
 public class ProviderVerificationController {
 
     private final ProviderVerificationService verificationService;

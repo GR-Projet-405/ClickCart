@@ -27,7 +27,6 @@ import jakarta.validation.constraints.NotBlank;
 
 @RestController
 @RequestMapping("/api/provider/services")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 @Validated
 public class ServiceListingController {
 

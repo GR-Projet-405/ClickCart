@@ -7,8 +7,8 @@ const slides=[
  {image:"/assets/service-ac-repair.jpg",title:"Make room for comfort.",copy:"Find air conditioning services for your everyday comfort.",query:"AC",tag:"EVERYDAY, MADE EASIER"}
 ];
 export default function LandingCarousel(){
- const [index,setIndex]=useState(0),[playing,setPlaying]=useState(false),[hover,setHover]=useState(false),[focused,setFocused]=useState(false);
- useEffect(()=>{if(!playing||hover||focused)return;const timer=setInterval(()=>{if(!document.hidden)setIndex(i=>(i+1)%slides.length);},6500);return()=>clearInterval(timer);},[playing,hover,focused]);
+ const [index,setIndex]=useState(0),[playing,setPlaying]=useState(()=>!window.matchMedia("(prefers-reduced-motion: reduce)").matches),[hover,setHover]=useState(false),[focused,setFocused]=useState(false);
+ useEffect(()=>{if(!playing||hover||focused)return;const timer=setInterval(()=>{if(!document.hidden)setIndex(i=>(i+1)%slides.length);},4000);return()=>clearInterval(timer);},[playing,hover,focused]);
  const move=offset=>{setPlaying(false);setIndex(i=>(i+offset+slides.length)%slides.length);};
  const slide=slides[index];
  return <section className="landing-carousel" aria-label="Explore service categories" aria-roledescription="carousel" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} onFocusCapture={()=>setFocused(true)} onBlurCapture={e=>{if(!e.currentTarget.contains(e.relatedTarget))setFocused(false);}} onKeyDown={e=>{if(e.target.tagName==='INPUT')return;if(e.key==='ArrowRight'){e.preventDefault();move(1);}if(e.key==='ArrowLeft'){e.preventDefault();move(-1);}}}>

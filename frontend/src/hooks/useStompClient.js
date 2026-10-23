@@ -31,7 +31,9 @@ export const useStompClient = () => {
         Authorization: token ? `Bearer ${token}` : '',
       },
       beforeConnect: async () => {
-        await refreshSession();
+        let expiresAt = 0;
+        try { expiresAt = JSON.parse(atob(getAccessToken().split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))).exp * 1000; } catch { /* No usable session yet. */ }
+        if (expiresAt <= Date.now() + 30000) await refreshSession();
         stompClient.connectHeaders = { Authorization: `Bearer ${getAccessToken()}` };
       },
       debug: function (str) {

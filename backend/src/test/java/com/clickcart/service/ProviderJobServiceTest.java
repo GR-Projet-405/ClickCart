@@ -32,6 +32,7 @@ class ProviderJobServiceTest {
     @Mock
     private JobProofStorageService storageService;
 
+    @Mock private BookingWorkflowService workflow;
     @Mock private CommissionTransactionService commissions;
     private ProviderJobService service;
 
@@ -41,6 +42,7 @@ class ProviderJobServiceTest {
     @BeforeEach
     void setUp() {
         service = new ProviderJobService(repository, storageService);
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "workflow", workflow);
         org.springframework.test.util.ReflectionTestUtils.setField(service, "commissions", commissions);
     }
 

@@ -46,7 +46,7 @@ export default function PaymentHistoryPage() {
           <h1 style={{ marginTop: "6px" }}>Customer Payment History</h1>
           <p>Track all completed transactions, digital receipts, and payment receipts.</p>
         </div>
-        <Button leftIcon={<Plus size={18} />} onClick={() => navigate("/checkout?bookingId=BKG-DEMO-99")}>
+        <Button leftIcon={<Plus size={18} />} onClick={() => navigate("/my-bookings")}>
           New Test Checkout
         </Button>
       </div>
@@ -82,7 +82,7 @@ export default function PaymentHistoryPage() {
               {filtered.map((item) => (
                 <tr key={item.id || item.receiptNumber}>
                   <td>
-                    <div style={{ fontWeight: "600" }}>{item.receiptNumber || "REC-2026-PENDING"}</div>
+                    <div style={{ fontWeight: "600" }}>{item.receiptNumber || "Awaiting cash receipt"}</div>
                     <div style={{ fontSize: "12px", color: "var(--cc-text-secondary)" }}>
                       {item.paymentDate ? new Date(item.paymentDate).toLocaleDateString() : "Just now"}
                     </div>
@@ -95,7 +95,7 @@ export default function PaymentHistoryPage() {
                     <code>{item.bookingId}</code>
                   </td>
                   <td style={{ fontWeight: "700", color: "var(--cc-text-primary)" }}>
-                    ${item.amount?.toFixed ? item.amount.toFixed(2) : item.amount} {item.currency || "USD"}
+                    {item.amount?.toFixed ? item.amount.toFixed(2) : item.amount} {item.currency || "USD"}
                   </td>
                   <td>
                     <Badge variant={item.status === "COMPLETED" ? "success" : "warning"}>
@@ -107,6 +107,7 @@ export default function PaymentHistoryPage() {
                       size="sm"
                       variant="outline"
                       leftIcon={<FileText size={14} />}
+                      disabled={item.status !== "COMPLETED"}
                       onClick={() => navigate(`/receipt/${item.receiptNumber || item.id}`)}
                     >
                       Receipt

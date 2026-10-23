@@ -1,3 +1,4 @@
+import { notify } from "../../context/FeedbackHost";
 import { authFetch } from "../../services/authService";
 import { API_BASE_URL } from "../../config/api";
 import React, { useState, useEffect } from 'react';
@@ -184,11 +185,11 @@ const VerificationQueue = () => {
         );
         setRejectingProvider(null);
       } else {
-        alert('Failed to reject provider.');
+        notify('Failed to reject provider.');
       }
     } catch (err) {
       console.error('Error confirming rejection:', err);
-      alert('Error updating rejection status.');
+      notify('Error updating rejection status.');
     } finally {
       setIsSubmitting(false);
     }

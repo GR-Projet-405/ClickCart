@@ -7,6 +7,7 @@ import Spinner from "../components/common/Spinner";
 const ProviderContext = createContext(null);
 export const useProvider = () => useContext(ProviderContext);
 function ProviderSession({ children, user }) {
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [verification, setVerification] = useState(null);
   const [verificationError, setVerificationError] = useState("");
@@ -16,7 +17,7 @@ function ProviderSession({ children, user }) {
     const load = () => getProviderProfile().then(data => {
       if (active) setProfile(data);
     }).catch(() => { if (active) setProfile(null); });
-    const loadVerification = () => providerVerificationService.getByUserId().then(data => { if (active) { setVerification(data); setVerificationError(""); } }).catch(err => { if (active) setVerificationError(err.message); }).finally(() => { if (active) setVerificationLoading(false); });
+    const loadVerification = () => providerVerificationService.getByUserId().then(data => { if (active) { setVerification(data); setVerificationError(""); } }).catch(err => { if (active) { setVerification(null); setVerificationError(err.message); } }).finally(() => { if (active) setVerificationLoading(false); });
     loadVerification();
     window.addEventListener("provider_verification_updated", loadVerification);
     window.addEventListener("focus", loadVerification);
@@ -26,7 +27,13 @@ function ProviderSession({ children, user }) {
   }, []);
   const displayName = (profile?.providerType === "business" ? profile.businessName || profile.contactPerson : profile?.fullName)
     || user.fullName || user.email || "Your account";
-  return <ProviderContext.Provider value={{ profile, displayName, user, verification, verificationError, verificationLoading }}>{children}</ProviderContext.Provider>;
+  const onboarding = /^\/provider\/(verification|profile(?:\/.*)?|settings)\/?$/.test(location.pathname);
+  let content = children;
+  if (!onboarding) {
+    if (verificationLoading) content = <div role="status"><Spinner /><p>Checking provider verification…</p></div>;
+    else if (verification?.status !== "APPROVED") content = <Navigate to="/provider/verification" replace />;
+  }
+  return <ProviderContext.Provider value={{ profile, displayName, user, verification, verificationError, verificationLoading }}>{content}</ProviderContext.Provider>;
 }
 export default function ProviderGuard({ children }) {
   const { user, status } = useAuth();

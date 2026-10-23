@@ -27,6 +27,7 @@ import com.clickcart.repository.ProviderJobRepository;
 public class ProviderJobService {
 
     private final ProviderJobRepository repository;
+    @org.springframework.beans.factory.annotation.Autowired private BookingWorkflowService workflow;
     private final JobProofStorageService storageService;
     @org.springframework.beans.factory.annotation.Autowired private CommissionTransactionService commissions;
     @org.springframework.beans.factory.annotation.Autowired private CommissionRuleService commissionRules;
@@ -143,9 +144,11 @@ public class ProviderJobService {
     public ProviderJobDetailDto startJob(String providerId, String jobId) {
         ProviderJob job = requireOwnedJob(providerId, jobId);
         requireStatus(job, JobStatus.ACCEPTED, "Only accepted jobs can be started");
+        workflow.requireActiveBooking(job);
         Instant now = Instant.now();
         job.setStatus(JobStatus.IN_PROGRESS);
         job.setStartedAt(now);
+        workflow.updateBooking(job, com.clickcart.model.BookingStatus.IN_PROGRESS, "In progress");
         job.setProgressLabel("On site servicing");
         job.setProgressPercent(70);
         job.setUpdatedAt(now);
@@ -178,6 +181,7 @@ public class ProviderJobService {
         job.setNetPayout(transaction.providerEarning().doubleValue());
         job.setStatus(JobStatus.COMPLETED);
         job.setCompletedAt(now);
+        workflow.updateBooking(job, com.clickcart.model.BookingStatus.COMPLETED, "Completed - cash payment due");
         job.setProgressLabel("Completed");
         job.setProgressPercent(100);
         if (request != null && request.completionNotes() != null && !request.completionNotes().isBlank()) {

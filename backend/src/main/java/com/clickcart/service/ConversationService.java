@@ -28,6 +28,8 @@ public class ConversationService {
     private static final Logger log = LoggerFactory.getLogger(ConversationService.class);
     private static final int PREVIEW_MAX_LENGTH = 120;
 
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.BookingRepository bookings;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.UserRepository users;
     private final ConversationRepository conversationRepo;
     private final MessageService messageService;
 
@@ -43,23 +45,10 @@ public class ConversationService {
     // ==========================================
 
     public Conversation createOrGetConversationForBooking(CreateConversationRequest req) {
-        return conversationRepo.findByBookingId(req.getBookingId())
-                .orElseGet(() -> {
-                    Conversation c = new Conversation();
-                    c.setBookingId(req.getBookingId());
-                    c.setCustomerId(req.getCustomerId());
-                    c.setProviderId(req.getProviderId());
-                    c.setServiceId(req.getServiceId());
-                    c.setServiceName(req.getServiceName());
-                    c.setServiceCategory(req.getServiceCategory());
-                    c.setCustomerName(req.getCustomerName());
-                    c.setCustomerAvatarFallback(req.getCustomerAvatarFallback());
-                    c.setProviderName(req.getProviderName());
-                    c.setProviderAvatarFallback(req.getProviderAvatarFallback());
-                    c.setBookingStatus(req.getBookingStatus());
-                    c.setLastMessageAt(Instant.now());
-                    return conversationRepo.save(c);
-                });
+        var request = new CreateOrFindConversationRequest();
+        request.setBookingId(req.getBookingId()); request.setProviderId(req.getProviderId()); request.setServiceId(req.getServiceId());
+        var summary = getOrCreateConversation(com.clickcart.security.CurrentCustomer.id(), request);
+        return findConversationById(summary.id());
     }
 
     public List<Conversation> getConversationsForCustomer(String customerId) {
@@ -130,18 +119,27 @@ public class ConversationService {
 
     public ConversationSummaryResponse getOrCreateConversation(String customerId,
             CreateOrFindConversationRequest request) {
+        var customer = users.findById(customerId).filter(u -> u.getRole()==com.clickcart.model.Role.CUSTOMER)
+            .orElseThrow(() -> new AccessForbiddenException("Customer account required"));
         String providerId = request.getProviderId();
-
-        Conversation conversation = conversationRepo
-                .findByCustomerIdAndProviderId(customerId, providerId)
-                .orElseGet(() -> {
-                    log.info("Creating new conversation: customerId={}, providerId={}", customerId, providerId);
-                    Conversation newConv = new Conversation(customerId, providerId);
-                    newConv.setServiceId(request.getServiceId());
-                    newConv.setBookingId(request.getBookingId());
-                    newConv.setLastMessageAt(Instant.now());
-                    return conversationRepo.save(newConv);
-                });
+        var provider = users.findById(providerId).filter(u -> u.getRole()==com.clickcart.model.Role.SERVICE_PROVIDER)
+            .orElseThrow(() -> new ResourceNotFoundException("Provider not found"));
+        com.clickcart.model.Booking booking = null;
+        if (request.getBookingId()!=null && !request.getBookingId().isBlank()) {
+            booking=bookings.findById(request.getBookingId()).orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+            if(!customerId.equals(booking.getCustomerId()) || !providerId.equals(booking.getProviderId())) throw new AccessForbiddenException("Booking participants do not match");
+        }
+        Conversation conversation = (booking == null ? conversationRepo.findByCustomerIdAndProviderId(customerId, providerId) : conversationRepo.findByBookingId(booking.getId()))
+            .orElseGet(() -> new Conversation(customerId, providerId));
+        assertParticipant(conversation, customerId);
+        conversation.setCustomerName(customer.getFullName()); conversation.setProviderName(provider.getFullName());
+        if (booking != null) {
+            conversation.setBookingId(booking.getId()); conversation.setServiceId(booking.getServiceId());
+            conversation.setServiceName(booking.getServiceTitle()); conversation.setServiceCategory(booking.getServiceCategory());
+            conversation.setBookingStatus(booking.getStatus().name());
+        }
+        if(conversation.getLastMessageAt()==null) conversation.setLastMessageAt(Instant.now());
+        conversation=conversationRepo.save(conversation);
 
         return toSummary(conversation, customerId, SenderRole.CUSTOMER);
     }

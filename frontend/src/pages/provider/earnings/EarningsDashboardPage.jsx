@@ -1,3 +1,4 @@
+import { notify } from "../../../context/FeedbackHost";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -71,7 +72,7 @@ export default function EarningsDashboardPage() {
       setPayoutSuccess(res);
       setSummary(await providerEarningsService.getSummary());
     } catch (err) {
-      alert("Error: " + err.message);
+      notify("Error: " + err.message);
     } finally {
       setSubmittingPayout(false);
     }

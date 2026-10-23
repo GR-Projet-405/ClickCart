@@ -1,13 +1,7 @@
-# Platform admin layout usage
+# Admin layout
 
-Admin feature pages belong under the `/admin` route and render as children of `AdminLayout` in `frontend/src/routes/AppRoutes.jsx`.
+`AdminLayout` supplies the shared navigation and page shell for admin pages. Feature content renders through the layout outlet.
 
-Feature pages provide only their main content. Do not recreate `AdminTopBar`, `AdminHeader`, or `AdminSidebar`; the layout supplies them automatically.
+Routes are defined in `frontend/src/routes/AdminRoutes.jsx` and mounted by `AppRoutes.jsx`. Pages reuse the shared layout rather than rendering duplicate headers, sidebars or footers.
 
-```jsx
-<Route path="/admin" element={<AdminLayout />}>
-  <Route path="example-area" element={<ExampleAdminPage />} />
-</Route>
-```
-
-The existing sidebar paths temporarily reuse one neutral workspace placeholder. Assigned developers should replace or add child routes as features are implemented.
+Account access follows the route guards. Provider work routes additionally require approved verification; profile, verification and account settings remain accessible during onboarding. Administrator authentication uses `/admin/login`.

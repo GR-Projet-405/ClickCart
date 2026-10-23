@@ -7,6 +7,7 @@ async function request(path, body) {
  return data;
 }
 export const paymentService = {
+ confirmCash: id => request(`/booking/${encodeURIComponent(id)}/confirm-cash`,{}),
  createPaymentIntent: data => request("/intent",data),
  processPayment: data => request("/process",data),
  getPaymentById: id => request(`/${encodeURIComponent(id)}`),

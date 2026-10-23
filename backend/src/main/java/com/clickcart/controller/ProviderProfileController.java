@@ -14,7 +14,6 @@ import com.clickcart.dto.ProviderProfileRequest;
 import com.clickcart.dto.ProviderProfileResponse;
 import com.clickcart.service.ProviderProfileService;
 
-@CrossOrigin(origins = "http://localhost:5173")
 @RestController
 @RequestMapping("/api/provider/profile")
 public class ProviderProfileController {

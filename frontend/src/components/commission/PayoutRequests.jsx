@@ -1,3 +1,4 @@
+import { requestCaption } from "../../context/FeedbackHost";
 import { useEffect, useState } from "react";
 import { commissionFetch } from "../../services/commissionApi";
 export default function PayoutRequests() {
@@ -5,7 +6,7 @@ export default function PayoutRequests() {
  async function load() { try { const response = await commissionFetch("/api/admin/payouts"); if (!response.ok) throw new Error("Unable to load payout requests"); setEntries(await response.json()); } catch(err) { setError(err.message); } }
  useEffect(() => { load(); }, []);
  async function review(entry,status) {
-  const reference = window.prompt(status === "SETTLED" ? "Enter the bank transfer reference after completing the transfer:" : "Enter the reason for rejecting this payout:");
+  const reference = await requestCaption(status === "SETTLED" ? "Enter the bank transfer reference after completing the transfer:" : "Enter the reason for rejecting this payout:");
   if (!reference?.trim()) return;
   setBusy(true); setError("");
   try { const response = await commissionFetch(`/api/admin/payouts/${entry.providerId}/${entry.request.id}`, { method:"PATCH", headers:{"Content-Type":"application/json"},body:JSON.stringify({status,reference}) }); if (!response.ok) throw new Error((await response.json()).message || "Unable to review this payout"); await load(); } catch(err) { setError(err.message); } finally { setBusy(false); }

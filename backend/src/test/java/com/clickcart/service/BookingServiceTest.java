@@ -35,8 +35,11 @@ class BookingServiceTest {
     @Mock
     private BookingRepository bookingRepository;
 
+    @Mock private BookingWorkflowService workflow;
     @InjectMocks
     private BookingServiceImpl bookingService;
+
+    @org.junit.jupiter.api.BeforeEach void wireWorkflow(){org.springframework.test.util.ReflectionTestUtils.setField(bookingService,"workflow",workflow);}
 
     @Test
     void getCustomerBookings_upcoming_returnsUpcomingBookings() {
@@ -58,11 +61,11 @@ class BookingServiceTest {
 
     @Test
     void getCustomerBookingSummary_returnsCorrectCounts() {
-        when(bookingRepository.countByCustomerIdAndStatusIn(eq("cust_101"), eq(Arrays.asList(BookingStatus.UPCOMING, BookingStatus.CONFIRMED))))
+        when(bookingRepository.countByCustomerIdAndStatusIn(eq("cust_101"), eq(Arrays.asList(BookingStatus.PENDING_APPROVAL, BookingStatus.ACCEPTED, BookingStatus.UPCOMING, BookingStatus.CONFIRMED))))
                 .thenReturn(2L);
         when(bookingRepository.countByCustomerIdAndStatusIn(eq("cust_101"), eq(Arrays.asList(BookingStatus.ACTIVE, BookingStatus.IN_PROGRESS))))
                 .thenReturn(1L);
-        when(bookingRepository.countByCustomerIdAndStatusIn(eq("cust_101"), eq(Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED))))
+        when(bookingRepository.countByCustomerIdAndStatusIn(eq("cust_101"), eq(Arrays.asList(BookingStatus.COMPLETED, BookingStatus.CANCELLED, BookingStatus.DECLINED))))
                 .thenReturn(3L);
 
         BookingSummaryDTO summary = bookingService.getCustomerBookingSummary("cust_101");
@@ -126,7 +129,7 @@ class BookingServiceTest {
 
         var response = bookingService.decide("bk-1", "provider-1", BookingStatus.ACCEPTED);
 
-        assertEquals(BookingStatus.ACCEPTED, response.getStatus());
+        assertEquals(BookingStatus.CONFIRMED, response.getStatus());
         verify(bookingRepository).save(any(Booking.class));
     }
 

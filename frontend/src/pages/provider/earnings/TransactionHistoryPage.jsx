@@ -1,3 +1,4 @@
+import { notify } from "../../../context/FeedbackHost";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -81,7 +82,7 @@ export default function TransactionHistoryPage() {
 
   const handleExportCSV = () => {
     if (transactions.length === 0) {
-      alert("No transactions to export.");
+      notify("No transactions to export.");
       return;
     }
 
@@ -357,7 +358,7 @@ export default function TransactionHistoryPage() {
               <button
                 className="btn-download-invoice"
                 onClick={() => {
-                  alert(`Downloading tax receipt for ${selectedTx.transactionId}...`);
+                  notify("PDF invoices are not available. Use Export CSV to download your transaction records.");
                 }}
               >
                 <Download size={16} />

@@ -1,3 +1,4 @@
+import { confirmAction, requestCaption } from "../../../context/FeedbackHost";
 import { useParams } from "react-router-dom";
 import { authFetch } from "../../../services/authService";
 import { API_BASE_URL } from "../../../config/api";
@@ -95,16 +96,16 @@ export default function ServiceMedia() {
     addFiles(event.dataTransfer.files);
   }
 
-  function handleDelete(id) {
-    if (window.confirm("Remove this file from your service?")) mutate(`/${id}`, { method: "DELETE" });
+  async function handleDelete(id) {
+    if (await confirmAction("Remove this file from your service?")) mutate(`/${id}`, { method: "DELETE" });
   }
 
   function handleMakeCover(id) {
     mutate(`/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ isCover: true }) });
   }
 
-  function handleEdit(id) {
-    const label = window.prompt("Caption for this media:", media.find(item => item.id === id)?.label || "");
+  async function handleEdit(id) {
+    const label = await requestCaption("Caption for this media:", media.find(item => item.id === id)?.label || "");
     if (label !== null) mutate(`/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ label }) });
   }
 

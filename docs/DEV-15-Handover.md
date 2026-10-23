@@ -438,8 +438,3 @@ These are considered **future enhancements** and are not claimed as part of the 
 ### Final Handover Statement
 
 _DEV-15 Provider Matching & Recommendations provides a functional recommendation workflow from provider matching and ranking through frontend presentation, filtering, provider inspection, and booking. The implementation uses service category and distance filtering with match-score-based ranking, supported by frontend sorting and transparent fallback mechanisms. The architecture can be extended later with more advanced weighted, semantic, or AI-based recommendation logic without replacing the existing fallback workflow._
-
-For the DEV-15 handover
-
-- Add a claim-by-claim correction table
-- Create the PDF-ready version

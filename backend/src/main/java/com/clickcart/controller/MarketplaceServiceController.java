@@ -14,10 +14,22 @@ import com.clickcart.service.ServiceListingService;
 
 @RestController
 @RequestMapping("/api/services")
-@CrossOrigin(origins = {"http://localhost:5173", "http://127.0.0.1:5173"})
 public class MarketplaceServiceController {
 
     private final ServiceListingService service;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.ServiceListingRepository listings;
+    @org.springframework.beans.factory.annotation.Autowired private com.clickcart.repository.UserRepository users;
+    @GetMapping("/provider/{id}")
+    public java.util.List<com.clickcart.model.ServiceListing> forProvider(@org.springframework.web.bind.annotation.PathVariable String id) {
+        return listings.findAllByProviderIdOrderByUpdatedAtDesc(id).stream().filter(s -> s.getStatus()==com.clickcart.model.ServiceListingStatus.ACTIVE).toList();
+    }
+    @GetMapping("/{id}")
+    public com.clickcart.model.ServiceListing get(@org.springframework.web.bind.annotation.PathVariable String id) {
+        var listing = listings.findById(id).filter(s -> s.getStatus() == com.clickcart.model.ServiceListingStatus.ACTIVE)
+            .orElseThrow(() -> new com.clickcart.exception.ResourceNotFoundException("Service not available"));
+        users.findById(listing.getProviderId()).ifPresent(user -> listing.setProviderName(user.getFullName()));
+        return listing;
+    }
 
     public MarketplaceServiceController(ServiceListingService service) {
         this.service = service;

@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { messagingService } from "../../../services/messagingService";
 import { X, Calendar, Clock, MapPin, User, ShieldCheck, AlertCircle, Phone, Mail } from "lucide-react";
 import Avatar from "../../../components/common/Avatar";
 import Button from "../../../components/common/Button";
 
 export default function BookingDetailsModal({ booking, onClose, onCancelBooking }) {
+  const navigate=useNavigate();
+  const [actionError,setActionError]=useState("");
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -32,14 +36,15 @@ export default function BookingDetailsModal({ booking, onClose, onCancelBooking 
     customerPhone,
   } = booking;
 
-  const isUpcoming = status === "UPCOMING" || status === "CONFIRMED";
+  const isUpcoming = ["PENDING_APPROVAL","UPCOMING","CONFIRMED","ACCEPTED"].includes(status);
+  const openChat=async()=>{setIsSubmitting(true);setActionError("");try{const c=await messagingService.createOrFindConversation({providerId:booking.providerId,serviceId:booking.serviceId,bookingId:id});navigate(`/messages/${c.id}`);}catch(e){setActionError(e.message);}finally{setIsSubmitting(false);}};
 
   const handleConfirmCancel = async () => {
     setIsSubmitting(true);
-    await onCancelBooking(id, cancelReason);
-    setIsSubmitting(false);
-    setShowCancelConfirm(false);
-    onClose();
+    try {
+      await onCancelBooking(id, cancelReason);
+      setShowCancelConfirm(false); onClose();
+    } catch(e) { setActionError(e.message); } finally {setIsSubmitting(false);}
   };
 
   return (
@@ -82,6 +87,7 @@ export default function BookingDetailsModal({ booking, onClose, onCancelBooking 
                 <AlertCircle size={18} className="booking-modal__alert-icon" />
                 Cancel Booking Confirmation
               </div>
+              {actionError && <p role="alert">{actionError}</p>}
               <p className="booking-modal__cancel-text">
                 Are you sure you want to cancel this booking? This action cannot be undone.
               </p>
@@ -196,6 +202,10 @@ export default function BookingDetailsModal({ booking, onClose, onCancelBooking 
         {/* Footer Actions */}
         {!showCancelConfirm && (
           <div className="booking-modal__footer">
+            {actionError && <p role="alert">{actionError}</p>}
+            <Button variant="outline" disabled={isSubmitting} onClick={openChat}>Message provider</Button>
+            {["CONFIRMED","ACCEPTED","IN_PROGRESS","COMPLETED"].includes(status) && <Button variant="outline" onClick={()=>navigate(`/checkout?bookingId=${encodeURIComponent(id)}`)}>Cash payment / receipt</Button>}
+            {status==="COMPLETED" && <Button variant="outline" onClick={()=>navigate(`/reviews?bookingId=${encodeURIComponent(id)}`)}>Write a review</Button>}
             {isUpcoming && (
               <Button
                 variant="ghost"
