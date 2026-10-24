@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 @Service
 public class AiSearchService {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
+    private final String apiKey;
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -31,9 +30,13 @@ public class AiSearchService {
 
     private static final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=";
 
-    public AiSearchService(ProviderProfileRepository providerProfileRepository, BookingRepository bookingRepository) {
+    public AiSearchService(
+            ProviderProfileRepository providerProfileRepository,
+            BookingRepository bookingRepository,
+            @Value("${gemini.api.key:${GEMINI_API_KEY:}}") String apiKey) {
         this.providerProfileRepository = providerProfileRepository;
         this.bookingRepository = bookingRepository;
+        this.apiKey = apiKey;
     }
 
     public AiSearchResponse searchServices(String userQuery) {
@@ -132,6 +135,10 @@ public class AiSearchService {
     }
 
     private String callGeminiApi(String prompt) throws Exception {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new IllegalStateException("Gemini AI search is unavailable because GEMINI_API_KEY is not configured.");
+        }
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         Map<String, Object> requestBody = Map.of("contents", List.of(Map.of("parts", List.of(Map.of("text", prompt)))));

@@ -62,4 +62,4 @@ logging:
 # Gemini AI Settings
 gemini:
   api:
-    key: ${GEMINI_API_KEY}
+    key: ${GEMINI_API_KEY:}
