@@ -43,6 +43,9 @@ import org.springframework.test.web.servlet.MockMvc;
 )
 @Import({SecurityConfig.class, ProviderJobService.class, GlobalExceptionHandler.class})
 class ProviderJobSecurityTest {
+    @MockitoBean private com.clickcart.repository.ProviderVerificationRepository verifications;
+    @MockitoBean private com.clickcart.service.AccountStore accounts;
+    @MockitoBean private com.clickcart.service.BookingWorkflowService workflow;
 
     @MockitoBean private com.clickcart.service.CommissionTransactionService commissions;
     @MockitoBean private com.clickcart.service.CommissionRuleService commissionRules;
@@ -144,6 +147,10 @@ class ProviderJobSecurityTest {
         user.setId(providerId);
         user.setEmail(providerId + "@example.test");
         user.setRole(role);
+        when(accounts.findById(providerId)).thenReturn(Optional.of(user));
+        var verification = new com.clickcart.model.ProviderVerification();
+        verification.setStatus("APPROVED");
+        when(verifications.findByUserId(providerId)).thenReturn(Optional.of(verification));
         return "Bearer " + jwtUtil.generateAccessToken(user);
     }
 

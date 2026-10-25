@@ -4,7 +4,6 @@ import com.clickcart.dto.SendMessageRequest;
 import com.clickcart.model.Message;
 import com.clickcart.service.MessageService;
 import jakarta.validation.Valid;
-import org.springframework.core.io.PathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -82,11 +80,10 @@ public class MessageController {
             @PathVariable String messageId,
             @RequestParam String userId,
             @RequestParam String role) throws IOException {
-        Path filePath = messageService.getAttachmentPath(messageId, userId, role);
+        Resource resource = messageService.getAttachmentResource(messageId, userId, role);
         String contentType = messageService.getAttachmentContentType(messageId);
         String originalName = messageService.getAttachmentOriginalName(messageId);
 
-        Resource resource = new PathResource(filePath);
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,

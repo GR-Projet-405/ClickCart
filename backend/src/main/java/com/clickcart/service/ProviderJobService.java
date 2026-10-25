@@ -1,13 +1,10 @@
 package com.clickcart.service;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.List;
 
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -197,11 +194,7 @@ public class ProviderJobService {
             .filter(item -> photoId.equals(item.getId()))
             .findFirst()
             .orElseThrow(() -> ApiException.notFound("Photo not found"));
-        Path path = storageService.resolve(job.getId(), photo.getStoredName());
-        if (!Files.exists(path)) {
-            throw ApiException.notFound("Photo file is no longer available");
-        }
-        return new FileSystemResource(path);
+        return storageService.read(job.getId(), photo.getStoredName());
     }
 
     public MediaType mediaTypeFor(String providerId, String jobId, String photoId) {
