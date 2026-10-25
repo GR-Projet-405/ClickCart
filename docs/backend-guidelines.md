@@ -13,4 +13,4 @@ The backend uses the base package `com.clickcart` and the following responsibili
 
 Keep dependencies flowing from the HTTP layer toward services and repositories. Do not expose persistence models as API contracts by default. Validate request DTOs at the API boundary.
 
-Shared domain structures and cross-feature contracts require team agreement before implementation. This foundation intentionally contains no marketplace example classes.
+Shared domain structures and cross-feature contracts require team agreement before implementation.

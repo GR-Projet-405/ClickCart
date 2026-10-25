@@ -1,0 +1,43 @@
+.address-modal {
+  position: relative;
+  width: 100%;
+  max-width: 44rem;
+  background: var(--cc-bg-surface);
+  border-radius: var(--cc-radius-xl);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--cc-border);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.address-modal__form {
+  padding: var(--cc-space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-5);
+}
+
+.address-modal__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--cc-space-4);
+}
+
+.address-modal__checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  font-size: var(--cc-text-body-sm-size);
+  color: var(--cc-text-primary);
+  cursor: pointer;
+  padding: var(--cc-space-2) 0;
+}
+
+.address-modal__checkbox-label input {
+  width: 1.1rem;
+  height: 1.1rem;
+  accent-color: var(--cc-primary);
+  cursor: pointer;
+}

@@ -49,7 +49,7 @@
 @media (min-width: 1024px) {
   .customer-footer__main {
     max-width: none;
-    grid-template-columns: minmax(15rem, 1fr) auto auto minmax(15rem, 1fr);
+    grid-template-columns: minmax(15rem, 1fr) auto auto;
     align-items: center;
   }
   .customer-footer__links {

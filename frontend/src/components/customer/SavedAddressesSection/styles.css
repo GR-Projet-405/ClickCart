@@ -1,0 +1,150 @@
+.saved-addresses-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--cc-space-5);
+  background: var(--cc-bg-surface);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-xl);
+  padding: var(--cc-space-5);
+}
+
+.saved-addresses-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--cc-space-3);
+  border-bottom: 1px solid var(--cc-border-soft);
+  gap: var(--cc-space-3);
+  flex-wrap: wrap;
+}
+
+.saved-addresses-card__title {
+  margin: 0;
+  font-size: 1.15rem;
+  color: var(--cc-text-primary);
+}
+
+.saved-addresses-card__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--cc-space-4);
+}
+
+.saved-addresses-card__item {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--cc-space-3);
+  padding: var(--cc-space-4);
+  background: var(--cc-bg-muted);
+  border: 1px solid var(--cc-border-soft);
+  border-radius: var(--cc-radius-lg);
+  transition: all 150ms ease-in-out;
+}
+
+.saved-addresses-card__item--default {
+  background: var(--cc-primary-softer);
+  border-color: var(--cc-primary-border-soft);
+  box-shadow: 0 0 0 1px var(--cc-primary);
+}
+
+.saved-addresses-card__item-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--cc-space-2);
+}
+
+.saved-addresses-card__item-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-3);
+}
+
+.saved-addresses-card__type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  background: var(--cc-bg-surface);
+  color: var(--cc-primary-dark);
+  border: 1px solid var(--cc-border);
+  border-radius: var(--cc-radius-md);
+  flex-shrink: 0;
+}
+
+.saved-addresses-card__label {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--cc-text-primary);
+}
+
+.saved-addresses-card__recipient {
+  font-size: var(--cc-text-caption-size);
+  color: var(--cc-text-secondary);
+}
+
+.saved-addresses-card__default-badge {
+  font-size: 0.6875rem;
+  padding: 2px 8px;
+}
+
+.saved-addresses-card__set-default-btn {
+  background: transparent;
+  border: 0;
+  color: var(--cc-primary-dark);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: var(--cc-radius-sm);
+  text-decoration: underline;
+}
+
+.saved-addresses-card__set-default-btn:hover {
+  background: var(--cc-primary-soft);
+}
+
+.saved-addresses-card__address-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.saved-addresses-card__line {
+  margin: 0;
+  font-size: var(--cc-text-body-sm-size);
+  color: var(--cc-text-primary);
+  font-weight: 500;
+}
+
+.saved-addresses-card__city {
+  margin: 0;
+  font-size: var(--cc-text-caption-size);
+  color: var(--cc-text-secondary);
+}
+
+.saved-addresses-card__notes {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--cc-text-muted);
+  font-style: italic;
+}
+
+.saved-addresses-card__item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--cc-space-2);
+  margin-top: var(--cc-space-1);
+}
+
+.saved-addresses-card__delete-btn {
+  color: var(--cc-error-text);
+}
+
+.saved-addresses-card__delete-btn:hover {
+  background: var(--cc-error-soft) !important;
+  color: var(--cc-error) !important;
+}

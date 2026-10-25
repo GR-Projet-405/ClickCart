@@ -1,32 +1,3 @@
-import React from 'react';
-import { ChevronDown, ExternalLink, Phone } from "lucide-react";
+import { Link } from "react-router-dom";
 import PageContainer from "../../common/PageContainer";
-
-export default function AdminTopBar() {
-  return (
-    <div className="dashboard-topbar">
-      <PageContainer className="dashboard-topbar__inner">
-        <div className="dashboard-topbar__support">
-          <Phone size={13} aria-hidden="true" />
-          <span>Need Help?</span>
-          <a href="tel:+942538862516">(025) 3886 25 16</a>
-        </div>
-        <nav
-          className="dashboard-topbar__links"
-          aria-label="Admin utility navigation"
-        >
-          <a href="/">
-            Visit Marketplace <ExternalLink size={12} aria-hidden="true" />
-          </a>
-          <a href="#help-center">Help Center</a>
-          <span>USD</span>
-          <button type="button" aria-label="Language: English">
-            <span aria-hidden="true">🇺🇸</span>
-            <span>Eng</span>
-            <ChevronDown size={12} aria-hidden="true" />
-          </button>
-        </nav>
-      </PageContainer>
-    </div>
-  );
-}
+export default function AdminTopBar() { return <div className="dashboard-topbar"><PageContainer className="dashboard-topbar__inner"><span>ClickCart administration</span><nav className="dashboard-topbar__links" aria-label="Admin utility navigation"><Link to="/">Visit marketplace</Link><Link to="/admin/profile">My profile</Link></nav></PageContainer></div>; }
