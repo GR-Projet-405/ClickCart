@@ -1,0 +1,65 @@
+# Container configuration. Secrets are supplied by the hosting environment.
+spring:
+  application:
+    name: clickcart-backend
+  main:
+    allow-bean-definition-overriding: true
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      database: ${DATABASE_NAME}
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+  # Gmail / SMTP Settings 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+server:
+  forward-headers-strategy: framework
+  port: ${PORT:10000}
+
+clickcart:
+  attachments:
+    dir: ${ATTACHMENTS_DIR:/app/data/attachments}
+  security:
+    enabled: true
+    issuer-uri: ${JWT_ISSUER_URI:}
+    audience: ${JWT_AUDIENCE:clickcart}
+  jwt:
+    secret: ${JWT_SECRET}
+    ttl-seconds: ${CLICKCART_JWT_TTL:900}
+  upload:
+    proof-dir: ${CLICKCART_PROOF_DIR:/app/data/proofs}
+
+# Cloudinary Settings
+cloudinary:
+  cloud-name: ${CLOUDINARY_CLOUD_NAME}
+  api-key: ${CLOUDINARY_API_KEY}
+  api-secret: ${CLOUDINARY_API_SECRET}
+
+logging:
+  level:
+    org.springframework.data.mongodb: WARN
+    com.clickcart: INFO
+
+# Gemini AI Settings
+gemini:
+  api:
+    key: ${GEMINI_API_KEY}
