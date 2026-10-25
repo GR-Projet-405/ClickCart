@@ -1,3 +1,4 @@
+import FavoriteButton from "../../Favorites/FavoriteButton";
 import { ArrowRight, MapPin, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Avatar from "../../common/Avatar";
@@ -26,6 +27,7 @@ export default function ServiceCard({ service, onViewService }) {
 
       <div className="marketplace-service-card__content">
         <div className="marketplace-service-card__meta">
+          <FavoriteButton targetType="SERVICE" targetId={service.id} />
           <span className="marketplace-service-card__category">{service.category || "General"}</span>
           <span className="marketplace-service-card__rating">
             <Star size={14} fill="currentColor" color="var(--cc-warning)" />

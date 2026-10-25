@@ -4,16 +4,6 @@ import SavedProviders from '../components/Favorites/SavedProviders';
 import EmptyState from '../components/Favorites/EmptyState';
 import { getFavorites } from '../services/favoritesApi';
 
-// Fallback catalog in case backend item doesn't have image
-const CATALOG = {
-  s1: { title: 'Garden Maintenance', providerName: 'Liam S.',  price: 'LKR 3,500', rating: 4.9, image: 'https://images.unsplash.com/photo-1558904541-efa8c4a08931?auto=format&fit=crop&q=80&w=400&h=250' },
-  s2: { title: 'Fresh Home Care',   providerName: 'Maria C.',  price: 'LKR 4,800', rating: 4.85, image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=400&h=250' },
-  s3: { title: 'Electrical Repairs', providerName: 'Rajiv K.', price: 'LKR 4,200', rating: 4.92, image: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&q=80&w=400&h=250' },
-  p1: { title: 'Liam Senanayake',   providerName: 'Liam S.',  price: 'LKR 3,000 / hr', rating: 4.95, image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=400&h=400' },
-  p2: { title: 'Maria Corelli',     providerName: 'Maria C.',  price: 'LKR 2,500 / hr', rating: 4.88, image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=400&h=400' },
-  p3: { title: 'Rajiv Kumaratunga', providerName: 'Rajiv K.', price: 'LKR 3,200 / hr', rating: 4.91, image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400&h=400' },
-};
-
 export default function MyFavorites() {
   const [activeTab, setActiveTab] = useState('services');
   const [services, setServices] = useState([]);
@@ -32,7 +22,6 @@ export default function MyFavorites() {
           .map(f => ({
             id: f.id,
             targetId: f.targetId,
-            ...(CATALOG[f.targetId] || {}),
             ...f,
           }))
       );
@@ -41,13 +30,12 @@ export default function MyFavorites() {
           .map(f => ({
             id: f.id,
             targetId: f.targetId,
-            ...(CATALOG[f.targetId] || {}),
             ...f,
           }))
       );
     } catch (err) {
       console.error(err);
-      setError('Could not load favorites. Is the backend running?');
+      setError(err.message || 'Could not load favorites. Please try again.');
     } finally {
       setLoading(false);
     }

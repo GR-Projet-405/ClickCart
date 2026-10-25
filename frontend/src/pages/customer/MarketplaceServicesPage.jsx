@@ -1,3 +1,4 @@
+import FavoriteButton from "../../components/Favorites/FavoriteButton";
 import { useEffect, useMemo, useState } from "react";
 import { AlertCircle, ArrowRight, Search, Wrench, X, MapPin } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -64,6 +65,7 @@ function ServiceDetails({ service, onClose }) {
         </button>
         <div className="marketplace-service-dialog__body">
           <span className="marketplace-service-category">{service.category}</span>
+          <FavoriteButton targetType="SERVICE" targetId={service.id} />
           <h2 id="marketplace-details-title">{service.title}</h2>
           <p>{service.description}</p>
           <strong>
