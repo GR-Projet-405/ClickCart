@@ -1,7 +1,7 @@
-import ProviderSettings from "../pages/provider/ProviderSettings";
+import ProviderSettings from "../pages/Provider/ProviderSettings";
 import ProviderGuard from "../context/ProviderContext";
 import { useAuth } from "../context/AuthContext";
-import NotificationsPage from "../pages/provider/NotificationsPage";
+import NotificationsPage from "../pages/Provider/NotificationsPage";
 import React from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 
