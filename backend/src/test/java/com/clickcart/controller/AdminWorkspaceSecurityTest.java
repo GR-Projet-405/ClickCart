@@ -24,12 +24,14 @@ class AdminWorkspaceSecurityTest {
  @Autowired MockMvc mvc;
  @Autowired JwtUtil tokens;
  @MockitoBean AccountStore users;
+ @MockitoBean com.clickcart.repository.ProviderVerificationRepository verifications;
  @MockitoBean MongoTemplate mongo;
  @MockitoBean(name="mongoMappingContext") MongoMappingContext mapping;
  private User user(String id, Role role) { var u=new User();u.setId(id);u.setRole(role);u.setEmail(id+"@example.com");u.setFullName("Admin Name");u.setPasswordHash("must-not-leak");return u; }
  private String token(User u) { return "Bearer "+tokens.generateAccessToken(u); }
  @Test void onlyAdminsCanReadDashboard() throws Exception {
    mvc.perform(get("/api/admin/workspace/summary")).andExpect(status().isUnauthorized());
+   when(users.findById("customer")).thenReturn(Optional.of(user("customer",Role.CUSTOMER)));
    mvc.perform(get("/api/admin/workspace/profile").header("Authorization",token(user("customer",Role.CUSTOMER)))).andExpect(status().isForbidden());
    verifyNoInteractions(mongo);
  }

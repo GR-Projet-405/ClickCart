@@ -82,7 +82,8 @@ public class SecurityConfig {
 
     @Bean
     @ConditionalOnProperty(name = "clickcart.security.enabled", havingValue = "true")
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http,
+            @Value("${clickcart.security.external-jwt-enabled:false}") boolean externalJwtEnabled) throws Exception {
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
         JwtGrantedAuthoritiesConverter authorities = new JwtGrantedAuthoritiesConverter();
         authorities.setAuthoritiesClaimName("roles");
@@ -133,10 +134,13 @@ public class SecurityConfig {
 
                 // DEV-01: rate limits run after CORS so browsers can read 429 responses
                 .addFilterAfter(authRateLimitFilter, CorsFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2ResourceServer(oauth -> oauth
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        if (externalJwtEnabled) {
+            http.oauth2ResourceServer(oauth -> oauth
                         .bearerTokenResolver(bearerTokenResolver())
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(converter)));
+        }
 
         return http.build();
     }
@@ -180,7 +184,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "clickcart.security.enabled", havingValue = "true")
+    @ConditionalOnProperty(name = {"clickcart.security.enabled", "clickcart.security.external-jwt-enabled"}, havingValue = "true")
     JwtDecoder jwtDecoder(@Value("${clickcart.security.issuer-uri}") String issuer,
             @Value("${clickcart.security.audience}") String audience) {
         JwtDecoder decoder = JwtDecoders.fromIssuerLocation(issuer);
