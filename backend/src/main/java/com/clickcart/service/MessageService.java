@@ -24,7 +24,6 @@ import java.nio.file.*;
 import java.time.Instant;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 @Service
 public class MessageService {
@@ -49,15 +48,17 @@ public class MessageService {
     private final ConversationRepository conversationRepository;
     private final ConversationService conversationService;
     private final NotificationService notificationService;
+    private final PrivateUploadStorage uploads;
 
     public MessageService(MessageRepository messageRepository,
             ConversationRepository conversationRepository,
             @Lazy ConversationService conversationService,
-            NotificationService notificationService) {
+            NotificationService notificationService, PrivateUploadStorage uploads) {
         this.messageRepository = messageRepository;
         this.conversationRepository = conversationRepository;
         this.conversationService = conversationService;
         this.notificationService = notificationService;
+        this.uploads = uploads;
     }
 
     public List<Message> getMessages(String conversationId, String userId, String role) {
@@ -180,7 +181,7 @@ public class MessageService {
         return saved;
     }
 
-    public Path getAttachmentPath(String messageId, String userId, String role) {
+    public org.springframework.core.io.Resource getAttachmentResource(String messageId, String userId, String role) {
         Message msg = messageRepository.findById(messageId)
                 .orElseThrow(() -> new ResourceNotFoundException("Message not found: " + messageId));
 
@@ -190,6 +191,10 @@ public class MessageService {
 
         conversationService.getConversation(msg.getConversationId(), userId, role);
 
+        if (msg.getAttachment().getStoredFilename().startsWith("gridfs-")) {
+            return uploads.read("conversation", msg.getConversationId(), msg.getAttachment().getStoredFilename());
+        }
+
         Path filePath = Paths.get(attachmentsDir,
                 msg.getConversationId(),
                 msg.getAttachment().getStoredFilename());
@@ -197,7 +202,7 @@ public class MessageService {
         if (!Files.exists(filePath)) {
             throw new ResourceNotFoundException("Attachment file not found.");
         }
-        return filePath;
+        return new org.springframework.core.io.PathResource(filePath);
     }
 
     public String getAttachmentContentType(String messageId) {
@@ -230,18 +235,7 @@ public class MessageService {
     }
 
     private String storeFile(MultipartFile file, String conversationId) throws IOException {
-        Path dir = Paths.get(attachmentsDir, conversationId);
-        Files.createDirectories(dir);
-
-        String ext = "";
-        String original = file.getOriginalFilename();
-        if (original != null && original.contains(".")) {
-            ext = original.substring(original.lastIndexOf('.'));
-        }
-        String storedName = UUID.randomUUID() + ext;
-        Path dest = dir.resolve(storedName);
-        file.transferTo(dest.toFile());
-        return storedName;
+        return uploads.store("conversation", conversationId, file);
     }
 
     private String sanitiseFilename(String filename) {

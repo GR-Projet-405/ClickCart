@@ -1,10 +1,8 @@
 package com.clickcart.service;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Set;
@@ -24,9 +22,12 @@ public class JobProofStorageService {
     private static final long MAX_BYTES = 10L * 1024 * 1024;
 
     private final Path root;
+    private final PrivateUploadStorage uploads;
 
-    public JobProofStorageService(@Value("${clickcart.upload.proof-dir:./data/job-proofs}") String proofDir) {
+    public JobProofStorageService(@Value("${clickcart.upload.proof-dir:./data/job-proofs}") String proofDir,
+            PrivateUploadStorage uploads) {
         this.root = Path.of(proofDir).toAbsolutePath().normalize();
+        this.uploads = uploads;
     }
 
     public JobPhoto store(String jobId, MultipartFile file) {
@@ -41,14 +42,7 @@ public class JobProofStorageService {
             throw ApiException.badRequest("Image must be 10MB or smaller");
         }
         try {
-            Path jobDir = root.resolve(jobId);
-            Files.createDirectories(jobDir);
-            String extension = extensionOf(file.getOriginalFilename(), contentType);
-            String storedName = UUID.randomUUID() + extension;
-            Path destination = jobDir.resolve(storedName);
-            try (InputStream input = file.getInputStream()) {
-                Files.copy(input, destination, StandardCopyOption.REPLACE_EXISTING);
-            }
+            String storedName = uploads.store("job-proof", jobId, file);
             JobPhoto photo = new JobPhoto();
             photo.setId(UUID.randomUUID().toString());
             photo.setOriginalName(file.getOriginalFilename() == null ? storedName : file.getOriginalFilename());
@@ -70,6 +64,13 @@ public class JobProofStorageService {
         return path;
     }
 
+    public org.springframework.core.io.Resource read(String jobId, String storedName) {
+        if (storedName.startsWith("gridfs-")) return uploads.read("job-proof", jobId, storedName);
+        Path path = resolve(jobId, storedName);
+        if (!Files.exists(path)) throw ApiException.notFound("Photo file is no longer available");
+        return new org.springframework.core.io.FileSystemResource(path);
+    }
+
     private static boolean hasImageExtension(String name) {
         if (name == null) {
             return false;
@@ -78,13 +79,4 @@ public class JobProofStorageService {
         return lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".png");
     }
 
-    private static String extensionOf(String originalName, String contentType) {
-        if (originalName != null && originalName.toLowerCase(Locale.ROOT).endsWith(".png")) {
-            return ".png";
-        }
-        if ("image/png".equals(contentType)) {
-            return ".png";
-        }
-        return ".jpg";
-    }
 }
