@@ -1,3 +1,5 @@
+import { getFavorites } from "../../services/favoritesApi";
+import { useAuth } from "../../context/AuthContext";
 import ChangePassword from "../../components/account/ChangePassword";
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
@@ -29,6 +31,7 @@ import "./CustomerProfilePage.css";
 
 export default function CustomerProfilePage() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const initialTab = tabParam || "profile";
@@ -44,8 +47,15 @@ export default function CustomerProfilePage() {
 
   const [activeTab, setActiveTab] = useState(initialTab);
   const [favoritesCount, setFavoritesCount] = useState(
-    profile?.stats?.favoriteProviders || 6
+    profile?.stats?.favoriteProviders || 0
   );
+  useEffect(() => {
+    let active = true;
+    setFavoritesCount(0);
+    const loadCount = () => { if (user?.role === "CUSTOMER") getFavorites().then(items => { if (active) setFavoritesCount(items.length); }).catch(() => {}); };
+    loadCount(); window.addEventListener("favorites-updated", loadCount);
+    return () => { active = false; window.removeEventListener("favorites-updated", loadCount); };
+  }, [user?.id, user?.role]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addressToEdit, setAddressToEdit] = useState(null);

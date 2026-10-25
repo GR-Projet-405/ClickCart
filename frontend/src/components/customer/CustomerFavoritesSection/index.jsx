@@ -1,3 +1,4 @@
+import { messagingService } from "../../../services/messagingService";
 import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -53,7 +54,7 @@ export default function CustomerFavoritesSection({
   // Modal for quick details preview
   const [previewItem, setPreviewItem] = useState(null);
 
-  const customerId = profile?.id || "mock-customer-001";
+  const customerId = profile?.id;
 
   // Load favorites from backend API
   const loadFavorites = async () => {
@@ -153,7 +154,7 @@ export default function CustomerFavoritesSection({
         return pB - pA;
       }
       // NEWEST default: by createdAt or id
-      return (b.id || "").localeCompare(a.id || "");
+      return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
     return result;
@@ -168,7 +169,7 @@ export default function CustomerFavoritesSection({
 
     // Optimistic UI update
     const previousFavorites = [...favorites];
-    const updated = favorites.filter((f) => f.id !== item.id && f.targetId !== item.targetId);
+    const updated = favorites.filter((f) => f.id !== item.id);
     setFavorites(updated);
     if (onUpdateFavoritesCount) {
       onUpdateFavoritesCount(updated.length);
@@ -182,6 +183,7 @@ export default function CustomerFavoritesSection({
     } catch (err) {
       console.error("Failed to remove favorite:", err);
       setFavorites(previousFavorites); // Revert on failure
+      onUpdateFavoritesCount?.(previousFavorites.length);
       if (onShowToast) {
         onShowToast(`Could not remove ${itemTitle}. Reverted changes.`, "warning");
       }
@@ -202,22 +204,14 @@ export default function CustomerFavoritesSection({
   };
 
   const handleBookProvider = (provider) => {
-    navigate("/booking/create", {
-      state: {
-        providerId: provider.targetId,
-        providerName: provider.providerName || provider.title,
-        specialty: provider.category,
-      },
-    });
+    navigate(`/booking/create?providerId=${encodeURIComponent(provider.targetId)}`);
   };
 
-  const handleMessageProvider = (provider) => {
-    navigate("/messages", {
-      state: {
-        recipientId: provider.targetId,
-        recipientName: provider.providerName || provider.title,
-      },
-    });
+  const handleMessageProvider = async (provider) => {
+    try {
+      const conversation = await messagingService.createOrFindConversation(provider.targetId);
+      navigate(`/messages/${conversation.id}`);
+    } catch (error) { onShowToast?.(error.message, "warning"); }
   };
 
   const handleViewProviderProfile = (provider) => {
@@ -455,8 +449,7 @@ export default function CustomerFavoritesSection({
                 <div className="service-fav-card__media-wrap">
                   <img
                     src={
-                      item.image ||
-                      "https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80&w=400&h=250"
+                      item.image || undefined
                     }
                     alt={item.title}
                     className="service-fav-card__image"
@@ -482,7 +475,7 @@ export default function CustomerFavoritesSection({
 
                   <div className="service-fav-card__provider-row">
                     <CheckCircle2 size={14} color="var(--cc-success)" />
-                    <span>{item.providerName || "Verified Provider"}</span>
+                    <span>{item.providerName || "Service provider"}</span>
                   </div>
 
                   <div className="service-fav-card__meta-row">
@@ -561,8 +554,7 @@ export default function CustomerFavoritesSection({
                   <div className="provider-fav-card__avatar-box">
                     <img
                       src={
-                        provider.image ||
-                        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400&h=400"
+                        provider.image || undefined
                       }
                       alt={provider.providerName || provider.title}
                       className="provider-fav-card__avatar"
@@ -601,7 +593,7 @@ export default function CustomerFavoritesSection({
                   <div className="provider-fav-card__highlight-item">
                     <span className="provider-fav-card__highlight-label">Rating</span>
                     <span className="provider-fav-card__highlight-val">
-                      ★ {provider.rating ? provider.rating.toFixed(2) : "4.90"}{" "}
+                      ★ {provider.rating ? provider.rating.toFixed(2) : "New"}{" "}
                       <small style={{ fontWeight: "normal", color: "var(--cc-text-muted)" }}>
                         ({provider.reviewsCount || 45})
                       </small>

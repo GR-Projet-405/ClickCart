@@ -1,15 +1,30 @@
+import { useNavigate } from "react-router-dom";
+import { notify } from "../../context/FeedbackHost";
 // frontend/src/components/Favorites/SavedProviders.jsx
 import React, { useState } from 'react';
 import { removeFavorite } from '../../services/favoritesApi';
 import Toast from '../common/Toast';
 
 export default function SavedProviders({ data = [], reload }) {
+  const navigate = useNavigate();
   const [toast, setToast] = useState('');
+  const [sort, setSort] = useState('Newest First');
+  const [removing, setRemoving] = useState(null);
+  const sorted = [...data].sort((a,b) => {
+    if (sort === 'Oldest First') return new Date(a.createdAt) - new Date(b.createdAt);
+    if (sort === 'Rating: High to Low') return (b.rating || 0) - (a.rating || 0);
+    if (sort.startsWith('Price:')) { const price = item => Number((item.price || '').replace(/[^0-9.]/g, '')); return (price(a)-price(b)) * (sort === 'Price: Low to High' ? 1 : -1); }
+    return new Date(b.createdAt) - new Date(a.createdAt);
+  });
 
   const handleRemove = async (targetId, title) => {
-    await removeFavorite('PROVIDER', targetId);
-    setToast(`Removed "${title}" from favorites`);
-    reload && reload();
+    setRemoving(targetId);
+    try {
+      await removeFavorite('PROVIDER', targetId);
+      notify(`Removed "${title}" from favorites`, 'success');
+      await reload?.();
+    } catch (error) { notify(error.message, 'error'); }
+    finally { setRemoving(null); }
   };
 
   return (
@@ -17,7 +32,7 @@ export default function SavedProviders({ data = [], reload }) {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>Saved Providers ({data.length})</h2>
         <select
-          onChange={(e) => setToast(`Sorted by: ${e.target.value}`)}
+          value={sort} onChange={(e) => setSort(e.target.value)}
           style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
         >
           <option>Newest First</option>
@@ -27,7 +42,7 @@ export default function SavedProviders({ data = [], reload }) {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-        {data.map((item) => (
+        {sorted.map((item) => (
           <div
             key={item.id}
             style={{
@@ -54,7 +69,7 @@ export default function SavedProviders({ data = [], reload }) {
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '130px' }}>
               <button
-                onClick={() => setToast(`Starting booking with "${item.providerName}"...`)}
+                onClick={() => navigate(`/booking/create?providerId=${encodeURIComponent(item.targetId)}`)}
                 style={{
                   background: '#2563eb',
                   color: 'white',
@@ -68,7 +83,7 @@ export default function SavedProviders({ data = [], reload }) {
                 Book Now
               </button>
               <button
-                onClick={() => setToast(`Viewing profile of "${item.providerName}"`)}
+                onClick={() => navigate(`/providers/${encodeURIComponent(item.targetId)}`)}
                 style={{
                   background: 'var(--cc-bg-surface)' ,
                   color: 'var(--cc-text-primary)',
@@ -81,7 +96,7 @@ export default function SavedProviders({ data = [], reload }) {
                 View Details
               </button>
               <button
-                onClick={() => handleRemove(item.targetId, item.title)}
+                disabled={removing === item.targetId} onClick={() => handleRemove(item.targetId, item.title)}
                 style={{
                   background: 'var(--cc-bg-surface)' ,
                   color: '#dc2626',

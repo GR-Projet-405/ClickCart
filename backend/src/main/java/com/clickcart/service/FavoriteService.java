@@ -21,6 +21,7 @@ public class FavoriteService {
             return existing.get();
         }
         Favorite favorite = new Favorite(customerId, targetType, targetId);
+        favorite.setId(java.util.UUID.nameUUIDFromBytes((customerId + "\u0000" + targetType + "\u0000" + targetId).getBytes(java.nio.charset.StandardCharsets.UTF_8)).toString());
         return favoriteRepository.save(favorite);
     }
 

@@ -1,3 +1,4 @@
+import FavoriteButton from "../../../components/Favorites/FavoriteButton";
 import { useAuth } from "../../../context/AuthContext";
 import { messagingService } from "../../../services/messagingService";
 import React, { useState, useEffect } from "react";
@@ -228,6 +229,7 @@ export default function PublicProviderProfile() {
           <div className="hero-info-column">
             <div className="hero-title-row">
               <h1 className="hero-name">{name}</h1>
+              <FavoriteButton targetType="PROVIDER" targetId={providerId} />
 
               <span className="type-chip">
                 {isIndividual ? "Individual Provider" : "Business Provider"}
