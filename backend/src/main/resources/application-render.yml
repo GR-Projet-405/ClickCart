@@ -40,6 +40,7 @@ clickcart:
     dir: ${ATTACHMENTS_DIR:/app/data/attachments}
   security:
     enabled: true
+    external-jwt-enabled: false
     issuer-uri: ${JWT_ISSUER_URI:}
     audience: ${JWT_AUDIENCE:clickcart}
   jwt:
