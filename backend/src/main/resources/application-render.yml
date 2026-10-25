@@ -46,12 +46,7 @@ cloudinary:
 logging:
   level:
     org.springframework.data.mongodb: WARN
-    com.AUTH_RESET_CODE_DELIVERY: email
-AUTH_RESET_MAIL_FROM: ${MAIL_FROM}
-
-clickcart:
-  mail:
-    provider: brevo INFO
+    com.clickcart: INFO
 
 # Gemini AI Settings
 gemini:

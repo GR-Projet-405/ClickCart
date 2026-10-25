@@ -9,6 +9,15 @@ import org.springframework.mail.javamail.JavaMailSender;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class BrevoMailConfigTest {
+    @Test void renderConfigurationLoadsWithoutDuplicateKeys() throws Exception {
+        var sources = new org.springframework.boot.env.YamlPropertySourceLoader().load("render",
+                new org.springframework.core.io.ClassPathResource("application-render.yml"));
+        var config = sources.get(0);
+        assertThat(config.getProperty("clickcart.mail.provider")).isEqualTo("brevo");
+        assertThat(config.getProperty("logging.level.com.clickcart")).isEqualTo("INFO");
+        assertThat(config.getProperty("clickcart.security.enabled")).isEqualTo(true);
+    }
+
     private final ApplicationContextRunner runner = new ApplicationContextRunner()
             .withUserConfiguration(BrevoMailConfig.class)
             .withConfiguration(AutoConfigurations.of(MailSenderAutoConfiguration.class));
