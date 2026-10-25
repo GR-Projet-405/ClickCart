@@ -29,7 +29,7 @@ import LandingPage from "../pages/customer/LandingPage";
 import CustomerReviewsPage from "../pages/reviews/CustomerReviewsPage";
 import PublicProviderProfile from "../pages/Provider/profile/PublicProviderProfile";
 import ConversationsPage from "../pages/messaging/ConversationsPage";
-import NotificationsPage from "../pages/provider/NotificationsPage";
+import NotificationsPage from "../pages/Provider/NotificationsPage";
 
 export default function CustomerRoutes() {
   return (
